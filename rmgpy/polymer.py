@@ -3485,11 +3485,16 @@ def _apply_conduit_irreversible_rewrite(forward, verdict) -> None:
     downstream directionality then agrees bit-for-bit automatically: the
     generating solver computes kb = 0, chem.yaml prints the ``=>`` arrow
     (rmgpy/cantera.py keys the arrow on ``reversible``), and the sidecar
-    row serializes ``kinetics.reversible: false``. Idempotent; DEAD CODE in
-    M18.3 (the admit arm is behind the disabled flag) -- unit-tested
-    directly. A REVOKED row keeps the rewrite (irreversibility only removes
-    flux; conservative). The what-else-reads-.reversible mutation-safety
-    audit is OQ-2 and MUST close before the M18.4 flag flip."""
+    row serializes ``kinetics.reversible: false``. Idempotent; DEAD CODE
+    while ``CONDUIT_ADMISSION_ENABLED`` stays False (the admit arm is
+    behind the disabled flag) -- unit-tested directly. A REVOKED row keeps
+    the rewrite (irreversibility only removes flux; conservative). Called
+    ONLY from :func:`readjudicate_conduit_admission` (OQ-2 relocation): the
+    what-else-reads-``.reversible`` mutation-safety audit (OQ-2) closed by
+    moving this call off the pre-dedup candidate and onto the canonical,
+    post-dedup, post-kinetics object -- the one place the mutation can
+    never be silently dropped by dedup or clobber a still-reversible
+    canonical duplicate."""
     if not getattr(verdict, "needs_irreversible_rewrite", False):
         return
     if not getattr(forward, "reversible", True):
@@ -3656,69 +3661,43 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
         # (CONDUIT_ADMISSION_ENABLED is False), so every row still refuses
         # exactly as M18.2 left it while the census suffix carries the
         # would-be verdict (WOULD-ADMIT / deny reason) for OQ-1 sizing.
-        from rmgpy.polymer_conduit import (CONDUIT_ADMISSION_ENABLED,
-                                           CANDIDATE_KEY_NOTE,
-                                           PROVISIONAL_DENY_REASONS,
+        from rmgpy.polymer_conduit import (PROVISIONAL_DENY_REASONS,
                                            AdmissionVerdict,
                                            annotate_refused_row,
                                            evaluate_conduit_admission,
                                            lookup_candidate)
         verdict = evaluate_conduit_admission(forward, row_pools)
-        if verdict.deny_reason in PROVISIONAL_DENY_REASONS:
-            # G6 re-adjudication defect fix: this stamp site runs BEFORE
-            # make_new_reaction assigns kinetics (deliberately -- it must
-            # precede check_existing so dedup can merge adjudication onto
-            # the canonical object), so a family-generated row always
-            # reaches G6 with kinetics None. The deny above is PROVISIONAL
-            # (would_admit stays 0, fail-closed); mark the row so
-            # readjudicate_conduit_admission can re-run G6 against the
-            # final kinetics after the kinetics conversion/barrier block
-            # (or across the canonical-dedup merge).
-            forward.polymer_conduit_admission_pending = True
         if verdict.admitted:
             # r42 P1-4(b): G1 consulted the ledger at EVALUATION time;
             # re-consult at the STAMPING decision point so a
             # feature-radical sighting registered since (the FR census is
             # warn-once and runs in either order relative to this site)
             # deterministically blocks the admit arm. Fail-closed
-            # narrowing only -- dead code in M18.3 like the arm itself.
+            # narrowing only.
             _entry = lookup_candidate(verdict.candidate_key)
             if _entry is not None and "feature_radical" in _entry["censuses"]:
                 verdict = AdmissionVerdict(
                     admitted=False,
                     deny_reason="feature-radical-overlap",
                     candidate_key=verdict.candidate_key)
-        if verdict.admitted and CONDUIT_ADMISSION_ENABLED:
-            # M18.4 live-admission arm (dead in M18.3; no solver dispatch
-            # arm exists yet). Stamp the conduit archetype + row params
-            # (§2.1), apply the [r39-P1] irreversible export rewrite, and
-            # census the admission LOUDLY.
-            forward.polymer_refused = False
-            forward.polymer_refused_accumulating = False
-            forward.polymer_flux_archetype = int(
-                PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
-            forward.polymer_conduit_dst_pool = verdict.dst_pool
-            forward.polymer_conduit_params = {
-                "admission_direction": "chain_to_pool",
-                "chain_units": float(verdict.chain_units),
-                "gas_products": [{
-                    "species": verdict.gas_product[0],
-                    "stoich": 1,
-                    "mw_g_mol": float(verdict.gas_product[1]),
-                }],
-                "gas_units": float(verdict.gas_units),
-                "candidate_key": verdict.candidate_key,
-                "candidate_key_note": CANDIDATE_KEY_NOTE,
-            }
-            _apply_conduit_irreversible_rewrite(forward, verdict)
-            logging.warning(
-                "MOMENT-CREDIT CONDUIT ADMITTED (moment_credit_conduit/1): "
-                "%s -> dst_pool=%s chain_units=%.6g gas_units=%.6g "
-                "key=%s rewrite=%s",
-                _reaction_census_label(forward), verdict.dst_pool,
-                verdict.chain_units, verdict.gas_units,
-                verdict.candidate_key, verdict.needs_irreversible_rewrite)
-            return
+        if verdict.admitted or verdict.deny_reason in PROVISIONAL_DENY_REASONS:
+            # OQ-2 relocation (adjudicated): this stamp site runs BEFORE
+            # make_new_reaction's check_existing dedup -- deliberately, so
+            # the row's adjudication can merge onto a canonical object that
+            # survives dedup -- and therefore cannot safely mutate anything
+            # here: a freshly stamped archetype/rewrite on a PRE-DEDUP
+            # candidate would be silently discarded if dedup instead keeps
+            # a pre-existing (possibly still-reversible) canonical
+            # equivalent, stamped over via merge_polymer_adjudication_stamps
+            # (which does not carry ``.reversible``) -- the exact
+            # REVERSIBLE-canonical clobber this relocation closes. Mark the
+            # row PENDING instead (covers both a PROVISIONAL
+            # kinetics-not-yet-assigned deny, e.g. every family-generated
+            # TemplateReaction, and an already-admitted verdict here) so
+            # :func:`readjudicate_conduit_admission` performs the ONE real
+            # admit-stamp + [r39-P1] irreversible rewrite, post-dedup and
+            # post-kinetics, on the CANONICAL object.
+            forward.polymer_conduit_admission_pending = True
         forward.polymer_refused = True
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
         # M18.2 (census-only): classify the refused row for the future
@@ -3972,9 +3951,11 @@ def _warn_general_chain_scale_pool_coupling(reaction_label: str,
 
 
 def readjudicate_conduit_admission(forward) -> None:
-    """M18.3 G6 re-adjudication hook (adjudicated defect fix): resolve a
-    PROVISIONAL ``kinetics-not-yet-assigned`` admission verdict against the
-    row's now-final kinetics.
+    """M18.3 G6 re-adjudication hook (adjudicated defect fix; OQ-2
+    relocation): resolve a PENDING admission verdict against the row's
+    now-final kinetics, and -- the ONE live admission/rewrite site -- apply
+    the admit-stamp + [r39-P1] irreversible export rewrite when the FINAL
+    verdict admits.
 
     The r93 stamp site (:func:`stamp_gas_association_refusal`) is called
     from ``make_new_reaction`` (rmgpy/rmg/model.py) BEFORE
@@ -3990,36 +3971,106 @@ def readjudicate_conduit_admission(forward) -> None:
       barrier-correction block (the kinetics are final there), and
     * the canonical-dedup early return, AFTER the merge transferred the
       discarded candidate's pending marker onto the canonical object
-      (whose kinetics are already final) -- so a provisional stamp merged
+      (whose kinetics are already final) -- so a pending stamp merged
       onto an existing canonical reaction cannot escape re-adjudication.
 
-    CENSUS/LEDGER-ONLY while ``CONDUIT_ADMISSION_ENABLED`` is False: the
-    refusal itself is never touched here. The hook re-runs the FULL
-    admission evaluation (kinetics was the only outstanding gate;
-    re-running every gate is deterministic and fail-closed -- genuinely
-    non-Arrhenius kinetics now FINAL-denies ``kinetics-not-exportable``),
-    re-registers the census sighting, and emits ONE loud census line whose
-    ``[conduit-admission/1 ...]`` tokens carry the FINAL verdict. The M18.4
-    live-admission arm must route through this hook for family-generated
-    rows (their stamp-time G6 can never pass); that wiring stays deferred
-    with the flag. If the kinetics are STILL None (``generate_kinetics``
-    disabled callers), the pending marker stays set and the provisional
-    deny stands: uncertainty never admits. NEVER raises (census-only code
-    must not change generation behavior)."""
+    OQ-2 (the ``.reversible`` in-place-mutation safety audit): the r93
+    stamp site never mutates archetype/params/``.reversible`` on the
+    PRE-DEDUP candidate any more -- exactly the object dedup can discard,
+    silently dropping the mutation, or (worse) surviving as canonical while
+    a pre-existing REVERSIBLE duplicate is kept instead, so
+    :func:`merge_polymer_adjudication_stamps` (which does not carry
+    ``.reversible``) would leave a MOMENT_CREDIT_CONDUIT-stamped canonical
+    still exporting a spurious ``<=>`` reverse. This hook is the only
+    admission/rewrite site left, and it always runs against the CANONICAL,
+    post-dedup, post-kinetics object.
+
+    The hook re-runs the FULL admission evaluation (kinetics was the only
+    outstanding gate; re-running every gate is deterministic and
+    fail-closed -- genuinely non-Arrhenius kinetics now FINAL-denies
+    ``kinetics-not-exportable``), re-applies the r42 P1-4(b) feature-radical
+    ledger re-check (a sighting registered since the stamp deterministically
+    blocks admission here too), and:
+
+    * on a FINAL ADMIT with ``CONDUIT_ADMISSION_ENABLED`` True: stamps the
+      conduit archetype + row params (DESIGN §2.1) onto ``forward``, applies
+      :func:`_apply_conduit_irreversible_rewrite`, and census-logs the
+      admission LOUDLY (mirrors the removed stamp-site arm, one line, then
+      returns -- no separate generic re-adjudication line);
+    * otherwise (flag off, or a FINAL/PROVISIONAL deny): CENSUS/LEDGER-ONLY,
+      exactly as before -- the refusal stands and one loud census line
+      carries the FINAL verdict.
+
+    A row denied here (e.g. ``feature-radical-overlap`` sighted between the
+    stamp and this hook) never receives the rewrite -- the gate is the FINAL
+    verdict, not the stamp-time one. If the kinetics are STILL None
+    (``generate_kinetics``-disabled callers), the pending marker stays set
+    and the provisional deny stands: uncertainty never admits. NEVER raises
+    (a hook failure must not change generation behavior; on exception the
+    prior state -- pending stamp, refusal -- stands)."""
     try:
         if not getattr(forward, "polymer_conduit_admission_pending", False):
             return
         if getattr(forward, "kinetics", None) is None:
             return  # still unresolved: provisional deny stands, marker kept
-        from rmgpy.polymer_conduit import (annotate_refused_row,
-                                           evaluate_conduit_admission)
+        from rmgpy.polymer_conduit import (CANDIDATE_KEY_NOTE,
+                                           CONDUIT_ADMISSION_ENABLED,
+                                           AdmissionVerdict,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           lookup_candidate)
         reactants = getattr(forward, "reactants", None) or []
         products = getattr(forward, "products", None) or []
         row_pools = ([s for s in reactants if isinstance(s, Polymer)]
                      + [s for s in products if isinstance(s, Polymer)])
         verdict = evaluate_conduit_admission(forward, row_pools)
+        if verdict.admitted:
+            # r42 P1-4(b): re-consult the ledger at the FINAL admit
+            # decision point too -- a feature-radical sighting registered
+            # since the stamp-time check (or since this hook's own
+            # evaluation, warn-once either order) must deterministically
+            # block the rewrite. Fail-closed narrowing only.
+            _entry = lookup_candidate(verdict.candidate_key)
+            if _entry is not None and "feature_radical" in _entry["censuses"]:
+                verdict = AdmissionVerdict(
+                    admitted=False,
+                    deny_reason="feature-radical-overlap",
+                    candidate_key=verdict.candidate_key)
         forward.polymer_conduit_admission_pending = False
         forward.polymer_conduit_admission_readjudicated = True
+        if verdict.admitted and CONDUIT_ADMISSION_ENABLED:
+            # THE live-admission arm (relocated from the pre-dedup stamp
+            # site, OQ-2): this object is the CANONICAL, post-dedup,
+            # post-kinetics reaction, so the mutation can never be dropped
+            # by dedup nor land on a discarded candidate. Stamp the conduit
+            # archetype + row params (DESIGN §2.1), apply the [r39-P1]
+            # irreversible export rewrite, and census the admission LOUDLY.
+            forward.polymer_refused = False
+            forward.polymer_refused_accumulating = False
+            forward.polymer_flux_archetype = int(
+                PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+            forward.polymer_conduit_dst_pool = verdict.dst_pool
+            forward.polymer_conduit_params = {
+                "admission_direction": "chain_to_pool",
+                "chain_units": float(verdict.chain_units),
+                "gas_products": [{
+                    "species": verdict.gas_product[0],
+                    "stoich": 1,
+                    "mw_g_mol": float(verdict.gas_product[1]),
+                }],
+                "gas_units": float(verdict.gas_units),
+                "candidate_key": verdict.candidate_key,
+                "candidate_key_note": CANDIDATE_KEY_NOTE,
+            }
+            _apply_conduit_irreversible_rewrite(forward, verdict)
+            logging.warning(
+                "MOMENT-CREDIT CONDUIT ADMITTED (moment_credit_conduit/1, "
+                "G6 re-adjudication): %s -> dst_pool=%s chain_units=%.6g "
+                "gas_units=%.6g key=%s rewrite=%s",
+                _reaction_census_label(forward), verdict.dst_pool,
+                verdict.chain_units, verdict.gas_units,
+                verdict.candidate_key, verdict.needs_irreversible_rewrite)
+            return
         # annotate_refused_row applies the r42 P1-4(b) post-registration FR
         # re-check itself, so an FR sighting that landed since the stamp
         # still can never print would_admit=1 on this line.

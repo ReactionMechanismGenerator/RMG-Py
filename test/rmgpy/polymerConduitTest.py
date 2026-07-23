@@ -1789,6 +1789,154 @@ class TestR42AdmissionCensusDeterminism:
         assert "would_admit=0 deny=feature-radical-overlap" in msgs[0]
 
 
+class TestM18LiveAdmissionRelocation:
+    """OQ-2 relocation (M18.4 wiring): the admit-stamp + [r39-P1]
+    irreversible export rewrite has moved OUT of the pre-dedup
+    ``stamp_gas_association_refusal`` arm and INTO
+    ``readjudicate_conduit_admission``, so it always lands on the
+    CANONICAL, post-dedup, post-kinetics object -- never on a candidate
+    dedup can silently discard.
+
+    Two defects this closes:
+
+    * CLOBBER: :func:`merge_polymer_adjudication_stamps` never carries
+      ``.reversible``, so a live rewrite applied to a PRE-DEDUP candidate
+      that dedup then discards (keeping a pre-existing REVERSIBLE
+      canonical instead) left the surviving canonical stamped
+      MOMENT_CREDIT_CONDUIT while still exporting a spurious ``<=>``.
+    * FAMILY UNDER-WIRING: family-generated TemplateReactions reach the
+      stamp site with ``kinetics is None`` (provisional deny) and never
+      got the rewrite even once their final kinetics resolved.
+
+    All three tests here monkeypatch ``CONDUIT_ADMISSION_ENABLED`` True
+    for the duration only (the production flag itself stays False,
+    pinned by ``TestAdmissionGates.test_flag_is_false``)."""
+
+    def test_dedup_clobber_relocated_admit_rewrites_canonical(
+            self, caplog, clean_registry, monkeypatch):
+        """THE clobber-closing test: a pre-existing REVERSIBLE canonical
+        duplicate is kept by dedup over a freshly (provisionally) stamped
+        admissible twin. Before the relocation, the stamp site would have
+        mutated ONLY the discarded twin (or, prior to that, never have
+        been reached at all for the canonical); merge_polymer_adjudication_stamps
+        does not carry .reversible, so the canonical would survive
+        MOMENT_CREDIT_CONDUIT-stamped yet still reversible=True. After the
+        relocation, readjudicate_conduit_admission on the canonical performs
+        the live admit + rewrite, so it must end up reversible=False."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   merge_polymer_adjudication_stamps,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        # pre-existing REVERSIBLE canonical, final Arrhenius kinetics
+        canonical, pf = _admissible_fixture(reversible=True)
+        # a fresh admissible twin, still pre-kinetics (family-shaped)
+        dup, _ = _admissible_fixture(reversible=True, kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(dup)
+        assert dup.polymer_conduit_admission_pending is True
+        assert dup.reversible is True  # NO mutation ever lands on dup
+
+        # make_new_reaction's dedup early-return: dup is discarded, its
+        # stamps merge onto the surviving canonical, which is then
+        # re-adjudicated against its OWN final kinetics.
+        merge_polymer_adjudication_stamps(dup, canonical)
+        assert canonical.polymer_conduit_admission_pending is True
+        assert canonical.reversible is True  # not yet rewritten
+
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(canonical)
+
+        assert canonical.reversible is False
+        assert int(canonical.polymer_flux_archetype) == int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert canonical.polymer_refused is False
+        assert canonical.polymer_conduit_params is not None
+        assert any("MOMENT-CREDIT CONDUIT ADMITTED" in r.getMessage()
+                   for r in caplog.records)
+        # the discarded dup itself was NEVER mutated -- the clobber this
+        # relocation closes is exactly "mutate the object dedup discards".
+        assert dup.reversible is True
+        assert int(getattr(dup, "polymer_flux_archetype", 0)) != int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+
+    def test_whole_model_backstop_every_conduit_stamp_is_irreversible(
+            self, caplog, clean_registry, monkeypatch):
+        """Whole-model invariant: ANY reaction carrying the
+        MOMENT_CREDIT_CONDUIT archetype must be irreversible -- across a
+        small mixed population of an admitted row and a denied row, only
+        the admitted one is stamped, and it alone is irreversible."""
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        admitted_rxn, _ = _admissible_fixture(reversible=True, label="CHAIN1")
+        denied_rxn, _ = _admissible_fixture(reversible=True, extra_gas=1,
+                                            label="CHAIN2")  # gas-product-count deny
+        reaction_list = [admitted_rxn, denied_rxn]
+        for rxn in reaction_list:
+            _general_chain_scale_pool_warned.clear()
+            stamp_gas_association_refusal(rxn)
+            readjudicate_conduit_admission(rxn)
+
+        conduit_archetype = int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        conduit_rows = [r for r in reaction_list
+                        if int(getattr(r, "polymer_flux_archetype", 0))
+                        == conduit_archetype]
+        assert len(conduit_rows) == 1
+        assert conduit_rows[0] is admitted_rxn
+        for r in conduit_rows:
+            assert r.reversible is False
+
+    def test_family_row_kinetics_none_then_final_gets_admitted_and_rewritten(
+            self, caplog, clean_registry, monkeypatch):
+        """FAMILY under-wiring-closing test: a family-generated
+        TemplateReaction reaches the stamp site with kinetics=None (denies
+        provisionally, kinetics-not-yet-assigned) and only becomes
+        admissible once its final kinetics is assigned (simulating
+        make_new_reaction's kinetics conversion step); readjudicate must
+        then perform the live admit + rewrite."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        rxn, pf = _admissible_fixture(reversible=True, kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_conduit_admission_pending is True
+        assert rxn.reversible is True  # no mutation while kinetics unknown
+        assert rxn.polymer_conduit_params is None
+
+        rxn.kinetics = Arrhenius(A=(1.0, "s^-1"), n=0.0, Ea=(0.0, "J/mol"))
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn)
+
+        assert rxn.polymer_conduit_admission_pending is False
+        assert rxn.polymer_conduit_admission_readjudicated is True
+        assert rxn.polymer_refused is False
+        assert rxn.reversible is False
+        assert int(rxn.polymer_flux_archetype) == int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert rxn.polymer_conduit_params is not None
+        assert any("MOMENT-CREDIT CONDUIT ADMITTED" in r.getMessage()
+                   for r in caplog.records)
+
+
 class TestLandingConeEqualityBoundary:
     """T6 (admission-side leg) -- the ratified equality-boundary fixture:
     u_raw EXACTLY a + 1 (credit u == 1.0, point mass ON the cone). The
