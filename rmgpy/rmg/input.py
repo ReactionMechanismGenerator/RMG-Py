@@ -1742,6 +1742,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            pressure: Union[float, List[float], Quantity],
                            initialMoles: Dict[Union[Species, str], float],
                            polymerPhase: PolymerPhase,
+                           nSims=6,
                            terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
                            terminationTime: Optional[Union[float, Quantity]] = None,
                            terminationRateRatio: Optional[float] = None,
@@ -1770,6 +1771,10 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                                                          MOLES (extensive), not mole fractions.
         polymerPhase (PolymerPhase): Configuration object for the polymer phase properties,
                                      containing density, moments, and pools.
+        nSims (int): The number of simulations to run per model iteration when the reactor is
+                     RANGED (list temperature and/or pressure); RMG's main loop samples this many
+                     discrete condition points within the ranges. Default is 6, mirroring
+                     simpleReactor. Forced to 1 when neither T nor P is a range.
         terminationConversion (Optional[Dict[Union[Species, str], float]]): A dictionary
                                                 {Species/Label: conversion} specifying the fractional
                                                 conversion at which to terminate (0.0 to 1.0).
@@ -1830,6 +1835,13 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         P = Quantity(pressure)
     else:
         P = [Quantity(p) for p in pressure]
+
+    # Mirror simple_reactor's rule: a reactor is only swept (n_sims > 1) when
+    # it is actually ranged; a fully-scalar deck runs a single simulation.
+    # (Polymer decks have no mole-fraction ranges -- initialMoles are scalar
+    # extensive moles -- so only T/P ranges arm the sweep.)
+    if not isinstance(temperature, list) and not isinstance(pressure, list):
+        nSims = 1
 
     real_polymer_phase = compile_polymer_phase(
         blueprint=polymerPhase,
@@ -1929,6 +1941,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         constant_gas_volume=constant_gas_volume,
         allow_unpaired_reference_state=allow_unpaired_reference_state,
         sens_conditions=sens_conditions,
+        n_sims=nSims,
     )
 
     rmg.reaction_systems.append(system)

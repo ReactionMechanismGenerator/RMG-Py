@@ -13235,3 +13235,97 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
         # No legacy mu1-only demotion for the spawned Polymer endpoint.
         assert not any("could not resolve their solver pool(s)"
                        in rec.getMessage() for rec in caplog.records)
+
+
+class TestHybridPolymerReactorRangedTP:
+    """T/P-range participation in RMG's ranged-reactor main-loop sampling.
+
+    RMG realizes a ranged reactor by sampling n_sims discrete conditions and
+    injecting each as a SCALAR via ReactionSystem.initialize_model(
+    conditions={'T': ..., 'P': ..., <species moles>}), which sets self.T /
+    self.P (base.pyx). The blueprint's solver build must therefore read the
+    scalar working attrs self.T / self.P -- never the blueprint
+    self.temperature / self.pressure, which are LISTS for a ranged deck."""
+
+    @staticmethod
+    def _reactor(temperature, pressure):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import HybridPolymerReactor, PolymerPhase
+        a = _spc("CCCC", "A")
+        phase = PolymerPhase(density=Quantity(1000.0, "kg/m^3"),
+                             initial_moments={}, initial_explicit={a: 1.0},
+                             pools=[], mass_transfer=[])
+        return a, HybridPolymerReactor(
+            temperature=temperature,
+            pressure=pressure,
+            initialMoles={a: 1.0},
+            polymerPhase=phase,
+            terminationTime=(1.0, "s"))
+
+    def test_ranged_blueprint_initialize_model_uses_sampled_conditions(self):
+        """Core regression: a ranged (list T, list P) blueprint must accept a
+        sampled scalar condition point exactly as RMG's main loop injects it
+        (RMG_Memory.get_cond() -> initialize_model(conditions=...)) and build
+        the solver at the SAMPLED point -- previously this crashed with
+        AttributeError: 'list' object has no attribute 'value_si' at
+        to_solver_object."""
+        a, reactor = self._reactor(temperature=[(750.0, "K"), (4000.0, "K")],
+                                   pressure=[(0.1, "bar"), (1.0, "bar")])
+        # Blueprint range record is preserved for RMG_Memory's sampler.
+        assert [t.value_si for t in reactor.Trange] == \
+            pytest.approx([750.0, 4000.0])
+        assert [p.value_si for p in reactor.Prange] == \
+            pytest.approx([1.0e4, 1.0e5])
+
+        # Inject a sampled point the way the main loop does.
+        reactor.initialize_model([a], [], [], [],
+                                 conditions={"T": 1234.0, "P": 1.0e5, a: 1.0})
+
+        assert reactor.T.value_si == pytest.approx(1234.0)
+        assert reactor.P.value_si == pytest.approx(1.0e5)
+        assert reactor.solver is not None
+        assert reactor.solver.T.value_si == pytest.approx(1234.0)
+        assert reactor.solver.P.value_si == pytest.approx(1.0e5)
+
+    def test_ranged_blueprint_seeds_scalar_working_attrs(self):
+        """The list branches of __init__ must seed the scalar working attrs
+        from the range floor: base.pyx only injects sampled conditions under
+        `hasattr(self, 'T')` / `hasattr(self, 'P')` -- without the seed the
+        injection is silently skipped and the solver build then crashes on
+        the list blueprint attrs."""
+        _a, reactor = self._reactor(temperature=[(750.0, "K"), (4000.0, "K")],
+                                    pressure=[(0.1, "bar"), (1.0, "bar")])
+        assert hasattr(reactor, "T") and hasattr(reactor, "P")
+        assert reactor.T.value_si == pytest.approx(750.0)
+        assert reactor.P.value_si == pytest.approx(1.0e4)  # 0.1 bar
+
+    def test_ranged_blueprint_second_sampled_point_rebuilds_solver_tp(self):
+        """A SECOND sampled point through the same blueprint must land on the
+        solver too (the main loop reuses the reaction_system across the
+        p-in-range(n_sims) sweep)."""
+        a, reactor = self._reactor(temperature=[(750.0, "K"), (4000.0, "K")],
+                                   pressure=[(0.1, "bar"), (1.0, "bar")])
+        reactor.initialize_model([a], [], [], [],
+                                 conditions={"T": 1234.0, "P": 1.0e5, a: 1.0})
+        reactor.initialize_model([a], [], [], [],
+                                 conditions={"T": 3000.0, "P": 5.0e4, a: 1.0})
+        assert reactor.solver.T.value_si == pytest.approx(3000.0)
+        assert reactor.solver.P.value_si == pytest.approx(5.0e4)
+
+    def test_scalar_blueprint_unchanged(self):
+        """Non-breaking: a scalar blueprint still builds identically -- the
+        solver T/P match the scalar deck values and the degenerate range
+        record collapses onto the scalar."""
+        a, reactor = self._reactor(temperature=(800.0, "K"),
+                                   pressure=(1.0e5, "Pa"))
+        assert reactor.T.value_si == pytest.approx(800.0)
+        assert reactor.P.value_si == pytest.approx(1.0e5)
+        assert [t.value_si for t in reactor.Trange] == \
+            pytest.approx([800.0, 800.0])
+
+        reactor.initialize_model([a], [], [], [])
+
+        assert reactor.solver is not None
+        assert reactor.solver.T.value_si == pytest.approx(800.0)
+        assert reactor.solver.P.value_si == pytest.approx(1.0e5)
+        assert reactor.n_sims == 1
