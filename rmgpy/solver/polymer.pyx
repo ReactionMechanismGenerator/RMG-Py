@@ -260,6 +260,21 @@ CONE_MARGIN_M_HI = 1.0e4
 # Smaller p over-throttles states with several comparable terms.
 BUNDLE_LIMITER_SOFTMIN_P = 8.0
 LN_EXP_OVERFLOW_GUARD = 700.0
+# N5b mu3-closure boundary band (round-62 DASSL-hang root cause):
+# _safe_mu3_from_mu012's realizability guard (mu1 >= mu0) is exact, but
+# right at the all-monomer boundary mu1 -> mu0 the two moments are
+# catastrophic-cancellation noise of each other (agreeing to 12+ digits,
+# per the round-62 investigation), so a solver step landing a rounding
+# ULP on the "wrong" side of mu1 == mu0 must not see the guard's full
+# 0.0 branch -- the physical limit AT the boundary is mu3 -> mu1 (every
+# chain has length 1, so sum(n^3) == sum(n) == mu1), not zero. sqrt(machine
+# epsilon) is the standard heuristic scale for "this difference is
+# rounding noise, not signal" (same scale already used for FD step
+# sizing at line ~5736); band = MU3_CLOSURE_BOUNDARY_REL * mu0 is
+# therefore the width within which mu0 - mu1 > 0 is treated as noise
+# astride the boundary. Genuine deep violations (mu1 < mu0 - band)
+# still return 0.0 unchanged.
+MU3_CLOSURE_BOUNDARY_REL = float(np.sqrt(np.finfo(np.float64).eps))
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
 # Gas constant for the radical_qssa_unzip Arrhenius evaluations, J/(mol K).
@@ -1122,11 +1137,26 @@ def _safe_mu3_from_mu012(mu0: float, mu1: float, mu2: float) -> float:
     solver noise or a bad source term pushes the state out of the realizable
     cone, the (μ2/μ1)³ extrapolation can explode into a DASSL singularity, so
     we return 0.0 (no closure contribution) rather than amplifying garbage.
+
+    N5b boundary-consistent closure (round-62 DASSL-hang root cause): the
+    guard above is exact, but AT the all-monomer boundary μ1 = μ0 (every
+    chain has length 1) the physical limit is μ3 → μ1 (Σn³ = Σn = μ1 when
+    every n = 1), not 0.0 -- and solver noise routinely lands a μ1 a
+    rounding ULP below μ0 right at that boundary (μ0, μ1 agreeing to 12+
+    digits per the round-62 investigation). Flatly returning 0.0 for any
+    μ1 < μ0, however small the violation, injects an O(k_scission·μ1)
+    spurious jump into dμ2/dt against an error weight orders of magnitude
+    smaller, which is what stalled DASSL's corrector. Within
+    MU3_CLOSURE_BOUNDARY_REL of the boundary we instead return the
+    boundary-consistent limit μ1; genuine deep violations (beyond the
+    band) still return 0.0 unchanged.
     """
     if mu0 <= SMALL_EPS or mu1 <= SMALL_EPS or mu2 <= SMALL_EPS:
         return 0.0
     if mu1 < mu0:  # unrealizable: more chains than monomer units
-        return 0.0
+        if mu0 - mu1 <= MU3_CLOSURE_BOUNDARY_REL * mu0:
+            return mu1  # noise-scale violation astride the boundary
+        return 0.0      # genuine deep realizability violation
     with np.errstate(divide="raise", invalid="raise", over="raise"):
         try:
             ln_mu3 = 3.0 * np.log(mu2) - 3.0 * np.log(mu1) + np.log(mu0)
@@ -5459,17 +5489,37 @@ class HybridPolymerSystem(ReactionSystem):
         Stage 2, cone-margin drain gate (M band, round-30: INDEPENDENT of
         E -- an out-of-cone pool with bulk-scale moments must not slip
         through the E early return, and an in-band out-of-cone pool must
-        not keep draining at w*S_base). Only for cone-shrinking debits
-        (b1 > b0, with b1 = mu2/mu1, or mu1/mu0 end-group; b0 = 1):
+        not keep draining at w*S_base). Applies ONLY to non-end-group
+        (length-biased, b1 = mu2/mu1) cone-shrinking debits (b1 > b0;
+        b0 = 1):
             Q10    = mu1 - mu0            (realizability cone margin)
             Q10 <= 0            -> S_eff = 0 REGARDLESS of E
             M      = Q10 / max(f0, f1)    (margin distance, floor units)
             M >= M_hi           -> S_eff = S_free EXACTLY (early return)
             S_cone = Q10 / (V_poly*(b1 - b0))
-            M <= M_lo           -> S_eff = softmin_p(S_free, S_cone)
-            between             -> v-smoothstep blend of the two laws
+            M <= M_lo           -> S_eff = 0 EXACTLY (N5b dead band, see
+                                 below; was softmin_p(S_free, S_cone))
+            between             -> v-smoothstep blend of S_free and
+                                 softmin_p(S_free, S_cone)
         Non-cone-shrinking debits (b1 <= b0) pass S_free through
         untouched, as do empty pools (stage 1 already throttled those).
+        EXCEPTION, end-group rows (round-62 N5b adjudicated fix): the
+        gate above is skipped entirely for end-group rows, which return
+        S_free unconditionally. End-group uniform-pick drains debit
+        (dmu0, dmu1) = (1, mu1/mu0)*rate, so Q10 = mu1 - mu0 decays
+        multiplicatively and never crosses zero -- the "out of cone"
+        state this gate exists to catch cannot occur on this surface.
+        The stage-2 cap also simplifies EXACTLY here (b1c - 1 =
+        q10/y0c, so S_cone == y0c/V_poly identically, which is always
+        >= S_base >= S_free), i.e. the cap is structurally non-binding
+        for end-group rows, so evaluating the q10/b1c cancellation
+        surface at all would only inject noise (up to ~1.08% measured
+        near the all-monomer boundary) for a gate that can never fire.
+        A prior revision instead forced a hard zero at end-group Q10 <=
+        0 by analogy with the non-end-group path; that analogy does not
+        hold here (see the in-code comment at the end_group branch) and
+        broke a correct HARD PIN regression test -- see
+        test_rtol_1e6_near_floor_trajectory_faithful.
 
         softmin_p(x_i) = (sum x_i^(-p))^(-1/p), the reciprocal p-norm
         soft-min (p = BUNDLE_LIMITER_SOFTMIN_P; see its block comment and
@@ -5478,11 +5528,18 @@ class HybridPolymerSystem(ReactionSystem):
 
         Healthy IN-CONE bulk pools take both early returns: s_base comes
         back bitwise, so byte-pins and bulk reversible-row detailed
-        balance (C_G* = Keq*S_base(A)/S_base(B)) are untouched. Inside
-        the bands every law is C1 (no hard-min argmin switches; w' = v' =
-        0 at all four band edges); the single accepted C0 kink is at
-        Q10 = 0 exactly, where softmin_p(S_free, S_cone) -> 0 meets the
-        hard zero CONTINUOUSLY with a bounded one-sided slope. s_base is
+        balance (C_G* = Keq*S_base(A)/S_base(B)) are untouched. N5b
+        (round-62 DASSL-hang root cause) floors the M <= M_lo branch to
+        the exact hard zero rather than trusting S_cone's noise-scale
+        magnitude down there: below M_lo, Q10 is itself sub-floor-scale
+        cancellation noise (~1e-17 mol/s-scale rows, ~15 orders below any
+        deck observable -- inside the model's own error budget, the same
+        adjudicated logic as the r81 floors). This moves the law's one
+        accepted discontinuity from the unresolvable Q10 == 0 noise scale
+        up to the resolvable M == M_lo band edge (a jump of bounded size,
+        from 0 to softmin_p(S_free, S_cone) at that edge), so DASSL's
+        corrector sees a step it can actually converge across instead of
+        an amplified noise sign-flip. s_base is
         the direction's adjudicated site law (mu1/V_poly or mu0/V_poly
         per row scaling, including the pre-existing a>0/a<0 VE
         min(mu0, mu1/|a|) throttle), computed by the caller from the pool
@@ -5518,27 +5575,59 @@ class HybridPolymerSystem(ReactionSystem):
                 s_free = w * s_base + (1.0 - w) * cap
         # ---- stage 2: cone-margin drain gate (independent of E) -------
         mu_idx = self.polymer_pools[pool_idx].mu_indices
+        if end_group:
+            # End-group uniform-pick drains debit (dmu0, dmu1) =
+            # (1, mu1/mu0)*rate, so d(Q10)/dt = -(rate/mu0)*Q10 -- Q10
+            # decays multiplicatively and never crosses zero (every
+            # length-1 chain still has its own end group; "nothing left
+            # to drain at b1c==1" is a non-end-group/internal-unit
+            # notion, it does not apply here). The stage-2 cone cap
+            # simplifies EXACTLY on this surface: b1c - 1 = q10/y0c, so
+            # s_cone == y0c/V_poly identically, which is >= s_base >=
+            # s_free always -- the cap never binds for end-group rows.
+            # The gate is therefore a structural no-op here: evaluating
+            # the q10/b1c cancellation surface at all only adds error
+            # (up to ~1.08% measured near the all-monomer boundary) for
+            # a cap that can never bind. Return s_free directly --
+            # byte-exact s_base in the bulk, and correct (not a hard
+            # zero) right at the b1c==1 boundary. (A prior revision of
+            # this branch forced a hard zero at q10<=0 by analogy with
+            # the non-end-group path below; that analogy does not hold
+            # for end-group rows and broke a correct HARD PIN regression
+            # test -- see test_rtol_1e6_near_floor_trajectory_faithful.)
+            return s_free
         y0c = _softclamp(y[mu_idx[0]], self._softclamp_lam)
         y1c = _softclamp(y[mu_idx[1]], self._softclamp_lam)
         y2c = _softclamp(y[mu_idx[2]], self._softclamp_lam)
-        if end_group:
-            if y0c / V_poly <= SMALL_EPS:
-                return s_free       # empty pool: stage 1 owns it
-            b1c = y1c / y0c         # uniform pick E[k]
-        else:
-            if y1c / V_poly <= SMALL_EPS:
-                return s_free
-            b1c = y2c / y1c         # length-biased pick E[k]
-        if b1c <= 1.0:              # b0 = 1: debit does not shrink Q10
+        if y1c / V_poly <= SMALL_EPS:
+            return s_free
+        b1c = y2c / y1c         # length-biased pick E[k]
+        if b1c <= 1.0:          # b0 = 1: debit does not shrink Q10
             return s_free
         q10 = y1c - y0c
         if q10 <= 0.0:
-            return 0.0              # out of cone: drain OFF, whatever E
+            return 0.0          # out of cone: drain OFF, whatever E
         floors = self._pool_mu_floors
         f_c = max(floors[pool_idx, 0], floors[pool_idx, 1])
         m_dist = q10 / f_c
         if m_dist >= CONE_MARGIN_M_HI:
             return s_free           # margin safely bulk: gate inactive
+        # N5b cone-gate dead-band fix: below M_LO, q10 itself is
+        # sub-floor-scale catastrophic-cancellation noise (the same
+        # noise regime that motivated the b1c/q10 consistency fix
+        # above). At this scale the row's true rate is bounded by
+        # roughly f_c/(V_poly*(b1c-1)) ~ 1e2*atol/(V_poly*(b1c-1)),
+        # i.e. of order the accepted-state floor itself -- about 15
+        # orders of magnitude below any deck-observable rate, squarely
+        # inside the model's own error budget (the same adjudicated
+        # "below-floor is noise, not signal" logic as the r81 floors).
+        # Returning cap here trusted that noise's magnitude AND sign;
+        # returning the exact hard zero instead moves the law's one
+        # remaining discontinuity from an unresolvable noise scale
+        # (Q10 == 0) up to the resolvable M_LO band edge, where DASSL's
+        # corrector can actually take a step across it.
+        if m_dist <= CONE_MARGIN_M_LO:
+            return 0.0
         s_cone = q10 / (V_poly * (b1c - 1.0))
         if s_free <= 0.0:
             return s_free
@@ -5546,8 +5635,6 @@ class HybridPolymerSystem(ReactionSystem):
         p = BUNDLE_LIMITER_SOFTMIN_P
         acc = (m / s_free) ** p + (m / s_cone) ** p
         cap = m * acc ** (-1.0 / p)
-        if m_dist <= CONE_MARGIN_M_LO:
-            return cap
         v_n = ((m_dist - CONE_MARGIN_M_LO)
                / (CONE_MARGIN_M_HI - CONE_MARGIN_M_LO))
         v = v_n * v_n * (3.0 - 2.0 * v_n)

@@ -109,13 +109,24 @@ def _s_eff(mu, end_group=False, s_base=None, v_poly=1.0, atol=1e-16):
         S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap)
                  (== S_base EXACTLY at E >= 1e4 floors: bulk untouched)
 
-    Stage 2 (cone margin, M band -- INDEPENDENT of E; only for
-    cone-shrinking debits b1 > b0 = 1):
+    Stage 2 (cone margin, M band -- INDEPENDENT of E; applies ONLY to
+    non-end-group, length-biased cone-shrinking debits b1 > b0 = 1):
         Q10 = mu1 - mu0 <= 0        -> 0 REGARDLESS of E
         M = Q10[mol]/floor >= 1e4   -> S_free EXACTLY (margin safely bulk)
-        M <= 1e2                    -> softmin_p(S_free, S_cone),
-                                       S_cone = Q10/(v_poly*(b1 - 1))
-        between                     -> C1 v-smoothstep blend
+        M <= 1e2                    -> 0 EXACTLY (N5b round-62 DASSL-hang
+                                       dead band: below M_lo, Q10 is itself
+                                       sub-floor-scale cancellation noise;
+                                       was softmin_p(S_free, S_cone))
+        between                     -> C1 v-smoothstep blend of S_free and
+                                       softmin_p(S_free, S_cone)
+    End-group rows (round-62 N5b adjudicated fix) SKIP stage 2 entirely
+    and return S_free unconditionally after stage 1: the end-group
+    uniform-pick debit (dmu0, dmu1) = (1, mu1/mu0)*rate makes Q10 =
+    mu1 - mu0 decay multiplicatively and never cross zero, and the
+    stage-2 cap simplifies exactly to S_cone == mu0/v_poly on this
+    surface (always >= S_base >= S_free), i.e. the gate is structurally
+    non-binding for end-group rows -- evaluating it would only add
+    cancellation noise near the all-monomer boundary.
 
     ``s_base`` defaults to the leg's plain site (mu1, or mu0 end-group);
     ``atol`` must match what the reaction system was initialized with."""
@@ -153,13 +164,17 @@ def _s_eff(mu, end_group=False, s_base=None, v_poly=1.0, atol=1e-16):
             s_free = w * base + (1.0 - w) * cap
     # stage 2: cone-margin drain gate (independent of E)
     if end_group:
-        if mu0 <= 1e-30:
-            return s_free
-        b1c = mu1 / mu0
-    else:
-        if mu1 <= 1e-30:
-            return s_free
-        b1c = mu2 / mu1
+        # N5b (round-62, user-adjudicated): end-group uniform-pick drains
+        # are unconditionally cone-preserving (Q10 decays multiplicatively
+        # and never crosses zero), and the stage-2 cap is structurally
+        # non-binding on this surface (S_cone == mu0/v_poly identically,
+        # always >= S_base >= S_free) -- skip stage 2 entirely and return
+        # S_free directly, rather than evaluating the q10/b1c cancellation
+        # surface for a gate that can never fire.
+        return s_free
+    if mu1 <= 1e-30:
+        return s_free
+    b1c = mu2 / mu1
     if b1c <= 1.0:                    # b0 = 1: debit does not shrink Q10
         return s_free
     q10 = mu1 - mu0
@@ -168,12 +183,15 @@ def _s_eff(mu, end_group=False, s_base=None, v_poly=1.0, atol=1e-16):
     m_dist = q10 * v_poly / floor     # margin in MOLES vs the mol floor
     if m_dist >= 1.0e4:
         return s_free
+    # N5b round-62 DASSL-hang dead band: below M_lo, q10 is itself
+    # sub-floor-scale cancellation noise -- return the exact hard zero
+    # instead of trusting cap/s_cone's noise-scale magnitude down there.
+    if m_dist <= 1.0e2:
+        return 0.0
     s_cone = q10 / (b1c - 1.0)
     if s_free <= 0.0:
         return s_free
     cap = _softmin_p([s_free, s_cone])
-    if m_dist <= 1.0e2:
-        return cap
     v_n = (m_dist - 1.0e2) / (1.0e4 - 1.0e2)
     v = v_n * v_n * (3.0 - 2.0 * v_n)
     return v * s_free + (1.0 - v) * cap
@@ -779,6 +797,53 @@ class TestHybridPolymerReactor:
         assert _safe_mu3_from_mu012(1.0, 5.0, 30.0) > 0.0
         # Unrealizable (mu1 < mu0): guarded to 0.0 rather than ~4e14.
         assert _safe_mu3_from_mu012(21.17, 0.0139, 380.5) == 0.0
+
+    def test_mu3_closure_n5b_boundary_band(self):
+        """
+        Round-62 N5b DASSL-hang fix: _safe_mu3_from_mu012's realizability
+        guard (mu1 >= mu0) is exact, but right AT the all-monomer boundary
+        mu1 == mu0 the physical limit is mu3 -> mu1 (every chain has length
+        1, so sum(n^3) == sum(n) == mu1), not the flat 0.0 the pre-fix guard
+        returned for ANY mu1 < mu0. A solver step landing a rounding ULP on
+        the "wrong" side of the boundary must see the boundary-consistent
+        limit, not an O(k_scission * mu1) spurious jump; genuine deep
+        realizability violations (beyond MU3_CLOSURE_BOUNDARY_REL * mu0)
+        must still hard-zero, unchanged from the pre-fix guard.
+        """
+        from rmgpy.solver.polymer import (
+            _safe_mu3_from_mu012, MU3_CLOSURE_BOUNDARY_REL,
+        )
+        mu0 = 21.17
+        # Exactly AT the boundary (mu1 == mu0): mu3 -> mu1 (not 0.0). This
+        # takes the normal log-Lagrange closure path (mu1 < mu0 is False),
+        # so it is exp(log(mu0)) rather than a bitwise passthrough -- not
+        # guaranteed bit-exact, just round-trip-accurate.
+        assert _safe_mu3_from_mu012(mu0, mu0, mu0) == pytest.approx(
+            mu0, rel=1e-12)
+        # Noise-scale violation astride the boundary (within the band):
+        # boundary-consistent limit mu3 -> mu1, not the flat hard zero.
+        eps_in_band = 0.25 * MU3_CLOSURE_BOUNDARY_REL * mu0
+        mu1_in = mu0 - eps_in_band
+        assert mu1_in < mu0
+        assert _safe_mu3_from_mu012(mu0, mu1_in, mu0) == mu1_in
+        # Just inside the band edge (margin well above the ulp scale of the
+        # mu0-mu1 cancellation itself, since 1e-12-scale perturbations at
+        # this magnitude are lost to rounding in the subtraction that
+        # computes the band test -- use a comfortable 1% margin instead).
+        edge_in = mu0 - MU3_CLOSURE_BOUNDARY_REL * mu0 * 0.99
+        assert _safe_mu3_from_mu012(mu0, edge_in, mu0) == edge_in
+        # Just OUTSIDE the band: back to the hard zero.
+        edge_out = mu0 - MU3_CLOSURE_BOUNDARY_REL * mu0 * 1.01
+        assert _safe_mu3_from_mu012(mu0, edge_out, mu0) == 0.0
+        # Genuine deep violation (far beyond the band): unchanged hard zero,
+        # matching the pre-fix guard's behavior exactly (same case as
+        # test_mu3_closure_realizability_guard above).
+        assert _safe_mu3_from_mu012(21.17, 0.0139, 380.5) == 0.0
+        # Realizable states (mu1 >= mu0) are completely untouched by the
+        # band logic -- only entered when mu1 < mu0.
+        assert _safe_mu3_from_mu012(1.0, 5.0, 30.0) > 0.0
+        assert _safe_mu3_from_mu012(mu0, mu0, mu0 + 1e-9) == pytest.approx(
+            mu0, rel=1e-6)
 
     def test_scission_moment_trajectory_stays_realizable(self):
         """
@@ -4071,10 +4136,12 @@ class TestHybridPolymerReactor:
         * BULK (E >= E_hi AND M >= M_hi): returns s_base EXACTLY (bitwise
           ==, not approx) -- healthy pools never feel the limiter, even
           when the bundle cap sits far below s_base (PDI > 1 shape).
-        * TAIL (E <= E_lo AND M <= M_lo): both soft caps fully active --
-          returns fold(fold(s_base, cap), s_cone) EXACTLY (the same
-          serial two-stage folds the solver computes), strictly at or
-          below the old hard min of all terms.
+        * TAIL (E <= E_lo AND M <= M_lo): stage 1's soft cap is fully
+          active (fold(s_base, cap)), but stage 2's M <= M_lo dead band
+          (round-62 N5b DASSL-hang fix) returns the EXACT hard zero
+          instead of trusting cap/s_cone's noise-scale magnitude down
+          there -- q10 itself is sub-floor-scale cancellation noise in
+          this band, so 0.0 is the only value that isn't noise-valued.
         * E-BAND with bulk margin (M >= M_hi): stage 2 exactly inactive;
           the C1 smoothstep blend w*s_base + (1-w)*fold(s_base, cap) with
           the SOFT floor distance E, pinned against a hand mirror.
@@ -4117,14 +4184,15 @@ class TestHybridPolymerReactor:
         # ... even though the cap is far below s_base for this shape.
         assert rs._bundle_availability_cap(1, y, 1.0, False) < 0.05 * s_base
 
-        # TAIL: E = 0.19, M = 2.41 floors -> both soft caps fully active,
-        # exact serial folds: stage 1 fold(s_base, cap), then stage 2
-        # fold(., s_cone).
+        # TAIL: E = 0.19, M = 2.41 floors -> stage 1's soft cap is fully
+        # active, but M <= M_lo (round-62 N5b dead band) hard-zeroes the
+        # row EXACTLY rather than folding in cap/s_cone's noise-scale
+        # magnitude.
         s_base, s_eff = solver_s_eff(1.0e-15)
         cap = rs._bundle_availability_cap(1, y, 1.0, False)
         b1y = y[7] / y[6]                  # exactly the solver's ratio
         s_cone = (y[6] - y[5]) / (b1y - 1.0)
-        assert s_eff == fold(fold(s_base, cap), s_cone)
+        assert s_eff == 0.0
         assert s_eff <= min(s_base, cap, s_cone)   # softmin_p <= hard min
         assert s_eff < s_base
         # ... and the stage-1 cap sits at/below EVERY per-moment term
@@ -4201,6 +4269,154 @@ class TestHybridPolymerReactor:
         slopes = np.diff(vals) / np.diff(grid)
         max_jump = np.max(np.abs(np.diff(slopes)))
         assert max_jump <= 2e-2 * np.max(np.abs(slopes))
+
+    def test_bundle_limiter_n5b_m_lo_dead_band_isolated(self):
+        """
+        Round-62 N5b DASSL-hang fix, requirement (a): an ISOLATED pin that
+        sub-M_LO m_dist returns EXACTLY 0.0 through _bundle_limited_site's
+        stage-2 cone-margin gate, with stage 1 held bulk-inactive (E far
+        above E_hi) so the result reflects stage 2 alone, not a stage-1
+        fold. Non-end-group row, q10 > 0 (in-cone) but m_dist = q10/f_c
+        well below CONE_MARGIN_M_LO -- pre-N5b this branch returned the
+        noise-valued softmin_p(s_free, s_cone); post-N5b it must be the
+        bitwise hard zero.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 1.135
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (1.0, 5.0, 30.0))
+        y = rs.y.copy()
+        floor = 1.0e-14  # max(SMALL_EPS, 100*atol), atol=1e-16
+
+        mu0 = 1.0e6 * floor
+        mu1 = mu0 + 40.0 * floor      # q10 = 40*floor <= M_LO = 100*floor
+        mu2 = mu1 * 50.0              # b1c = mu2/mu1 >> 1: in-cone, not the
+                                       # b1c<=1 early-return path
+        y[5], y[6], y[7] = mu0, mu1, mu2
+
+        # Confirm stage 1 is bulk-inactive (E >= E_hi) so this pins stage 2
+        # alone.
+        e_dist = _softmin_p([mu0, mu1, mu2]) / floor
+        assert e_dist >= 1.0e4
+        m_dist = (mu1 - mu0) / floor
+        assert m_dist <= 1.0e2
+
+        s_eff = rs._bundle_limited_site(1, y, 1.0, False, mu1)
+        assert s_eff == 0.0
+
+    def test_bundle_limiter_n5b_end_group_q10_single_decision(self):
+        """
+        Round-62 N5b DASSL-hang fix, requirement (b), user-adjudicated
+        shape: end-group rows do NOT gate on the cone-margin surface at
+        all -- the stage-2 cap is provably non-binding for end-group rows
+        (uniform-pick debits are unconditionally cone-preserving: Q10 =
+        mu1 - mu0 decays multiplicatively under the debit and never
+        crosses zero, and S_cone == mu0/v_poly identically on this
+        surface, always >= S_base >= S_free), so end-group rows return
+        S_free directly after stage 1 rather than evaluating the
+        q10/b1c cancellation surface for a cap that can never bind. This
+        pins that behavioral CONTRACT.
+
+        All cases held stage-1 bulk-inactive (E >= E_hi), so S_free ==
+        S_base bitwise here.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 1.135
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (1.0, 5.0, 30.0))
+        floor = 1.0e-14
+        mu0 = 1.0e6 * floor
+
+        # (1) end-group, q10 == 0 exactly (b1c == 1.0 exactly too): the
+        # cone cap is structurally non-binding here -- returns S_free
+        # (== s_base bitwise, bulk E), NOT a hard zero. The boundary
+        # answer is the drain rate, not "nothing left to drain."
+        y = rs.y.copy()
+        y[5], y[6], y[7] = mu0, mu0, mu0 * 50.0
+        assert rs._bundle_limited_site(1, y, 1.0, True, mu0) == mu0
+
+        # (2) end-group, q10 slightly negative (b1c slightly < 1): same
+        # non-binding cap, same S_free passthrough -- length-1 chains
+        # still carry their own end group, so there is no cone violation
+        # to gate on for this row kind.
+        y = rs.y.copy()
+        y[5], y[6], y[7] = mu0, mu0 - 40.0 * floor, mu0 * 50.0
+        assert rs._bundle_limited_site(1, y, 1.0, True, mu0) == mu0
+
+        # (3) end-group, q10 positive and mid-band (M_lo < m_dist < M_hi):
+        # end-group rows skip stage 2 entirely (cap non-binding), so this
+        # still comes back strictly positive (S_free), regardless of
+        # where q10/m_dist would have landed in the (unused) M band.
+        y = rs.y.copy()
+        mu1_mid = mu0 + 5000.0 * floor
+        y[5], y[6], y[7] = mu0, mu1_mid, mu1_mid * 50.0
+        e_dist = _softmin_p([mu0, mu1_mid, mu1_mid * 50.0]) / floor
+        assert e_dist >= 1.0e4
+        m_dist = (mu1_mid - mu0) / floor
+        assert 1.0e2 < m_dist < 1.0e4
+        s_eff = rs._bundle_limited_site(1, y, 1.0, True, mu1_mid)
+        assert s_eff > 0.0
+
+        # (4) CONTRAST: non-end-group row with the analogous "==1.0"
+        # boundary on its OWN ratio (b1c = mu2/mu1 == 1.0 exactly), even
+        # though q10 = mu1 - mu0 > 0 (would NOT trigger q10<=0 alone).
+        # This gate fires on b1c, independent of q10 -- returns s_free
+        # (nonzero), the opposite of case (1)'s hard zero at the
+        # end-group's analogous boundary. Demonstrates the two row kinds
+        # gate on structurally different surfaces, each internally
+        # single-sourced.
+        y = rs.y.copy()
+        mu1_b = mu0 + 40.0 * floor
+        y[5], y[6], y[7] = mu0, mu1_b, mu1_b  # b1c = mu2/mu1 = 1.0 exactly
+        s_free = rs._bundle_limited_site(1, y, 1.0, False, mu1_b)
+        assert s_free == mu1_b  # bulk E, b1c<=1 early return -> s_base
+
+    def test_bundle_limiter_m_band_edge_no_toggle(self):
+        """
+        Round-62 N5b DASSL-hang fix, requirement (d): sweeping q10 (via
+        mu1, holding mu0 fixed and bulk) across BOTH the M_lo and M_hi
+        cone-margin band edges must show exactly ONE admissible
+        discontinuity -- the accepted jump from 0 (sub-M_lo dead band) up
+        to softmin_p(s_free, s_cone) AT the M_lo edge (documented in
+        _bundle_limited_site's N5b comment) -- with NO sign-dependent
+        toggling (no zero samples above the jump, no repeated
+        zero/nonzero alternation) and non-decreasing values from the edge
+        onward through the v-blend into the M_hi bulk region.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 1.135
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (1.0, 5.0, 30.0))
+        y = rs.y.copy()
+        floor = 1.0e-14
+        mu0 = 1.0e7 * floor  # fixed; dominates the E-band softmin_p (bulk)
+
+        q10_grid = np.linspace(10.0 * floor, 2.0e4 * floor, 4001)
+        vals = []
+        for q10 in q10_grid:
+            mu1 = mu0 + q10
+            mu2 = mu1 * 10.0
+            y[5], y[6], y[7] = mu0, mu1, mu2
+            e_dist = _softmin_p([mu0, mu1, mu2]) / floor
+            assert e_dist >= 1.0e4  # stage 1 stays bulk-inactive throughout
+            vals.append(rs._bundle_limited_site(1, y, 1.0, False, mu1))
+        vals = np.array(vals)
+        m_dist_grid = q10_grid / floor
+
+        below = vals[m_dist_grid <= 1.0e2]
+        above = vals[m_dist_grid > 1.0e2]
+        assert np.all(below == 0.0)
+        assert np.all(above > 0.0)  # no toggling back to zero past the edge
+        assert np.all(np.diff(above) >= -1e-12 * np.max(above))  # monotone
+        # Exactly one contiguous zero -> nonzero transition (single jump).
+        nonzero_mask = vals > 0.0
+        assert np.sum(np.diff(nonzero_mask.astype(int)) == 1) == 1
+        # Above M_hi: bulk s_free (== s_base) exactly.
+        bulk = vals[m_dist_grid >= 1.0e4]
+        assert np.all(bulk == mu0 + q10_grid[m_dist_grid >= 1.0e4])
 
     def test_regen2_born_empty_daughter_conduit_integration_repro(self):
         """
