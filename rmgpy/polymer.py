@@ -2768,7 +2768,14 @@ def _warn_once_refused(entry: dict) -> None:
             "no flux applied (stamp-but-keep). Deferred to item 20's "
             "conduit.%s",
             entry["reaction"], entry["radical_class"], entry["reason"],
-            annotate_feature_radical(entry["reaction"]))
+            # I-016: only a genuine (accumulating / QSSA-invalid)
+            # feature-radical gets the sticky feature_radical ledger tag; a
+            # conduit-deferred (eliminating) row registers non-blocking so
+            # the conduit can adjudicate it later (see annotate_feature_radical).
+            annotate_feature_radical(
+                entry["reaction"],
+                genuine_feature_radical=(
+                    entry.get("radical_class") == "accumulating")))
 
 
 def _reaction_census_label(rxn) -> str:

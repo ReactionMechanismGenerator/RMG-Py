@@ -1109,25 +1109,45 @@ def get_conduit_flux_totals():
     return {k: dict(v) for k, v in _CONDUIT_FLUX_TOTALS.items()}
 
 
-def annotate_feature_radical(reaction_label):
+def annotate_feature_radical(reaction_label, genuine_feature_radical=True):
     """String-only annotation hook for the FEATURE-RADICAL census line
     (emitted via :func:`rmgpy.polymer._warn_once_refused`; its caller lives
     in the solver, which M18.2 must not edit, so this hook works from the
-    census label alone -- sufficient because every feature-radical row
-    buckets FEATURE_RADICAL regardless of shape). NEVER raises."""
+    census label alone). NEVER raises.
+
+    I-016 tag-narrowing: only a GENUINE feature-radical -- a resonance-
+    stabilized, QSSA-invalid ``accumulating`` radical (see
+    :func:`rmgpy.polymer.is_qssa_eliminating_radical`) -- registers the
+    sticky ``feature_radical`` census that admission gate G1
+    (:func:`evaluate_conduit_admission`) keys on to deny
+    ``feature-radical-overlap`` for the whole run. A QSSA-*eliminating* row
+    (``radical_class == "eliminating"``, reason ``conduit-deferred``) is
+    conduit-REPRESENTABLE; blanket-tagging it ``feature_radical`` was a
+    self-referential block that permanently denied the very rows the
+    conduit is meant to adjudicate. Such rows register under the
+    non-blocking ``conduit_deferred`` token instead, so G1 no longer fires
+    and the real verdict is adjudicated later (with RMG objects) at
+    readjudication. Admission is default-off, so this is ZERO generation
+    change today: an un-blocked conduit-deferred row still re-denies
+    downstream (G2 classifier-not-admissible / G3 gas-product-count)
+    because its written orientation is recombination, not scission."""
     try:
         key = candidate_key_from_label(reaction_label)
-        entry = register_candidate(key, "feature_radical", "FEATURE_RADICAL")
+        if genuine_feature_radical:
+            census, bucket, deny_reason = (
+                "feature_radical", "FEATURE_RADICAL", "feature-radical-overlap")
+        else:
+            census, bucket, deny_reason = (
+                "conduit_deferred", "CONDUIT_DEFERRED", "conduit-deferred")
+        entry = register_candidate(key, census, bucket)
         result = {"candidate_key": key, "shape": None, "admissible": False}
         # r42 P1-4(a): EVERY census line carries the admission verdict
-        # tokens (BUILD_SPEC W1.6 promised them on every line, and the FR
-        # line lacked them). An FR sighting is the upstream blocker: once
-        # registered (the line above), any admission evaluation of this
-        # key G1-denies feature-radical-overlap -- printed here so the FR
-        # census line and the ledger can never disagree.
+        # tokens (BUILD_SPEC W1.6 promised them on every line). Once
+        # registered (the line above), any admission evaluation of this key
+        # denies deterministically -- printed here so the census line and
+        # the ledger can never disagree.
         return (census_suffix(result, entry)
-                + admission_census_suffix(
-                    _deny(key, "feature-radical-overlap")))
+                + admission_census_suffix(_deny(key, deny_reason)))
     except Exception as exc:  # pragma: no cover - defensive fail-open
         logging.warning(
             "MOMENT-CREDIT CONDUIT CENSUS (M18.2): feature-radical "
