@@ -27,6 +27,8 @@
 #                                                                             #
 ###############################################################################
 
+import logging
+
 import cython
 import numpy as np
 cimport numpy as np
@@ -291,6 +293,9 @@ cdef class NASA(HeatCapacityModel):
                     raise ValueError('Only one, two, or three NASA polynomials can be stored in a single NASA object.')
 
     cpdef NASAPolynomial select_polynomial(self, double T):
+        cdef NASAPolynomial low_poly = None, high_poly = None, chosen, poly
+        cdef double low_tmin = 0.0, high_tmax = 0.0, poly_tmin, poly_tmax
+        cdef str direction
         if self.poly1 is not None and self.poly1.is_temperature_valid(T):
             return self.poly1
         elif self.poly2 is not None and self.poly2.is_temperature_valid(T):
@@ -298,7 +303,47 @@ cdef class NASA(HeatCapacityModel):
         elif self.poly3 is not None and self.poly3.is_temperature_valid(T):
             return self.poly3
         else:
-            raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
+            # T is outside the fitted range of every stored polynomial. Rather than
+            # refusing (historic behavior raised ValueError here), fall back to the
+            # nearest-range polynomial and evaluate it in EXTRAPOLATION. This keeps
+            # extreme-temperature reactors (e.g. ranged polymer pyrolysis) alive at
+            # the cost of using an out-of-fit value; the (rate-limited) warning below
+            # flags every affected species once. NOTE: this is a global RMG thermo
+            # behavior change affecting all reactor types.
+            for poly in (self.poly1, self.poly2, self.poly3):
+                if poly is None:
+                    continue
+                # A missing bound means the polynomial is unbounded in that
+                # direction; treat it as -/+inf so the deref below is safe and the
+                # sentinels stay consistent with the below/above classification.
+                poly_tmin = poly.Tmin.value_si if poly.Tmin is not None else float('-inf')
+                poly_tmax = poly.Tmax.value_si if poly.Tmax is not None else float('inf')
+                if low_poly is None or poly_tmin < low_tmin:
+                    low_poly = poly
+                    low_tmin = poly_tmin
+                if high_poly is None or poly_tmax > high_tmax:
+                    high_poly = poly
+                    high_tmax = poly_tmax
+            if low_poly is None:
+                # No polynomials are defined at all; nothing to extrapolate from.
+                raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
+            if T < low_tmin:
+                direction = 'below'
+                chosen = low_poly
+            else:
+                direction = 'above'
+                chosen = high_poly
+            if not self._extrapolation_warned:
+                logging.warning(
+                    'NASA thermo for %r evaluated at T = %g K, which is %s the fitted '
+                    'range [%g, %g] K; returning an EXTRAPOLATED value from the nearest '
+                    'polynomial. Extrapolated NASA thermo may be unphysical. (Further '
+                    'out-of-range warnings for this species are suppressed.)',
+                    self.label or self.comment or '<unlabeled NASA>',
+                    T, direction, low_tmin, high_tmax,
+                )
+                self._extrapolation_warned = True
+            return chosen
     
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """

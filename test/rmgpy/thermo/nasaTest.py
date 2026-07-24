@@ -31,8 +31,9 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 """
 
+import logging
+import math
 import os.path
-
 
 import numpy as np
 
@@ -232,6 +233,80 @@ class TestNASA:
             g_exp = self.nasa.get_enthalpy(T) - T * self.nasa.get_entropy(T)
             g_act = self.nasa.get_free_energy(T)
             assert round(abs(g_exp / g_act - 1.0), 4) == 0, "{0} != {1}".format(g_exp, g_act)
+
+    def test_extrapolation_out_of_range(self, caplog):
+        """
+        Test that NASA.select_polynomial() extrapolates (instead of raising) and warns
+        exactly once per object when T is outside the fitted range of every stored
+        polynomial, while leaving in-range evaluation unchanged.
+        """
+        # Use a fresh NASA object (not the shared self.nasa fixture) so the
+        # rate-limiting flag doesn't leak state between tests.
+        nasa = NASA(
+            polynomials=[
+                NASAPolynomial(coeffs=self.coeffs_low, Tmin=(self.Tmin, "K"), Tmax=(self.Tint, "K")),
+                NASAPolynomial(coeffs=self.coeffs_high, Tmin=(self.Tint, "K"), Tmax=(self.Tmax, "K")),
+            ],
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            E0=(self.E0, "J/mol"),
+            comment=self.comment,
+        )
+
+        # In-range evaluation is unchanged: compare against the existing expected
+        # values already used by the in-range tests above (T=400 K).
+        T_in_range = 400
+        cp_exp = 7.80157 * constants.R
+        h_exp = -22.7613 * constants.R * T_in_range
+        s_exp = 29.6534 * constants.R
+        assert round(abs(cp_exp / nasa.get_heat_capacity(T_in_range) - 1.0), 4) == 0
+        assert round(abs(h_exp / nasa.get_enthalpy(T_in_range) - 1.0), 3) == 0
+        assert round(abs(s_exp / nasa.get_entropy(T_in_range) - 1.0), 4) == 0
+        g_exp = nasa.get_enthalpy(T_in_range) - T_in_range * nasa.get_entropy(T_in_range)
+        assert round(abs(g_exp / nasa.get_free_energy(T_in_range) - 1.0), 4) == 0
+
+        # Below the lowest Tmin: extrapolate + warn, no exception.
+        T_below = self.Tmin - 100.0
+        with caplog.at_level(logging.WARNING):
+            cp_below = nasa.get_heat_capacity(T_below)
+            h_below = nasa.get_enthalpy(T_below)
+            s_below = nasa.get_entropy(T_below)
+            g_below = nasa.get_free_energy(T_below)
+        assert math.isfinite(cp_below)
+        assert math.isfinite(h_below)
+        assert math.isfinite(s_below)
+        assert math.isfinite(g_below)
+        below_warnings = [r for r in caplog.records if r.levelno == logging.WARNING and "extrapolat" in r.getMessage().lower()]
+        # Rate-limited: four out-of-range calls above should still only produce one warning.
+        assert len(below_warnings) == 1
+
+        caplog.clear()
+
+        # Above the highest Tmax: extrapolate + warn, no exception.
+        T_above = self.Tmax + 500.0
+        with caplog.at_level(logging.WARNING):
+            cp_above = nasa.get_heat_capacity(T_above)
+        assert math.isfinite(cp_above)
+        above_warnings = [r for r in caplog.records if r.levelno == logging.WARNING and "extrapolat" in r.getMessage().lower()]
+        # Still rate-limited to one warning total for this NASA object (the flag was
+        # already set by the below-range calls above).
+        assert len(above_warnings) == 0
+
+    def test_extrapolation_one_sided_bound(self):
+        """
+        Test that select_polynomial() extrapolates (rather than dereferencing None)
+        when a stored polynomial has only one temperature bound. Such a polynomial
+        can reach the out-of-range branch via its defined bound, and the min/max scan
+        must treat the missing bound as unbounded instead of touching ``None.value_si``.
+        """
+        # Single polynomial bounded above only (Tmin=None). Evaluated above its Tmax,
+        # is_temperature_valid() returns False, so we hit the extrapolation branch and
+        # the scan reads poly.Tmin, which is None.
+        nasa = NASA(
+            polynomials=[NASAPolynomial(coeffs=self.coeffs_high, Tmin=None, Tmax=(self.Tint, "K"))],
+        )
+        cp = nasa.get_heat_capacity(self.Tmax)  # above the poly's Tmax
+        assert math.isfinite(cp)
 
     def test_pickle(self):
         """
