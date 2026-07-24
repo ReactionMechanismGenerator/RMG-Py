@@ -37,6 +37,7 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.base import Entry
+from rmgpy.data.kinetics import family as kinetics_family
 from rmgpy.data.solvation import SolventData
 from rmgpy.data.surface import MetalDatabase
 from rmgpy.data.vaporLiquidMassTransfer import (
@@ -2165,7 +2166,28 @@ def pressure_dependence(
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1, polymerConduitAdmission=None):
+            saveSeedModulus=-1, polymerConduitAdmission=None, tolerateMissingReverseReactions=False):
+    if tolerateMissingReverseReactions is not False and tolerateMissingReverseReactions is not True and (
+            not isinstance(tolerateMissingReverseReactions, int) or isinstance(tolerateMissingReverseReactions, bool)
+            or tolerateMissingReverseReactions <= 0):
+        raise InputError(
+            "`tolerateMissingReverseReactions` must be False, True, or a positive integer, not "
+            "{0!r}.".format(tolerateMissingReverseReactions))
+    kinetics_family.TOLERATE_MISSING_REVERSE = tolerateMissingReverseReactions
+    if tolerateMissingReverseReactions is not False:
+        if rmg.output_directory:
+            kinetics_family.DROPPED_REVERSE_LOG_PATH = os.path.join(
+                rmg.output_directory, 'dropped_reverse_reactions.jsonl')
+        else:
+            logging.warning(
+                "`tolerateMissingReverseReactions` was enabled but no output directory is set yet; "
+                "dropped reverse reactions will not be logged to a file.")
+            kinetics_family.DROPPED_REVERSE_LOG_PATH = None
+        logging.warning(
+            "`tolerateMissingReverseReactions` is enabled (={0}). Reactions with no matching reverse "
+            "reaction will be dropped instead of raising a fatal error; see {1} for an audit "
+            "log.".format(tolerateMissingReverseReactions, kinetics_family.DROPPED_REVERSE_LOG_PATH))
+
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
@@ -2204,6 +2226,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
             "default-off fallback), not {0!r}.".format(polymerConduitAdmission))
     rmg.polymer_conduit_admission = polymerConduitAdmission
     rmg.trimolecular_product_reversible = trimolecularProductReversible
+    rmg.tolerate_missing_reverse_reactions = tolerateMissingReverseReactions
     rmg.walltime = wallTime
     rmg.save_seed_modulus = saveSeedModulus
 
@@ -2782,6 +2805,8 @@ def save_input_file(path, rmg):
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
     f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    if rmg.tolerate_missing_reverse_reactions is not False:
+        f.write('    tolerateMissingReverseReactions = {0!r},\n'.format(rmg.tolerate_missing_reverse_reactions))
     f.write(')\n\n')
 
     f.close()

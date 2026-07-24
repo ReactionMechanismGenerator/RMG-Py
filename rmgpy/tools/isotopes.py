@@ -441,7 +441,12 @@ def ensure_reaction_direction(isotopomer_rxns):
                 logging.info('isotope: identified flipped reaction direction in reaction number {} of reaction {}. '
                              'Altering the direction.'.format(rxn.index, str(rxn)))
                 # obtain reverse attribute with template and degeneracy
-                family.add_reverse_attribute(rxn)
+                found_reverse = family.add_reverse_attribute(rxn)
+                if not found_reverse:
+                    logging.warning("Reaction {} has no matching reverse reaction (forbidden or dropped via "
+                                     "tolerateMissingReverseReactions); skipping isotope direction "
+                                     "correction for this reaction.".format(str(rxn)))
+                    continue
                 if frozenset(rxn.reverse.template) != frozenset(reference.template):
                     logging.warning("Reaction {} did not find proper reverse template, might cause "
                                     "degeneracy error.".format(str(rxn)))

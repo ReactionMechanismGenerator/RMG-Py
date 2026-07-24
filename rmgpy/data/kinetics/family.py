@@ -32,6 +32,7 @@ This module contains functionality for working with kinetics families.
 """
 import codecs
 import itertools
+import json
 import logging
 import multiprocessing as mp
 import os.path
@@ -69,6 +70,24 @@ import rmgpy.constants as constants
 from rmgpy.data.solvation import SoluteData, add_solute_data, SoluteTSData, to_soluteTSdata
 
 ################################################################################
+
+# Gated, audited tolerance for KineticsFamily.add_reverse_attribute's "no matching reverse
+# reaction found" KineticsError. Off by default so behavior is unchanged unless explicitly
+# enabled (e.g. via the `tolerateMissingReverseReactions` input.py option).
+#
+# TOLERATE_MISSING_REVERSE:
+#   False (default) - hard error, byte-for-byte identical to historical behavior.
+#   True            - tolerate an unlimited number of dropped reactions.
+#   positive int N  - tolerate up to N total dropped reactions (summed across all families);
+#                      the (N+1)th drop raises KineticsError with a summary.
+TOLERATE_MISSING_REVERSE = False
+
+# Optional path to a JSONL file that dropped reactions get appended to (one JSON object per
+# line) when TOLERATE_MISSING_REVERSE is enabled. None disables audit logging.
+DROPPED_REVERSE_LOG_PATH = None
+
+# Per-family counts of reactions dropped via TOLERATE_MISSING_REVERSE, keyed by family label.
+_dropped_reverse_counts = {}
 
 
 class TemplateReaction(Reaction):
@@ -1822,7 +1841,9 @@ class KineticsFamily(Database):
         For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
         attribute that contains the reverse reaction information (like degeneracy)
 
-        Returns `True` if successful and `False` if the reverse reaction is forbidden.
+        Returns `True` if successful and `False` if the reverse reaction is forbidden, or (when
+        module-level `TOLERATE_MISSING_REVERSE` is enabled) if no matching reverse reaction was
+        found and the drop is being tolerated.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
         if self.own_reverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
@@ -1883,8 +1904,37 @@ class KineticsFamily(Database):
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in "
                                   "reaction family {1} for forward reaction {2}."
                                   "\n".format(len(reactions), self.label, str(rxn)))
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
-                                        "{1}.".format(self.label, str(rxn)))
+                    if TOLERATE_MISSING_REVERSE is False:
+                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
+                                            "{1}.".format(self.label, str(rxn)))
+                    else:
+                        total_dropped = sum(_dropped_reverse_counts.values()) + 1
+                        if TOLERATE_MISSING_REVERSE is not True and total_dropped > TOLERATE_MISSING_REVERSE:
+                            summary = ', '.join('{0}: {1}'.format(label, n)
+                                                 for label, n in sorted(_dropped_reverse_counts.items()))
+                            raise KineticsError(
+                                "Did not find reverse reaction in reaction family {0} for reaction {1}. "
+                                "Tolerance for missing reverse reactions (tolerateMissingReverseReactions="
+                                "{2}) exceeded after {3} total dropped reactions ({4}).".format(
+                                    self.label, str(rxn), TOLERATE_MISSING_REVERSE, total_dropped, summary))
+                        _dropped_reverse_counts[self.label] = _dropped_reverse_counts.get(self.label, 0) + 1
+                        logging.error(
+                            "Dropping reaction {0} from family {1}: no matching reverse reaction found "
+                            "(tolerated by tolerateMissingReverseReactions).".format(str(rxn), self.label))
+                        if DROPPED_REVERSE_LOG_PATH:
+                            try:
+                                record = {
+                                    'family': self.label,
+                                    'reaction': str(rxn),
+                                    'reactants': [spc.molecule[0].to_smiles() for spc in rxn.reactants],
+                                    'products': [spc.molecule[0].to_smiles() for spc in rxn.products],
+                                }
+                                with open(DROPPED_REVERSE_LOG_PATH, 'a') as f:
+                                    f.write(json.dumps(record) + '\n')
+                            except Exception as e:
+                                logging.warning("Could not write to DROPPED_REVERSE_LOG_PATH {0}: {1}".format(
+                                    DROPPED_REVERSE_LOG_PATH, e))
+                        return False
             elif (len(reactions) > 1 and
                     not all([reactions[0].is_isomorphic(other, strict=False, check_template_rxn_products=True)
                              for other in reactions])):

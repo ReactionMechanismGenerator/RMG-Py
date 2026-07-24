@@ -28,6 +28,7 @@
 ###############################################################################
 
 import filecmp
+import json
 import logging
 import os.path
 import shutil
@@ -38,6 +39,7 @@ import numpy as np
 
 from rmgpy import settings
 import rmgpy.data.kinetics.family
+import rmgpy.exceptions
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -1400,3 +1402,105 @@ multiplicity 2
 
         assert valid_polymer_product_found, \
             "Failed to map any generated reaction product back to a valid Polymer object."
+
+
+class TestAddReverseAttributeTolerance:
+    """
+    Test the gated, audited tolerance for KineticsFamily.add_reverse_attribute's
+    "no matching reverse reaction found" KineticsError (module-level
+    rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE / DROPPED_REVERSE_LOG_PATH).
+    """
+
+    @classmethod
+    def setup_class(cls):
+        cls.database = KineticsDatabase()
+        cls.database.load_families(
+            path=os.path.join(settings["test_data.directory"], "testing_database/kinetics/families"),
+            families=["intra_H_migration"],
+        )
+        cls.family = cls.database.families["intra_H_migration"]
+        assert cls.family.own_reverse, "Test assumes an own-reverse family."
+
+    def setup_method(self):
+        # Reset module-level tolerance state before every test so tests don't leak into each other.
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = False
+        rmgpy.data.kinetics.family.DROPPED_REVERSE_LOG_PATH = None
+        rmgpy.data.kinetics.family._dropped_reverse_counts = {}
+
+    def teardown_method(self):
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = False
+        rmgpy.data.kinetics.family.DROPPED_REVERSE_LOG_PATH = None
+        rmgpy.data.kinetics.family._dropped_reverse_counts = {}
+
+    def _make_zero_reverse_rxn(self):
+        """
+        Build a simple reaction whose reverse-match search we will force to find
+        zero matches by stubbing out `_generate_reactions`.
+        """
+        reactant = Species(molecule=[Molecule(smiles='CC')])
+        product = Species(molecule=[Molecule(smiles='CC')])
+        rxn = Reaction(reactants=[reactant], products=[product])
+        return rxn
+
+    def test_tolerate_missing_reverse_default_raises(self):
+        """
+        Default (False): behavior is unchanged -- a hard KineticsError is raised.
+        """
+        rxn = self._make_zero_reverse_rxn()
+        with mock.patch.object(self.family, '_generate_reactions', return_value=[]):
+            with pytest.raises(rmgpy.exceptions.KineticsError):
+                self.family.add_reverse_attribute(rxn)
+
+    def test_tolerate_missing_reverse_true_drops_and_returns_false(self):
+        """
+        Toggle True: the reaction is dropped (returns False) instead of raising.
+        """
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = True
+        rxn = self._make_zero_reverse_rxn()
+        with mock.patch.object(self.family, '_generate_reactions', return_value=[]):
+            result = self.family.add_reverse_attribute(rxn)
+        assert result is False
+        assert rmgpy.data.kinetics.family._dropped_reverse_counts[self.family.label] == 1
+
+    def test_tolerate_missing_reverse_true_writes_audit_log(self, tmp_path):
+        """
+        When enabled with an audit log path set, a JSONL record is appended.
+        """
+        log_path = str(tmp_path / "dropped_reverse_reactions.jsonl")
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = True
+        rmgpy.data.kinetics.family.DROPPED_REVERSE_LOG_PATH = log_path
+        rxn = self._make_zero_reverse_rxn()
+        with mock.patch.object(self.family, '_generate_reactions', return_value=[]):
+            result = self.family.add_reverse_attribute(rxn)
+        assert result is False
+        with open(log_path) as f:
+            lines = f.readlines()
+        assert len(lines) == 1
+        record = json.loads(lines[0])
+        assert record['family'] == self.family.label
+        assert 'reactants' in record and 'products' in record
+
+    def test_tolerate_missing_reverse_int_zero_raises_on_first_drop(self):
+        """
+        Toggle int 0: tolerates nothing, so even the first drop exceeds it and raises,
+        with a per-family drop summary in the message.
+        """
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = 0
+        rxn = self._make_zero_reverse_rxn()
+        with mock.patch.object(self.family, '_generate_reactions', return_value=[]):
+            with pytest.raises(rmgpy.exceptions.KineticsError, match=self.family.label):
+                self.family.add_reverse_attribute(rxn)
+
+    def test_tolerate_missing_reverse_int_exceeded_raises_with_summary(self):
+        """
+        Toggle a positive int N: the (N+1)th drop across the family raises KineticsError
+        with a summary of per-family counts, instead of returning False forever.
+        """
+        rmgpy.data.kinetics.family.TOLERATE_MISSING_REVERSE = 1
+        rxn1 = self._make_zero_reverse_rxn()
+        rxn2 = self._make_zero_reverse_rxn()
+        with mock.patch.object(self.family, '_generate_reactions', return_value=[]):
+            result1 = self.family.add_reverse_attribute(rxn1)
+            assert result1 is False
+            with pytest.raises(rmgpy.exceptions.KineticsError, match=self.family.label):
+                self.family.add_reverse_attribute(rxn2)
