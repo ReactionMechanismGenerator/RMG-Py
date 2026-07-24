@@ -1012,9 +1012,11 @@ class TestAppendOnlyAnnotation:
 
         from rmgpy.polymer import _refused_census_warned, _warn_once_refused
 
+        # I-016: a GENUINE feature-radical is an accumulating/QSSA-invalid
+        # row (see is_qssa_eliminating_radical); only it buckets FEATURE_RADICAL.
         entry = {"reaction": "SYN_R(1) + SYN_P(2) <=> SYN_Q(3)",
-                 "radical_class": "eliminating",
-                 "reason": "conduit-deferred"}
+                 "radical_class": "accumulating",
+                 "reason": "qssa-invalid"}
         _refused_census_warned.discard(
             (entry["reaction"], entry["reason"]))
         with caplog.at_level(_logging.WARNING):
@@ -1048,10 +1050,12 @@ class TestAppendOnlyAnnotation:
         rxn = self._refused_row()
         label = _reaction_census_label(rxn)
         from rmgpy.polymer import _refused_census_warned
-        _refused_census_warned.discard((label, "conduit-deferred"))
+        # I-016: the feature_radical+r93 overlap precedence only arises for a
+        # GENUINE feature-radical (accumulating/QSSA-invalid) upstream sighting.
+        _refused_census_warned.discard((label, "qssa-invalid"))
         _warn_once_refused({"reaction": label,
-                            "radical_class": "eliminating",
-                            "reason": "conduit-deferred"})
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
         _general_chain_scale_pool_warned.clear()
         with caplog.at_level(_logging.WARNING):
             stamp_gas_association_refusal(rxn)
@@ -1711,9 +1715,11 @@ class TestR42AdmissionCensusDeterminism:
 
         from rmgpy.polymer import _refused_census_warned, _warn_once_refused
 
+        # I-016: only a genuine (accumulating/QSSA-invalid) feature-radical
+        # carries the feature-radical-overlap admission token.
         entry = {"reaction": "SYN_R42(1) + SYN_P42(2) <=> SYN_Q42(3)",
-                 "radical_class": "eliminating",
-                 "reason": "conduit-deferred"}
+                 "radical_class": "accumulating",
+                 "reason": "qssa-invalid"}
         _refused_census_warned.discard((entry["reaction"], entry["reason"]))
         with caplog.at_level(_logging.WARNING):
             _warn_once_refused(entry)
@@ -1726,6 +1732,43 @@ class TestR42AdmissionCensusDeterminism:
         # append-only: the M18.2 census suffix rides before it
         assert msgs[0].index("[conduit-census/1") < msgs[0].index(
             "[conduit-admission/1")
+
+    def test_i016_only_accumulating_gets_sticky_feature_radical_tag(
+            self, clean_registry):
+        """I-016 tag-narrowing lock: an accumulating/QSSA-invalid row
+        registers the sticky ``feature_radical`` census (the admission
+        gate-G1 blocker); an eliminating/conduit-deferred row registers the
+        non-blocking ``conduit_deferred`` token instead. Because G1 keys on
+        ``"feature_radical" in censuses``, the eliminating row is no longer
+        permanently blocked -- the self-referential trap is gone. Admission
+        is default-off, so this is ZERO generation change (the un-blocked
+        row still re-denies downstream at G2/G3)."""
+        from rmgpy.polymer import _refused_census_warned, _warn_once_refused
+        from rmgpy.polymer_conduit import (lookup_candidate,
+                                           candidate_key_from_label)
+
+        acc_label = "ACC_R(1) <=> ACC_Q(2)"
+        elim_label = "ELM_R(1) + ELM_P(2) <=> ELM_Q(3)"
+        _refused_census_warned.discard((acc_label, "qssa-invalid"))
+        _refused_census_warned.discard((elim_label, "conduit-deferred"))
+
+        _warn_once_refused({"reaction": acc_label,
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
+        _warn_once_refused({"reaction": elim_label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+
+        acc = lookup_candidate(candidate_key_from_label(acc_label))
+        elim = lookup_candidate(candidate_key_from_label(elim_label))
+        assert acc is not None and elim is not None
+        # genuine feature-radical keeps the sticky G1-blocking tag ...
+        assert acc["effective_bucket"] == "FEATURE_RADICAL"
+        assert "feature_radical" in acc["censuses"]
+        # ... conduit-deferred registers non-blocking; NOT feature_radical,
+        # so G1 (which tests membership of "feature_radical") cannot fire.
+        assert elim["effective_bucket"] == "CONDUIT_DEFERRED"
+        assert "feature_radical" not in elim["censuses"]
 
     def test_fr_registered_after_evaluation_downgrades_would_admit(
             self, clean_registry):
@@ -2168,9 +2211,11 @@ class TestLedgerEpochsAndReset:
         assert lookup_candidate(key) is None
         assert (label, "conduit-deferred") not in _refused_census_warned
         # post-reset re-sighting re-registers (would be starved if the
-        # warn-once set had survived the ledger reset)
+        # warn-once set had survived the ledger reset). I-016: this entry is
+        # radical_class="eliminating" (conduit-deferred), so it re-registers
+        # under the non-blocking CONDUIT_DEFERRED bucket, not FEATURE_RADICAL.
         _warn_once_refused(entry)
-        assert lookup_candidate(key)["effective_bucket"] == "FEATURE_RADICAL"
+        assert lookup_candidate(key)["effective_bucket"] == "CONDUIT_DEFERRED"
         reset_conduit_state()
 
     def test_reset_census_registry_is_alias(self):
