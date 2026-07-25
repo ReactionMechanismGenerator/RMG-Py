@@ -2523,8 +2523,12 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
     if key not in _flux_archetype_warned:
         _flux_archetype_warned.add(key)
         logging.warning(
-            "Polymer flux archetype UNRESOLVED (%s): %s -- the solver will "
-            "apply legacy mu1-only moment flux for this reaction shape.",
+            "Polymer flux archetype UNRESOLVED (%s): %s -- rows of this shape "
+            "are refused (zero flux) when the lost mass is chain-scale "
+            "(item-18); any surviving row applies an EXPLICIT legacy mu1-only "
+            "fallback that updates mu1 only and cannot conserve mu0/mu2 for "
+            "this shape (survivor-vs-consumed lineage is unstamped). Live rows "
+            "are surfaced by the solver's LIVE-UNRESOLVED census.",
             reason, detail)
 
 
@@ -3125,6 +3129,18 @@ def classify_reaction_flux_archetype(reactants, products,
         # Polymer reactant but no polymer product (e.g. full conversion to
         # gas). No flux rule exists for this shape; the solver-level phase
         # check skips such core reactions anyway, so flag it loudly.
+        #
+        # Conservation argument (adjudicated): NO single correct moment flux
+        # exists for this shape. A FULLY-CONSUMED chain would need a
+        # whole-chain-bundle drain (mu0: -r*b0, mu1: -r*b1, mu2: -r*b2); a
+        # SURVIVED-SHORTER chain would need a same-pool VE debit (mu0: 0,
+        # mu1: -r*a, mu2: -r*(2a*E[n] - a^2)). The two are indistinguishable
+        # here because the survivor bit is unstamped (create_reacted_copy
+        # returning None is a representability result, not a
+        # survivor-vs-consumed lineage stamp), so either rule would silently
+        # corrupt mu0 for the wrong sub-case. The fallback is therefore
+        # deliberately explicit-and-loud (item-18 refuse gate + warn-once +
+        # solver LIVE-UNRESOLVED census), never silent.
         _warn_unresolved_archetype(
             "polymer reactant with no polymer product",
             tuple(sorted(reactant_pools)))
@@ -3173,6 +3189,22 @@ def classify_reaction_flux_archetype(reactants, products,
                 > _VE_NET_MASS_EPS_G):
             return PolymerFluxArchetype.VOLATILE_EJECTION
         return PolymerFluxArchetype.MIGRATION
+    # Ambiguous cross-pool shape. Conservation argument (adjudicated): NO
+    # single correct moment flux exists here, but for a DIFFERENT reason than
+    # shape 1 -- the obstruction is unresolvable cross-pool LINEAGE, not
+    # consume-vs-survive. This branch is reached when a polymer product is
+    # cross-pool yet the clean 1-reactant-pool -> 1-cross-pool MIGRATION shape
+    # does not hold: >=2 reactant pools (which source chain fed which product
+    # pool is unknown), >=2 product pools (how to split one source chain's
+    # moments across destinations is unknown), or 0 reactant pools (a chain
+    # appears in a pool with no source to debit -- mu1 would be credited with
+    # no matching mu0). Per-pool mu0/mu1/mu2 apportionment is therefore
+    # underdetermined, so no single debit/credit rule is correct. Legacy
+    # mu1-only (move one mu1 unit per proxy, pool-to-pool) is the documented
+    # lineage-agnostic approximation (design spec UNRESOLVED section; exact
+    # lineage resolution deferred/out-of-scope). The fallback is deliberately
+    # explicit-and-loud (warn-once here + the solver's LIVE-UNRESOLVED
+    # census), never silent.
     _warn_unresolved_archetype(
         "ambiguous cross-pool shape",
         tuple(sorted(p.label for p in product_polymers)))

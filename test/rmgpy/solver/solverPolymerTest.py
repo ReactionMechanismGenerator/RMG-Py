@@ -1364,6 +1364,122 @@ class TestHybridPolymerReactor:
         assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED   # demoted
         assert rs.reaction_chip_units[0] == 2    # array filled regardless
 
+    @staticmethod
+    def _live_unresolved_system():
+        """Fixture: one LIVE (non-refused) generation-time FLUX_UNRESOLVED
+        proxy-touching reaction (polymer reactant, no polymer product --
+        shape 1) plus the pool bookkeeping species. Mirrors
+        test_stamped_scission_without_daughter_pool_demotes_to_legacy but
+        stamps UNRESOLVED (4) directly, i.e. the classifier's fall-through
+        stamp rather than a solver-side demotion."""
+        Proxy = _spc("CCCC", "poly")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        Daughter = _spc("CCC", "poly_daughter")   # core species, NO pool
+        core = [Proxy, Mu0, Mu1, Mu2, Daughter]
+        mask = np.array([False] * 5, dtype=bool)
+
+        rxn = Reaction(reactants=[Proxy], products=[Daughter], **_KIN)
+        rxn.polymer_flux_archetype = 4   # stamped UNRESOLVED at generation
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)}, termination=[],
+        )
+        return rs, core, rxn
+
+    def test_live_unresolved_census_warns_at_initialize_model(self, caplog):
+        """
+        LIVE-UNRESOLVED census (adjudicated deliverable): a non-refused
+        FLUX_UNRESOLVED proxy-touching row must be surfaced by ONE prominent
+        warning at initialize_model -- the legacy mu1-only fallback must
+        never run silently. Diagnostic only: no raise, flux untouched.
+        """
+        rs, core, rxn = self._live_unresolved_system()
+        with caplog.at_level(logging.WARNING):
+            rs.initialize_model(core, [rxn], [], [])
+        hits = [r for r in caplog.records
+                if "LIVE UNRESOLVED MOMENT-FLUX CENSUS" in r.getMessage()]
+        assert len(hits) == 1
+        msg = hits[0].getMessage()
+        assert "1 non-refused" in msg
+        assert "mu1-only" in msg
+        assert "CANNOT conserve mu0/mu2" in msg
+        # the sample names the offending row
+        assert "row 0" in msg
+        # census is warn-only: the row stays live UNRESOLVED, not refused
+        import rmgpy.solver.polymer as sp
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED
+        assert rs.reaction_refused[0] == 0
+
+    def test_refused_unresolved_row_does_not_trigger_live_census(self, caplog):
+        """
+        Pairing gate: a REFUSED UNRESOLVED row (item-18 adjudication,
+        flux-dead via reaction_refused) is NOT live and must NOT appear in
+        the LIVE-UNRESOLVED census. Fixture mirrors
+        test_refused_feature_abstraction_conserves_backbone_mass.
+        """
+        Proxy = _spc("CCC(C)CCCC(C)CCCC(C)C", "epdm")
+        Mu0 = _spc("CO", "epdm_mu0")
+        Mu1 = _spc("C=O", "epdm_mu1")
+        Mu2 = _spc("C#N", "epdm_mu2")
+        Macro = _spc("CCC(C)CCC[C](C)CCCC(C)C", "epdm_macroradical")
+        H = _spc("[H]", "H")
+        H2 = _spc("[H][H]", "H2")
+        core = [Proxy, Mu0, Mu1, Mu2, Macro, H, H2]
+        mask = np.array([False] * 5 + [True, True], dtype=bool)
+        kin2 = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                         T0=(298.15, "K"))
+        rxn = Reaction(reactants=[Proxy, H], products=[Macro, H2],
+                       kinetics=kin2, reversible=False)
+        rxn.polymer_flux_archetype = 4   # UNRESOLVED
+        rxn.polymer_refused = True       # item-18 refusal (zero flux)
+        pool = PolymerPoolConfig(
+            label="epdm", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+            termination=[],
+        )
+        with caplog.at_level(logging.WARNING):
+            rs.initialize_model(core, [rxn], [], [])
+        assert rs.reaction_refused[0] == 1
+        assert not any("LIVE UNRESOLVED MOMENT-FLUX CENSUS" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_live_unresolved_rhs_dispatch_math_unchanged(self):
+        """
+        Math lock (adjudicated: NO flux change): the FLUX_UNRESOLVED RHS
+        dispatch for a live row still applies the legacy mu1-only transfer
+        -- mu1 drained by r = kf * mu1 (site-scaled, V_poly=1), the explicit
+        product gains +r, and mu0/mu2 are NOT touched. The census is purely
+        diagnostic.
+        """
+        rs, core, rxn = self._live_unresolved_system()
+        rs.initialize_model(core, [rxn], [], [])
+
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1                        # site-scaled by mu1, V_poly=1
+        assert np.isclose(dn_dt[2], -r)     # mu1 drained (legacy, unchanged)
+        assert np.isclose(dn_dt[4], +r)     # explicit product gains
+        assert dn_dt[1] == 0.0              # mu0 untouched
+        assert dn_dt[3] == 0.0              # mu2 untouched
+
     def test_double_count_tripwire_fires_on_copresence_and_dormant_otherwise(self):
         """
         item 18 (T2): a pool carrying BOTH an explicit, surviving beta-scission/

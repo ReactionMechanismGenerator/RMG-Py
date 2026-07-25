@@ -842,6 +842,34 @@ PS_1
         classify_reaction_flux_archetype([p, q], [other])  # repeat call
         assert len(polymer_mod._flux_archetype_warned) == n_before
 
+    def test_unresolved_warn_once_text_is_honest(self, caplog):
+        """
+        The UNRESOLVED warn-once message must state the ACTUAL behavior
+        (adjudicated): chain-scale rows are refused (item-18), any surviving
+        row runs an EXPLICIT mu1-only fallback that cannot conserve mu0/mu2,
+        and live rows are surfaced by the solver's LIVE-UNRESOLVED census --
+        not the old claim that the solver simply "applies legacy flux".
+        """
+        import logging as _logging
+        import rmgpy.polymer as polymer_mod
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        polymer_mod._flux_archetype_warned.clear()
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+        with caplog.at_level(_logging.WARNING):
+            # shape 1: polymer reactant, all-gas products -> UNRESOLVED
+            assert (classify_reaction_flux_archetype([p], [gas])
+                    == PolymerFluxArchetype.UNRESOLVED)
+        hits = [r for r in caplog.records
+                if "Polymer flux archetype UNRESOLVED" in r.getMessage()]
+        assert len(hits) == 1
+        msg = hits[0].getMessage()
+        assert "refused (zero flux)" in msg
+        assert "mu1-only" in msg
+        assert "cannot conserve mu0/mu2" in msg
+        assert "LIVE-UNRESOLVED census" in msg
+
     def test_classify_chip_product_returns_discrete_chip(self):
         """
         A CHIP-stamped product polymer (left by surge_chip_products' fold-back)
