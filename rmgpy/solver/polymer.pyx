@@ -3808,6 +3808,50 @@ class HybridPolymerSystem(ReactionSystem):
                 "runner construction only).",
                 n_unstamped)
 
+        # LIVE-UNRESOLVED census (adjudicated): enumerate every non-refused
+        # FLUX_UNRESOLVED proxy-touching row that will apply the legacy
+        # mu1-only fallback at the RHS. Sources: generation-time UNRESOLVED
+        # classification (stamp_polymer_flux_archetype) OR the solver-side
+        # non-attributable pool-demotion above. Pure additive diagnostic --
+        # ONE prominent warning at initialize_model, no raise, no flux
+        # change: mu0's sign is unknowable for these shapes
+        # (survivor-vs-consumed lineage is unstamped), so the fallback stays
+        # explicit-and-loud rather than silently "corrected". Proxy-touch
+        # membership deliberately reuses the SAME check as the
+        # unstamped_live_rows gate / SGH mover scan (is_pool_proxy over
+        # reactant_indices/product_indices core slots).
+        live_unresolved_rows = []
+        for i in range(n_rxn):
+            if self.reaction_flux_archetype[i] != FLUX_UNRESOLVED:
+                continue
+            if self.reaction_refused[i]:
+                continue
+            touches_proxy = False
+            for slot in range(3):
+                r_sp = ir_arr[i, slot]
+                if r_sp != -1 and r_sp < n_core and self.is_pool_proxy[r_sp]:
+                    touches_proxy = True
+                    break
+                p_sp = ip_arr[i, slot]
+                if p_sp != -1 and p_sp < n_core and self.is_pool_proxy[p_sp]:
+                    touches_proxy = True
+                    break
+            if touches_proxy:
+                live_unresolved_rows.append(i)
+        if live_unresolved_rows:
+            logging.warning(
+                "LIVE UNRESOLVED MOMENT-FLUX CENSUS: %d non-refused "
+                "FLUX_UNRESOLVED proxy-touching row(s) will apply legacy "
+                "mu1-only flux at the RHS (updates mu1 only; CANNOT conserve "
+                "mu0/mu2 for these shapes). Sources: generation-time "
+                "UNRESOLVED classification OR solver-side non-attributable "
+                "pool-demotion. first rows: %s",
+                len(live_unresolved_rows),
+                "; ".join("%s row %d: %s" % (
+                    "core" if r_i < len(core_reactions) else "edge",
+                    r_i, str(combined_rxns[r_i]))
+                    for r_i in live_unresolved_rows[:5]))
+
         # P1-2 (atom-transfer mass defect): per-row MOMENT-space eject units.
         # reaction_eject_units stores the MASS defect a_mass = (net
         # non-polymer mass)/monomer_mw. For an atom-transfer conduit
