@@ -32,11 +32,12 @@ This module contains unit tests of the :mod:`arkane.pdep` module.
 """
 
 import logging
+import math
 import os
 import shutil
 
-
 import pytest
+import yaml
 
 from rmgpy import settings
 from rmgpy.chemkin import read_reactions_block
@@ -134,3 +135,98 @@ class ArkaneTest:
         for f in files:
             if "pdep_sa" not in f:
                 os.remove(os.path.join(settings["test_data.directory"], "arkane", "tst1", f))
+
+
+@pytest.mark.functional
+class ArkaneILTSensitivityTest:
+    """
+    Integration test for `arkane.sensitivity.PDepSensitivity` on a network that genuinely
+    contains an ILT-based ("modeless", ``not rxn.can_tst()``) path reaction alongside RRKM-based
+    ones, exercising the real perturb-both-E0-and-Ea code path (see arkane/sensitivity.py) rather
+    than a synthetic/fabricated one.
+
+    The fixture (test/rmgpy/test_data/arkane/tst_ilt_mixed/pdep_sa_ilt_mixed.py) reuses, verbatim,
+    the real species/transitionState/reaction/network thermochemistry from the official
+    examples/arkane/networks/acetyl+O2_cse example (its 'entrance1' transition state is modeless,
+    with real Arrhenius kinetics on the owning reaction; its 'isom1'/'exit1'/'exit2'/'exit3'
+    transition states are RRKM, with full statmech modes). Only the `pressureDependence(...)`
+    block's computational settings (grid density/range, solver method) were narrowed to keep this
+    test fast; no thermochemistry was altered or fabricated.
+    """
+
+    @classmethod
+    def setup_class(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        cls.directory = os.path.join(settings["test_data.directory"], "arkane", "tst_ilt_mixed", "")
+        cls.input_file = os.path.join(cls.directory, "pdep_sa_ilt_mixed.py")
+
+        # clear the working folder from any previous test output
+        dirs = [d for d in os.listdir(cls.directory) if not os.path.isfile(os.path.join(cls.directory, d))]
+        for d in dirs:
+            shutil.rmtree(os.path.join(cls.directory, d, ""))
+        files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
+        for f in files:
+            if "pdep_sa_ilt_mixed" not in f:
+                os.remove(os.path.join(cls.directory, f))
+
+    def test_ilt_and_rrkm_path_reactions_produce_finite_sensitivity_coefficients(self):
+        """
+        Test that a real PDep sensitivity analysis job, run on a network with both an ILT-based
+        and several RRKM-based path reactions, produces finite, non-all-zero TS sensitivity
+        coefficients for the ILT-based transition state (whose Ea is perturbed alongside its E0),
+        while leaving the RRKM-based transition states' coefficients well-defined too (they are
+        unaffected by the Ea-perturbation logic, since it only applies when `not rxn.can_tst()`).
+        """
+        arkane = Arkane()
+        arkane.input_file = self.input_file
+        arkane.output_directory = self.directory
+        arkane.verbose = logging.WARN
+        arkane.plot = False
+        arkane.job_list = []
+        arkane.job_list = arkane.load_input_file(self.input_file)
+        arkane.execute()
+
+        job = arkane.job_list[0]
+        path_reactions_by_label = {rxn.label: rxn for rxn in job.network.path_reactions}
+        assert not path_reactions_by_label["entrance1"].can_tst()  # the genuinely ILT-based reaction
+        for rrkm_label in ("isom1", "exit1", "exit2", "exit3"):
+            assert path_reactions_by_label[rrkm_label].can_tst()
+
+        yaml_path = os.path.join(self.directory, "sensitivity", "sa_coefficients.yml")
+        assert os.path.isfile(yaml_path)
+        with open(yaml_path, "r") as f:
+            sa_data = yaml.unsafe_load(f)
+
+        ilt_ts_values = []
+        rrkm_ts_values = []
+        for reaction_str, conditions in sa_data.items():
+            if reaction_str == "structures":
+                continue
+            for condition_data in conditions.values():
+                for entry_label, coefficient in condition_data.items():
+                    if entry_label == "(TS) entrance1":
+                        ilt_ts_values.append(coefficient)
+                    elif entry_label.startswith("(TS) "):
+                        rrkm_ts_values.append(coefficient)
+
+        assert len(ilt_ts_values) > 0
+        assert all(math.isfinite(v) for v in ilt_ts_values)
+        assert any(v != 0.0 for v in ilt_ts_values)
+
+        assert len(rrkm_ts_values) > 0
+        assert all(math.isfinite(v) for v in rrkm_ts_values)
+        assert any(v != 0.0 for v in rrkm_ts_values)
+
+    @classmethod
+    def teardown_class(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        cls.directory = os.path.join(settings["test_data.directory"], "arkane", "tst_ilt_mixed", "")
+
+        # clean working folder from all previous test output
+        dirs = [d for d in os.listdir(cls.directory) if not os.path.isfile(os.path.join(cls.directory, d))]
+        for d in dirs:
+            shutil.rmtree(os.path.join(cls.directory, d, ""))
+        files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
+        for f in files:
+            if "pdep_sa_ilt_mixed" not in f:
+                os.remove(os.path.join(cls.directory, f))
