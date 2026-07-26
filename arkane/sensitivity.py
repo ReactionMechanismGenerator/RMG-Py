@@ -42,9 +42,17 @@ import numpy as np
 from rmgpy.pdep import Configuration
 import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
+from rmgpy.kinetics import Arrhenius
 from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, PressureDependenceError
 
 ################################################################################
+
+# Tolerance (in J/mol) used when checking whether a TransitionState's E0 was synthesized as
+# E0(TS) = sum(E0(reactants)) + Ea (as RMG and Arkane's own ILT path do), as opposed to being an
+# independent, hand-authored value. 1 kJ/mol is comfortably below the floating-point noise floor
+# introduced by unit conversions and energy corrections along that construction path, while still
+# being small enough to catch a genuinely independent E0.
+SYNTHETIC_TS_E0_TOLERANCE = 1000.0  # J/mol (~1 kJ/mol)
 
 
 class KineticsSensitivity(object):
@@ -240,6 +248,39 @@ class KineticsSensitivity(object):
         plt.close()
 
 
+def _ts_e0_is_synthetic(rxn, ts_e0_si, ea_si):
+    """
+    Determine whether a TransitionState's E0 was synthesized from the owning path reaction's
+    Arrhenius activation energy as ``E0(TS) = sum(E0(reactants)) + Ea`` (the convention used by
+    both RMG, see rmgpy/rmg/pdep.py, and Arkane itself when a TS's E0 is missing, see
+    arkane/pdep.py), as opposed to being an independent, physically meaningful value supplied by
+    a hand-authored Arkane input (a modeless TS with its own E0).
+
+    `ts_e0_si` and `ea_si` must be the TS's E0 and the reaction's Arrhenius Ea, both in SI units
+    (J/mol), taken at the SAME point in a perturb/unperturb pair (i.e. both read before that call's
+    own shift is applied to them). Because both quantities are shifted by the identical amount on
+    a perturb call and shifted back by the identical amount on the matching unperturb call, their
+    difference (ts_e0_si - ea_si) is invariant across the pair, and so is this function's verdict --
+    this is essential, since silently disagreeing between the perturb and unperturb calls would
+    leave Ea perturbed with no corresponding unperturb (or vice versa), corrupting later iterations.
+
+    A path reaction may be stored in either direction relative to which side the TS sits on, so
+    both the reactants-side and the products-side sums are tried before concluding the relation
+    does not hold.
+    """
+    for species_list in (rxn.reactants, rxn.products):
+        try:
+            e0_sum = sum(spc.conformer.E0.value_si for spc in species_list)
+        except AttributeError:
+            # A species on this side lacks a conformer/E0 (e.g. a placeholder species without
+            # statmech data); treat this side as not matching rather than raising, and fall
+            # through to try the other side.
+            continue
+        if abs((ts_e0_si - ea_si) - e0_sum) <= SYNTHETIC_TS_E0_TOLERANCE:
+            return True
+    return False
+
+
 class PDepSensitivity(object):
     """
     The :class:`Sensitivity` class represents an instance of a sensitivity analysis job
@@ -255,7 +296,12 @@ class PDepSensitivity(object):
                         respective path reaction at the respective `conditions` in the appropriate units
     `sa_rates`          A dictionary with string representations of net_reactions as keys. Values are dictionaries with
                         Wells or TransitionStates as keys and each value is a list of forward rates from `job` at the
-                        respective `conditions` after perturbing the corresponding well or TS's E0
+                        respective `conditions` after perturbing the corresponding well's E0, or, for a TS, its E0
+                        and (if the owning path reaction is ILT-based rather than RRKM-based, and the TS's E0 was
+                        synthesized from that reaction's Arrhenius Ea in the first place) the Ea of the Arrhenius
+                        kinetics used to derive its microcanonical rate, both by the same amount. For such TS rows
+                        the reported coefficient is therefore NOT a plain dln(r)/dE0(TS): it is a derivative along
+                        the coordinate that raises the synthetic barrier (TS E0 and Ea together)
     `sa_coefficients`   A dictionary with similar structure as `sa_rates`, containing the sensitivity coefficients
                         in the forward direction
     =================== ================================================================================================
@@ -380,12 +426,54 @@ class PDepSensitivity(object):
         The perturbation is done by addition of the energy amount in self.perturbation.
         If unperturb is `False`, the perturbation is addition of the energy amount in self.perturbation.
         If unperturb is `False`, this is done by subtracting.
+
+        For a :class:TransitionState belonging to one or more path reactions whose microcanonical
+        rate is computed via the inverse Laplace transform (ILT) method rather than RRKM theory
+        (i.e. ``not rxn.can_tst()``), perturbing the TS's E0 alone is a structural no-op: the ILT
+        convolution and its high-pressure-limit renormalization are driven by the reaction's
+        Arrhenius activation energy `Ea`, not by the TS conformer's E0. When, by construction,
+        E0(TS) = sum(E0(reactants)) + Ea (see :func:`_ts_e0_is_synthetic`), perturbing `Ea` by the
+        same amount as E0 is the physically consistent perturbation, and is applied here in
+        addition to the E0 perturbation for every ILT-based path reaction that shares this TS
+        object (Arkane input files may point more than one `reaction` block at the same
+        `transitionState` label, so a single TS entry can own several path reactions; since the E0
+        perturbation above already affects all of them -- the object is shared -- the Ea
+        perturbation must match that same blast radius or the two representations of the barrier
+        would desynchronize). Hand-authored, modeless transition states whose E0 is an independent
+        physical value (i.e. the synthetic relation above does not hold) are left with only their
+        E0 perturbed, since moving their Ea as well would not be physically justified. RRKM-based
+        (`can_tst()` is `True`) path reactions are unaffected, since RRKM genuinely uses the TS's
+        E0 and sum of states, and perturbing both would double-count.
         """
         perturbation = self.perturbation.value_si
         if unperturb:
             perturbation *= -1
         if isinstance(entry, TransitionState):
-            entry.conformer.E0 = quantity.Energy(entry.conformer.E0.value_si + perturbation, 'J/mol')
+            # Read the pre-shift TS E0 (and, below, each reaction's pre-shift Ea) so that the
+            # synthetic-relation check below is invariant across a perturb/unperturb pair: both
+            # E0(TS) and Ea are shifted by the identical `perturbation` here and in the matching
+            # call, so their difference -- and hence the check's verdict -- does not change
+            # between the two calls. See :func:`_ts_e0_is_synthetic` for the full argument.
+            ts_e0_before = entry.conformer.E0.value_si
+            entry.conformer.E0 = quantity.Energy(ts_e0_before + perturbation, 'J/mol')
+            for rxn in self.job.network.path_reactions:
+                if rxn.transition_state is not None and rxn.transition_state is entry and not rxn.can_tst():
+                    kinetics = rxn.kinetics if rxn.network_kinetics is None else rxn.network_kinetics
+                    if isinstance(kinetics, Arrhenius):
+                        ea_before = kinetics.Ea.value_si
+                        if _ts_e0_is_synthetic(rxn, ts_e0_before, ea_before):
+                            kinetics.Ea = quantity.Energy(ea_before + perturbation, 'J/mol')
+                        else:
+                            logging.info(
+                                "Not perturbing Ea for ILT-based path reaction '{0}': its TS E0 does not "
+                                "match sum(E0(reactants)) + Ea (nor the products-side equivalent), so it "
+                                "appears to carry an independent, hand-authored E0. Only E0 was "
+                                "perturbed.".format(rxn))
+                    else:
+                        logging.warning(
+                            "Not perturbing Ea for ILT-based path reaction '{0}' with kinetics of type "
+                            "'{1}': the resulting TS sensitivity coefficient will be meaningless.".format(
+                                rxn, kinetics.__class__.__name__))
         elif isinstance(entry, Configuration):
             entry.species[0].conformer.E0 = quantity.Energy(entry.species[0].conformer.E0.value_si + perturbation,
                                                             'J/mol')
@@ -407,8 +495,12 @@ class PDepSensitivity(object):
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
-                       "by perturbing E0 of each well or TS by {1},\n and are given in "
-                       "`mol/J` units.\n\n\n".format(network_str, self.perturbation))
+                       "by perturbing E0 of each well or TS by {1}, and are given in `mol/J` units.\n"
+                       "For a TS owned by an ILT-based path reaction whose E0 was synthesized from\n"
+                       "that reaction's Arrhenius Ea (E0(TS) = sum(E0(reactants)) + Ea), the Ea is\n"
+                       "perturbed by the same amount alongside E0, so that row's coefficient is a\n"
+                       "derivative along the coordinate that raises the synthetic barrier (TS E0\n"
+                       "and Ea together), not a plain dln(r)/dE0(TS).\n\n\n".format(network_str, self.perturbation))
             for rxn in self.job.network.net_reactions:
                 for species in rxn.reactants + rxn.products:
                     if species.label not in sa_data['structures']:
@@ -474,6 +566,9 @@ class PDepSensitivity(object):
                 axis.set_yticks(y_pos)
                 axis.set_yticklabels(labels)
                 axis.invert_yaxis()  # labels read top-to-bottom
+                # Note: for a TS row belonging to an ILT-based path reaction with a synthetic E0
+                # (E0(TS) = sum(E0(reactants)) + Ea), this coefficient is a derivative along the
+                # coordinate that raises E0 and Ea together, not a plain dln(k)/dE0(TS); see save().
                 axis.set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
