@@ -29,6 +29,8 @@
 
 import os
 
+import pytest
+
 
 import numpy as np
 
@@ -759,6 +761,127 @@ class SimpleReactorTest:
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
             assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 6) == 0
+
+    def test_specific_collider_reverse_rates_stay_consistent(self):
+        """
+        Every pressure-dependent specific-collider reaction must have its reverse rate
+        coefficient refreshed from its own recomputed forward rate coefficient.
+
+        The residual recomputes kf at the collider's effective pressure, so kb has to be
+        recomputed as kf/Keq alongside it. Updating kb outside the loop leaves every reaction
+        except the last one holding the kb computed at the initial total pressure, and
+        assigning kf through an index carried over from a previous iteration zeroes the wrong
+        reaction's forward rate coefficient entirely.
+        """
+        chem_file = os.path.join(
+            os.path.dirname(rmgpy.__file__), "solver", "files", "specific_collider_model", "chem.inp"
+        )
+        dictionary_file = os.path.join(
+            os.path.dirname(rmgpy.__file__), "solver", "files", "specific_collider_model", "species_dictionary.txt"
+        )
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
+
+        smiles_dict = {"Ar": "[Ar]", "N2(1)": "N#N", "O2": "[O][O]", "H": "[H]", "CH3": "[CH3]", "CH4": "C"}
+        species_dict = {}
+        for name, smiles in smiles_dict.items():
+            mol = Molecule(smiles=smiles)
+            for species in species_list:
+                if species.is_isomorphic(mol):
+                    species_dict[name] = species
+                    break
+
+        rxn_system = SimpleReactor(
+            1000,
+            10,
+            initial_mole_fractions={
+                species_dict["Ar"]: 2.0,
+                species_dict["N2(1)"]: 1.0,
+                species_dict["O2"]: 0.5,
+                species_dict["H"]: 0.1,
+                species_dict["CH3"]: 0.1,
+                species_dict["CH4"]: 0.001,
+            },
+            n_sims=1,
+            termination=None,
+        )
+        rxn_system.initialize_model(species_list, reaction_list, [], [])
+
+        # initialize_model already evaluates the residual once via set_initial_derivative;
+        # this call just makes the dependency explicit.
+        rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))
+
+        indices = rxn_system.pdep_specific_collider_reaction_indices
+        assert len(indices) > 1, "fixture must contain more than one specific-collider reaction"
+
+        for j in indices:
+            expected_kb = rxn_system.kf[j] / rxn_system.Keq[j]
+            assert rxn_system.kb[j] == pytest.approx(expected_kb, rel=1e-9, abs=1e-300), (
+                f"reverse rate coefficient for specific-collider reaction {j} was not "
+                f"recomputed from its own forward rate coefficient"
+            )
+
+    def test_specific_collider_absent_from_core_zeroes_its_own_reaction(self):
+        """
+        A specific collider that is not a core species must zero its own reaction's rate
+        coefficients, not another reaction's.
+
+        The index used to write kf was previously assigned only on the branch where the collider
+        is present in the solution vector, so the fallback branch wrote through whichever index
+        the previous iteration left behind. With H2O on the edge rather than in the core, that
+        zeroed the O2-collider reaction instead.
+        """
+        chem_file = os.path.join(
+            os.path.dirname(rmgpy.__file__), "solver", "files", "specific_collider_model", "chem.inp"
+        )
+        dictionary_file = os.path.join(
+            os.path.dirname(rmgpy.__file__), "solver", "files", "specific_collider_model", "species_dictionary.txt"
+        )
+        species_list, reaction_list = load_chemkin_file(chem_file, dictionary_file)
+
+        smiles_dict = {"Ar": "[Ar]", "N2(1)": "N#N", "O2": "[O][O]", "H": "[H]", "CH3": "[CH3]", "CH4": "C"}
+        species_dict = {}
+        for name, smiles in smiles_dict.items():
+            mol = Molecule(smiles=smiles)
+            for species in species_list:
+                if species.is_isomorphic(mol):
+                    species_dict[name] = species
+                    break
+
+        water = Molecule(smiles="O")
+        h2o = next(s for s in species_list if s.is_isomorphic(water))
+        # Put H2O on the edge, so species_index[H2O] >= len(y) and the fallback branch is taken.
+        core_species = [s for s in species_list if s is not h2o]
+        edge_species = [h2o]
+
+        rxn_system = SimpleReactor(
+            1000,
+            10,
+            initial_mole_fractions={
+                species_dict["Ar"]: 2.0,
+                species_dict["N2(1)"]: 1.0,
+                species_dict["O2"]: 0.5,
+                species_dict["H"]: 0.1,
+                species_dict["CH3"]: 0.1,
+                species_dict["CH4"]: 0.001,
+            },
+            n_sims=1,
+            termination=None,
+        )
+        rxn_system.initialize_model(core_species, reaction_list, edge_species, [])
+        rxn_system.residual(0.0, rxn_system.y, np.zeros(rxn_system.y.shape))
+
+        colliders = rxn_system.specific_collider_species
+        indices = rxn_system.pdep_specific_collider_reaction_indices
+        assert h2o in list(colliders), "fixture must include an H2O-collider reaction"
+
+        for collider, j in zip(colliders, indices):
+            if collider is h2o:
+                assert rxn_system.kf[j] == 0.0
+                assert rxn_system.kb[j] == 0.0
+            else:
+                assert rxn_system.kf[j] > 0.0, (
+                    f"collider {collider} reaction {j} was zeroed by another reaction's fallback"
+                )
 
     def test_get_const_spc_indices(self):
         """
