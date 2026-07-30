@@ -3391,3 +3391,20 @@ class TestCollisionLimitViolation:
         # k_at_t_max < limit_max, so the forward direction must not be reported. If the surviving
         # rate were compared against the orphaned t_min limit instead, it would be.
         assert [v for v in violators if v[1] == "forward"] == []
+
+    def test_missing_reactant_transport_still_checks_reverse(self):
+        """
+        Missing transport data on a reactant must not suppress the reverse-direction check,
+        which depends only on the products.
+        """
+        rxn = self.make_reaction(A=1e20)
+        original = rxn.reactants[0].transport_data
+        rxn.reactants[0].transport_data = TransportData(sigma=(0, "angstrom"), epsilon=(0, "K"))
+        try:
+            violators = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
+        finally:
+            rxn.reactants[0].transport_data = original
+
+        directions = [v[1] for v in violators]
+        assert "forward" not in directions
+        assert "reverse" in directions

@@ -1756,7 +1756,7 @@ class Reaction:
                 try:
                     limit_f = self.calculate_coll_limit(temp=temp, reverse=False)
                 except ValueError:
-                    continue
+                    pass
                 else:
                     try:
                         kf = self.get_rate_coefficient(temp, pressure)
@@ -1773,7 +1773,7 @@ class Reaction:
                 try:
                     limit_r = self.calculate_coll_limit(temp=temp, reverse=True)
                 except ValueError:
-                    continue
+                    pass
                 else:
                     try:
                         kr = self.generate_reverse_rate_coefficient().get_rate_coefficient(temp, pressure)
