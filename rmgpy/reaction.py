@@ -1748,37 +1748,50 @@ class Reaction:
                 conditions.append([t_max, p_max])
         logging.debug("Checking whether reaction {0} violates the collision rate limit...".format(self))
         violator_list = []
-        kf_list = []
-        kr_list = []
-        collision_limit_f = []
-        collision_limit_r = []
+        forward_checks = []
+        reverse_checks = []
         for condition in conditions:
+            temp, pressure = condition
             if len(self.reactants) >= 2:
                 try:
-                    collision_limit_f.append(self.calculate_coll_limit(temp=condition[0], reverse=False))
+                    limit_f = self.calculate_coll_limit(temp=temp, reverse=False)
                 except ValueError:
                     continue
                 else:
-                    kf_list.append(self.get_rate_coefficient(condition[0], condition[1]))
+                    try:
+                        kf = self.get_rate_coefficient(temp, pressure)
+                    except (ReactionError, KineticsError, TypeError, ValueError,
+                            ZeroDivisionError, OverflowError) as err:
+                        logging.warning(
+                            "Skipping forward collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                    else:
+                        forward_checks.append((kf, limit_f, condition))
             if len(self.products) >= 2:
                 try:
-                    collision_limit_r.append(self.calculate_coll_limit(temp=condition[0], reverse=True))
+                    limit_r = self.calculate_coll_limit(temp=temp, reverse=True)
                 except ValueError:
                     continue
                 else:
-                    kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(condition[0], condition[1]))
-        if len(self.reactants) >= 2:
-            for i, k in enumerate(kf_list):
-                if k > collision_limit_f[i]:
-                    ratio = k / collision_limit_f[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'forward', ratio, condition])
-        if len(self.products) >= 2:
-            for i, k in enumerate(kr_list):
-                if k > collision_limit_r[i]:
-                    ratio = k / collision_limit_r[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'reverse', ratio, condition])
+                    try:
+                        kr = self.generate_reverse_rate_coefficient().get_rate_coefficient(temp, pressure)
+                    except (ReactionError, KineticsError, TypeError, ValueError,
+                            ZeroDivisionError, OverflowError) as err:
+                        logging.warning(
+                            "Skipping reverse collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because reverse rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                    else:
+                        reverse_checks.append((kr, limit_r, condition))
+        for direction, checks in (('forward', forward_checks), ('reverse', reverse_checks)):
+            for k, collision_limit, (temp, pressure) in checks:
+                if k > collision_limit:
+                    ratio = k / collision_limit
+                    condition = '{0} K, {1:.1f} bar'.format(temp, pressure / 1e5)
+                    violator_list.append([self, direction, ratio, condition])
         return violator_list
 
     def calculate_coll_limit(self, temp, reverse=False):

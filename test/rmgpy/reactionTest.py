@@ -31,6 +31,7 @@
 This module contains unit tests of the rmgpy.reaction module.
 """
 
+import logging
 import math
 
 import cantera as ct
@@ -66,6 +67,7 @@ from rmgpy.statmech.torsion import HinderedRotor
 from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
+from rmgpy.transport import TransportData
 
 def order_of_magnitude(number):
     return math.floor(math.log(number, 10))
@@ -3247,3 +3249,145 @@ class TestChargeTransferReaction:
                 kr = kr_oxidation.get_rate_coefficient(T,V)
                 K = self.rxn_oxidation.get_equilibrium_constant(T,V)
                 assert order_of_magnitude(kf/kr) == order_of_magnitude(K)
+
+
+class TestCollisionLimitViolation:
+    """
+    Contains unit tests of the Reaction.check_collision_limit_violation() method.
+    """
+
+    def setup_class(self):
+        """
+        A bimolecular reaction on both sides, so that the forward and reverse directions are
+        both checked. All four species carry transport data (required by calculate_coll_limit)
+        and thermo (required by generate_reverse_rate_coefficient).
+        """
+        self.ch3 = Species(
+            label="CH3",
+            molecule=[Molecule().from_smiles("[CH3]")],
+            transport_data=TransportData(sigma=(3.8, "angstrom"), epsilon=(144, "K")),
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195], "cal/(mol*K)"),
+                H298=(9.357, "kcal/mol"),
+                S298=(45.174, "cal/(mol*K)"),
+                Cp0=(4.0 * constants.R, "J/(mol*K)"),
+                CpInf=(10.0 * constants.R, "J/(mol*K)"),
+            ),
+        )
+        self.ch4 = Species(
+            label="CH4",
+            molecule=[Molecule().from_smiles("C")],
+            transport_data=TransportData(sigma=(3.746, "angstrom"), epsilon=(141.4, "K")),
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([8.615, 9.687, 10.963, 12.301, 14.841, 16.976, 20.528], "cal/(mol*K)"),
+                H298=(-17.714, "kcal/mol"),
+                S298=(44.472, "cal/(mol*K)"),
+                Cp0=(4.0 * constants.R, "J/(mol*K)"),
+                CpInf=(13.0 * constants.R, "J/(mol*K)"),
+            ),
+        )
+        self.c2h5 = Species(
+            label="C2H5",
+            molecule=[Molecule().from_smiles("C[CH2]")],
+            transport_data=TransportData(sigma=(4.302, "angstrom"), epsilon=(252.3, "K")),
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([11.635, 13.744, 16.085, 18.246, 21.885, 24.676, 29.107], "cal/(mol*K)"),
+                H298=(29.496, "kcal/mol"),
+                S298=(56.687, "cal/(mol*K)"),
+                Cp0=(4.0 * constants.R, "J/(mol*K)"),
+                CpInf=(19.0 * constants.R, "J/(mol*K)"),
+            ),
+        )
+        self.c2h6 = Species(
+            label="C2H6",
+            molecule=[Molecule().from_smiles("CC")],
+            transport_data=TransportData(sigma=(4.302, "angstrom"), epsilon=(252.3, "K")),
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=([12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595], "cal/(mol*K)"),
+                H298=(-19.521, "kcal/mol"),
+                S298=(54.799, "cal/(mol*K)"),
+                Cp0=(4.0 * constants.R, "J/(mol*K)"),
+                CpInf=(22.0 * constants.R, "J/(mol*K)"),
+            ),
+        )
+
+    def make_reaction(self, A):
+        """Return CH4 + C2H5 <=> CH3 + C2H6 with the given Arrhenius pre-exponential."""
+        return Reaction(
+            reactants=[self.ch4, self.c2h5],
+            products=[self.ch3, self.c2h6],
+            kinetics=Arrhenius(A=(A, "m^3/(mol*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K")),
+        )
+
+    def test_no_violation_for_physical_rate(self):
+        """A sane rate coefficient must not be reported as a collision limit violator."""
+        rxn = self.make_reaction(A=1e3)
+        assert rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6) == []
+
+    def test_violation_is_detected_and_labelled(self):
+        """An absurdly large rate coefficient must be reported in both directions."""
+        rxn = self.make_reaction(A=1e20)
+        violators = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
+
+        directions = [v[1] for v in violators]
+        assert "forward" in directions
+        assert "reverse" in directions
+        for violator_rxn, direction, ratio, condition in violators:
+            assert violator_rxn is rxn
+            assert ratio > 1.0
+            # The condition string must name a temperature that was actually evaluated.
+            assert condition in ("300.0 K, 1.0 bar", "1500.0 K, 1.0 bar")
+
+    def test_rate_and_limit_stay_aligned_when_a_condition_fails(self, caplog):
+        """
+        Regression test: if the rate coefficient cannot be evaluated at one condition, the
+        surviving rates must still be compared against *their own* collision limits.
+
+        Previously the collision limit was appended before the rate was evaluated, so a failure
+        at t_min left an orphaned limit behind and every later rate was compared against the
+        wrong limit. Because the collision limit grows with sqrt(T), that skew compared the
+        high-temperature rate against the smaller low-temperature limit and manufactured a
+        spurious violation.
+        """
+        t_min, t_max, pressure = 300.0, 1500.0, 1e5
+        reference = self.make_reaction(A=1e3)
+
+        # A rate that is under the limit at t_max but would exceed the (smaller) limit at t_min.
+        limit_min = reference.calculate_coll_limit(temp=t_min, reverse=False)
+        limit_max = reference.calculate_coll_limit(temp=t_max, reverse=False)
+        assert limit_min < limit_max, "collision limit is expected to increase with temperature"
+        k_at_t_max = 0.5 * (limit_min + limit_max)
+        assert limit_min < k_at_t_max < limit_max
+
+        class RateFailsAtTmin(Reaction):
+            """
+            Reaction whose forward rate cannot be evaluated at t_min. Subclassing is used rather
+            than patching the instance because Reaction is a cdef class with read-only attributes.
+            """
+
+            def get_rate_coefficient(self, T, P=0, surface_site_density=0, potential=0):
+                if T <= t_min:
+                    raise ValueError("simulated rate evaluation failure at t_min")
+                return k_at_t_max
+
+        rxn = RateFailsAtTmin(
+            reactants=[self.ch4, self.c2h5],
+            products=[self.ch3, self.c2h6],
+            kinetics=Arrhenius(A=(1e3, "m^3/(mol*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K")),
+        )
+        with caplog.at_level(logging.WARNING):
+            violators = rxn.check_collision_limit_violation(
+                t_min=t_min, t_max=t_max, p_min=pressure, p_max=pressure
+            )
+
+        # Guard the premise: if the override ever stopped reaching the compiled caller, the
+        # assertion below would pass vacuously because the real rate is also under the limit.
+        assert "Skipping forward collision limit check" in caplog.text
+
+        # k_at_t_max < limit_max, so the forward direction must not be reported. If the surviving
+        # rate were compared against the orphaned t_min limit instead, it would be.
+        assert [v for v in violators if v[1] == "forward"] == []
