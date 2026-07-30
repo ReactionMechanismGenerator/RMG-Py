@@ -75,7 +75,7 @@ RUN make
 
 # Install and link Julia dependencies for RMS
 # setting this env variable fixes an issue with Julia precompilation on Windows
-ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
+ENV JULIA_CPU_TARGET="generic;x86-64;haswell;skylake;broadwell;znver1;znver2;znver3;cascadelake;icelake-client;cooperlake"
 ENV RMS_BRANCH=${RMS_Branch}
 ENV RMS_INSTALLER=continuous
 # Usually this is set automatically, but we're not actually running
