@@ -1355,6 +1355,12 @@ cdef class ReactionSystem(DASx):
             else:  # three reactants
                 fderiv = C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
 
+            # kb is always built as kf/Keq, so kb/kf is identically 1/Keq. Dividing by Keq avoids
+            # the 0.0/0.0 that kb/kf becomes when kf underflows, which is NaN in C and silently
+            # poisons the sensitivity matrix. Every reactor marks an irreversible reaction with
+            # Keq = inf, which passes this test and correctly gives C/inf = 0. A reversible
+            # reaction cannot have Keq == 0 (get_equilibrium_constant raises), so the only thing
+            # that trips this branch is NaN thermochemistry, where zero is the safe answer.
             if not (Keq[j] > 0.0):
                 rderiv = 0.0
             elif ip[j, 1] == -1:  # only one product
