@@ -152,7 +152,14 @@ species(
 
 transitionState(
     label = 'entrance1',
-    E0 = (0.0,'kcal/mol'),
+    # Deliberately does NOT satisfy E0(TS) = sum(E0(reactants)) + Ea (= 0.0 + 0.0 kcal/mol here):
+    # real RMG-written network files generally break that relation (RMG mutates Ea via
+    # fix_barrier_height after synthesizing the TS E0, and Arkane strips energy_correction when
+    # writing the file), and an earlier revision of the sensitivity fix gated the Ea perturbation
+    # on it -- passing on this fixture (where everything was 0.0, satisfying the relation
+    # trivially) while failing on essentially all real networks. Keeping the relation broken here
+    # ensures this integration test exercises the real-world shape.
+    E0 = (2.0,'kcal/mol'),
 )
 
 transitionState(

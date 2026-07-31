@@ -145,13 +145,19 @@ class ArkaneILTSensitivityTest:
     ones, exercising the real perturb-both-E0-and-Ea code path (see arkane/sensitivity.py) rather
     than a synthetic/fabricated one.
 
-    The fixture (test/rmgpy/test_data/arkane/tst_ilt_mixed/pdep_sa_ilt_mixed.py) reuses, verbatim,
-    the real species/transitionState/reaction/network thermochemistry from the official
+    The fixture (test/rmgpy/test_data/arkane/tst_ilt_mixed/pdep_sa_ilt_mixed.py) reuses the real
+    species/transitionState/reaction/network thermochemistry from the official
     examples/arkane/networks/acetyl+O2_cse example (its 'entrance1' transition state is modeless,
     with real Arrhenius kinetics on the owning reaction; its 'isom1'/'exit1'/'exit2'/'exit3'
-    transition states are RRKM, with full statmech modes). Only the `pressureDependence(...)`
-    block's computational settings (grid density/range, solver method) were narrowed to keep this
-    test fast; no thermochemistry was altered or fabricated.
+    transition states are RRKM, with full statmech modes), with two deliberate deviations: the
+    `pressureDependence(...)` block's computational settings (grid density/range, solver method)
+    were narrowed to keep this test fast, and the 'entrance1' TS E0 was moved to 2.0 kcal/mol so
+    that it does NOT satisfy E0(TS) = sum(E0(reactants)) + Ea. The latter is the regression shape
+    that matters: real RMG-written network files generally break that relation, and an earlier
+    revision of the sensitivity fix gated the Ea perturbation on it -- passing on this fixture
+    (where every energy was 0.0 and the relation held trivially) while producing structurally
+    zero TS coefficients on essentially all real networks (24 of 6,434 resolvable path reactions
+    across 400 real RMG networks satisfied the relation, i.e. 0.4%).
     """
 
     @classmethod
@@ -188,9 +194,20 @@ class ArkaneILTSensitivityTest:
 
         job = arkane.job_list[0]
         path_reactions_by_label = {rxn.label: rxn for rxn in job.network.path_reactions}
-        assert not path_reactions_by_label["entrance1"].can_tst()  # the genuinely ILT-based reaction
+        ilt_rxn = path_reactions_by_label["entrance1"]
+        assert not ilt_rxn.can_tst()  # the genuinely ILT-based reaction
         for rrkm_label in ("isom1", "exit1", "exit2", "exit3"):
             assert path_reactions_by_label[rrkm_label].can_tst()
+
+        # Guard the fixture's regression shape: the ILT TS's E0 must NOT satisfy
+        # E0(TS) = sum(E0) + Ea on either side (real RMG-written networks generally break this
+        # relation; an earlier revision gated the Ea perturbation on it and thus passed on a
+        # relation-satisfying fixture while failing on real networks).
+        ts_e0 = ilt_rxn.transition_state.conformer.E0.value_si
+        ea = ilt_rxn.kinetics.Ea.value_si
+        for side in (ilt_rxn.reactants, ilt_rxn.products):
+            e0_sum = sum(spc.conformer.E0.value_si for spc in side)
+            assert abs((ts_e0 - ea) - e0_sum) > 5000.0  # J/mol
 
         yaml_path = os.path.join(self.directory, "sensitivity", "sa_coefficients.yml")
         assert os.path.isfile(yaml_path)
@@ -199,8 +216,9 @@ class ArkaneILTSensitivityTest:
 
         ilt_ts_values = []
         rrkm_ts_values = []
+        well_values = []
         for reaction_str, conditions in sa_data.items():
-            if reaction_str == "structures":
+            if reaction_str in ("structures", "metadata"):
                 continue
             for condition_data in conditions.values():
                 for entry_label, coefficient in condition_data.items():
@@ -208,10 +226,27 @@ class ArkaneILTSensitivityTest:
                         ilt_ts_values.append(coefficient)
                     elif entry_label.startswith("(TS) "):
                         rrkm_ts_values.append(coefficient)
+                    else:
+                        well_values.append(coefficient)
 
         assert len(ilt_ts_values) > 0
         assert all(math.isfinite(v) for v in ilt_ts_values)
         assert any(v != 0.0 for v in ilt_ts_values)
+
+        # The YAML carries a machine-discoverable marker of which TS rows are ILT-based (combined
+        # E0+Ea perturbation), so a consumer need not re-derive can_tst() per reaction.
+        assert "(TS) entrance1" in sa_data["metadata"]["ilt_transition_states"]
+
+        # The ILT TS coefficients must be genuinely meaningful, not numerical noise: without the
+        # Ea perturbation they sit many orders of magnitude below the well coefficients (the E0
+        # perturbation alone is a structural no-op for an ILT-based reaction), so require the
+        # largest ILT TS coefficient to be within two orders of magnitude of the largest well
+        # coefficient.
+        assert len(well_values) > 0
+        max_well = max(abs(v) for v in well_values)
+        max_ilt_ts = max(abs(v) for v in ilt_ts_values)
+        assert max_well > 0.0
+        assert max_ilt_ts >= 1e-2 * max_well
 
         assert len(rrkm_ts_values) > 0
         assert all(math.isfinite(v) for v in rrkm_ts_values)

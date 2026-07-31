@@ -47,13 +47,6 @@ from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongColli
 
 ################################################################################
 
-# Tolerance (in J/mol) used when checking whether a TransitionState's E0 was synthesized as
-# E0(TS) = sum(E0(reactants)) + Ea (as RMG and Arkane's own ILT path do), as opposed to being an
-# independent, hand-authored value. 1 kJ/mol is comfortably below the floating-point noise floor
-# introduced by unit conversions and energy corrections along that construction path, while still
-# being small enough to catch a genuinely independent E0.
-SYNTHETIC_TS_E0_TOLERANCE = 1000.0  # J/mol (~1 kJ/mol)
-
 
 class KineticsSensitivity(object):
     """
@@ -224,14 +217,14 @@ class KineticsSensitivity(object):
             ax[i][0].set_yticks(y_pos)
             ax[i][0].set_yticklabels(labels)
             ax[i][0].invert_yaxis()  # labels read top-to-bottom
-            ax[i][0].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
+            ax[i][0].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{mol}{J}$)')
             ax[i][0].set_title('Forward, {0}'.format(condition))
             ax[i][0].set_xlim([min_sa, max_sa])
             ax[i][1].barh(y_pos, r_values, align='center', color='blue')
             ax[i][1].set_yticks(y_pos)
             ax[i][1].set_yticklabels(labels)
             ax[i][1].invert_yaxis()  # labels read top-to-bottom
-            ax[i][1].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
+            ax[i][1].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{mol}{J}$)')
             ax[i][1].set_title('Reverse, {0}'.format(condition))
             ax[i][1].set_xlim([min_sa, max_sa])
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
@@ -246,39 +239,6 @@ class KineticsSensitivity(object):
         path = os.path.join(self.sensitivity_path, filename)
         plt.savefig(path)
         plt.close()
-
-
-def _ts_e0_is_synthetic(rxn, ts_e0_si, ea_si):
-    """
-    Determine whether a TransitionState's E0 was synthesized from the owning path reaction's
-    Arrhenius activation energy as ``E0(TS) = sum(E0(reactants)) + Ea`` (the convention used by
-    both RMG, see rmgpy/rmg/pdep.py, and Arkane itself when a TS's E0 is missing, see
-    arkane/pdep.py), as opposed to being an independent, physically meaningful value supplied by
-    a hand-authored Arkane input (a modeless TS with its own E0).
-
-    `ts_e0_si` and `ea_si` must be the TS's E0 and the reaction's Arrhenius Ea, both in SI units
-    (J/mol), taken at the SAME point in a perturb/unperturb pair (i.e. both read before that call's
-    own shift is applied to them). Because both quantities are shifted by the identical amount on
-    a perturb call and shifted back by the identical amount on the matching unperturb call, their
-    difference (ts_e0_si - ea_si) is invariant across the pair, and so is this function's verdict --
-    this is essential, since silently disagreeing between the perturb and unperturb calls would
-    leave Ea perturbed with no corresponding unperturb (or vice versa), corrupting later iterations.
-
-    A path reaction may be stored in either direction relative to which side the TS sits on, so
-    both the reactants-side and the products-side sums are tried before concluding the relation
-    does not hold.
-    """
-    for species_list in (rxn.reactants, rxn.products):
-        try:
-            e0_sum = sum(spc.conformer.E0.value_si for spc in species_list)
-        except AttributeError:
-            # A species on this side lacks a conformer/E0 (e.g. a placeholder species without
-            # statmech data); treat this side as not matching rather than raising, and fall
-            # through to try the other side.
-            continue
-        if abs((ts_e0_si - ea_si) - e0_sum) <= SYNTHETIC_TS_E0_TOLERANCE:
-            return True
-    return False
 
 
 class PDepSensitivity(object):
@@ -297,11 +257,10 @@ class PDepSensitivity(object):
     `sa_rates`          A dictionary with string representations of net_reactions as keys. Values are dictionaries with
                         Wells or TransitionStates as keys and each value is a list of forward rates from `job` at the
                         respective `conditions` after perturbing the corresponding well's E0, or, for a TS, its E0
-                        and (if the owning path reaction is ILT-based rather than RRKM-based, and the TS's E0 was
-                        synthesized from that reaction's Arrhenius Ea in the first place) the Ea of the Arrhenius
-                        kinetics used to derive its microcanonical rate, both by the same amount. For such TS rows
-                        the reported coefficient is therefore NOT a plain dln(r)/dE0(TS): it is a derivative along
-                        the coordinate that raises the synthetic barrier (TS E0 and Ea together)
+                        and (if the owning path reaction is ILT-based rather than RRKM-based) the Ea of the
+                        Arrhenius kinetics used to derive its microcanonical rate, both by the same amount. For
+                        such TS rows the reported coefficient is therefore NOT a plain dln(r)/dE0(TS): it is a
+                        derivative along the coordinate that raises the barrier (TS E0 and Ea together)
     `sa_coefficients`   A dictionary with similar structure as `sa_rates`, containing the sensitivity coefficients
                         in the forward direction
     =================== ================================================================================================
@@ -372,6 +331,11 @@ class PDepSensitivity(object):
             wells = []
             transition_states = []
             while c < self.max_iters:
+                # Each attempt works on a fresh deep copy of the base job, so the in-place E0/Ea
+                # shifts that perturb() applies never touch base_job. This is what makes the
+                # perturb/unperturb pair exception-safe: if self.job.execute() below raises, the
+                # corrupted copy is simply discarded on the next iteration -- the invariant does
+                # not rely on unperturb() running on every code path.
                 self.job = deepcopy(base_job)
                 wells = []
                 wells.extend(self.job.network.reactants)
@@ -429,19 +393,28 @@ class PDepSensitivity(object):
 
         For a :class:TransitionState belonging to one or more path reactions whose microcanonical
         rate is computed via the inverse Laplace transform (ILT) method rather than RRKM theory
-        (i.e. ``not rxn.can_tst()``), perturbing the TS's E0 alone is a structural no-op: the ILT
-        convolution and its high-pressure-limit renormalization are driven by the reaction's
-        Arrhenius activation energy `Ea`, not by the TS conformer's E0. When, by construction,
-        E0(TS) = sum(E0(reactants)) + Ea (see :func:`_ts_e0_is_synthetic`), perturbing `Ea` by the
-        same amount as E0 is the physically consistent perturbation, and is applied here in
-        addition to the E0 perturbation for every ILT-based path reaction that shares this TS
-        object (Arkane input files may point more than one `reaction` block at the same
-        `transitionState` label, so a single TS entry can own several path reactions; since the E0
-        perturbation above already affects all of them -- the object is shared -- the Ea
-        perturbation must match that same blast radius or the two representations of the barrier
-        would desynchronize). Hand-authored, modeless transition states whose E0 is an independent
-        physical value (i.e. the synthetic relation above does not hold) are left with only their
-        E0 perturbed, since moving their Ea as well would not be physically justified. RRKM-based
+        (i.e. ``not rxn.can_tst()``), perturbing the TS's E0 alone is a structural no-op for
+        n >= 0.25 and very nearly one otherwise. In ``apply_inverse_laplace_transform_method``
+        (rmgpy/pdep/reaction.pyx) the TS E0 is never referenced when the Arrhenius temperature
+        exponent n >= 0.25, so E0 is genuinely dead there; for n < 0.25 it enters only as a
+        grain-threshold cutoff, and in every case the resulting k(E) is renormalized
+        (rmgpy/pdep/network.py, ``calculate_microcanonical_rates``) by a single scalar so that its
+        canonical average reproduces ``kf_expected``, the high-pressure-limit Arrhenius k(T), which
+        depends on `Ea` and not on the TS E0. (For n < 0.25 the threshold shift does survive that
+        scalar renormalization into the pressure-dependent rate, so E0 is not strictly a no-op
+        there -- but that is precisely why perturbing E0 alongside Ea is correct rather than a
+        double-count: for an ILT-based reaction the barrier physically lives in `Ea`, with
+        E0(TS) = sum(E0(reactants)) + Ea, so raising the barrier necessarily raises both together.)
+        The `Ea` perturbation is therefore applied here in addition to the E0 perturbation for every
+        ILT-based path reaction with Arrhenius kinetics that shares this TS object (Arkane input
+        files may point more than one `reaction` block at the same `transitionState` label, so a
+        single TS entry can own several path reactions; since the E0 perturbation above already
+        affects all of them -- the object is shared -- the Ea perturbation must match that same
+        blast radius or the two representations of the barrier would desynchronize). This assumes
+        each such path reaction owns its own Arrhenius kinetics object: a single Arrhenius instance
+        shared across a TS's reactions is one barrier and is perturbed only once, while one shared
+        across reactions of *different* transition states is an unsupported input that would
+        cross-contaminate their sensitivities -- a warning is emitted if that is detected. RRKM-based
         (`can_tst()` is `True`) path reactions are unaffected, since RRKM genuinely uses the TS's
         E0 and sum of states, and perturbing both would double-count.
         """
@@ -449,31 +422,52 @@ class PDepSensitivity(object):
         if unperturb:
             perturbation *= -1
         if isinstance(entry, TransitionState):
-            # Read the pre-shift TS E0 (and, below, each reaction's pre-shift Ea) so that the
-            # synthetic-relation check below is invariant across a perturb/unperturb pair: both
-            # E0(TS) and Ea are shifted by the identical `perturbation` here and in the matching
-            # call, so their difference -- and hence the check's verdict -- does not change
-            # between the two calls. See :func:`_ts_e0_is_synthetic` for the full argument.
-            ts_e0_before = entry.conformer.E0.value_si
-            entry.conformer.E0 = quantity.Energy(ts_e0_before + perturbation, 'J/mol')
+            entry.conformer.E0 = quantity.Energy(entry.conformer.E0.value_si + perturbation, 'J/mol')
+            # Shift Ea by the same amount for every ILT-based path reaction owning this TS. The gate
+            # below MUST return the same verdict on a perturb call and its matching unperturb call,
+            # or Ea would be left shifted (or shifted twice) and every later iteration would run on a
+            # corrupted network. It trivially does: it depends only on the presence of statmech modes
+            # on the TS (`can_tst`) and on the type of the kinetics object, neither of which is
+            # affected by the E0/Ea shifts applied here.
+            perturbed_kinetics = set()  # id()s of Arrhenius objects already shifted this call
             for rxn in self.job.network.path_reactions:
                 if rxn.transition_state is not None and rxn.transition_state is entry and not rxn.can_tst():
                     kinetics = rxn.kinetics if rxn.network_kinetics is None else rxn.network_kinetics
                     if isinstance(kinetics, Arrhenius):
-                        ea_before = kinetics.Ea.value_si
-                        if _ts_e0_is_synthetic(rxn, ts_e0_before, ea_before):
-                            kinetics.Ea = quantity.Energy(ea_before + perturbation, 'J/mol')
-                        else:
-                            logging.info(
-                                "Not perturbing Ea for ILT-based path reaction '{0}': its TS E0 does not "
-                                "match sum(E0(reactants)) + Ea (nor the products-side equivalent), so it "
-                                "appears to carry an independent, hand-authored E0. Only E0 was "
-                                "perturbed.".format(rxn))
-                    else:
+                        if id(kinetics) in perturbed_kinetics:
+                            # Several of this TS's path reactions share one Arrhenius object: it is a
+                            # single barrier, already shifted once to match the single E0 shift above,
+                            # so do not shift it again (that would move Ea by 2x the E0 shift).
+                            continue
+                        perturbed_kinetics.add(id(kinetics))
+                        kinetics.Ea = quantity.Energy(kinetics.Ea.value_si + perturbation, 'J/mol')
+                    elif not unperturb:
+                        # Defensive only: a non-Arrhenius ILT path reaction cannot actually reach
+                        # sensitivity analysis, because apply_inverse_laplace_transform_method
+                        # (rmgpy/pdep/reaction.pyx) declares a Cython-typed `Arrhenius kinetics`
+                        # parameter, so the unperturbed base run in __init__ would already raise a
+                        # TypeError before we ever get here. The warning is guarded by `not unperturb`
+                        # so it is logged once per perturbation rather than twice (perturb + unperturb).
                         logging.warning(
                             "Not perturbing Ea for ILT-based path reaction '{0}' with kinetics of type "
                             "'{1}': the resulting TS sensitivity coefficient will be meaningless.".format(
                                 rxn, kinetics.__class__.__name__))
+            if not unperturb:
+                # Aliased-kinetics guard: if an Arrhenius object just shifted for this TS is also the
+                # kinetics of an ILT path reaction owned by a *different* TS, that reaction's rate has
+                # been collaterally perturbed and its sensitivity row is contaminated. This is an
+                # unsupported input (distinct reactions should not share one mutable kinetics object),
+                # so surface it loudly rather than silently reporting a corrupted coefficient.
+                for rxn in self.job.network.path_reactions:
+                    if (rxn.transition_state is not None and rxn.transition_state is not entry
+                            and not rxn.can_tst()):
+                        other_kinetics = rxn.kinetics if rxn.network_kinetics is None else rxn.network_kinetics
+                        if id(other_kinetics) in perturbed_kinetics:
+                            logging.warning(
+                                "Path reaction '{0}' (transition state '{1}') shares its Arrhenius kinetics "
+                                "object with a path reaction of the perturbed transition state '{2}'; its "
+                                "sensitivity coefficients will be contaminated. Give each path reaction its "
+                                "own kinetics object.".format(rxn, rxn.transition_state.label, entry.label))
         elif isinstance(entry, Configuration):
             entry.species[0].conformer.E0 = quantity.Energy(entry.species[0].conformer.E0.value_si + perturbation,
                                                             'J/mol')
@@ -481,6 +475,38 @@ class PDepSensitivity(object):
     def unperturb(self, entry):
         """A helper function for calling self.perturb cleanly when unperturbing"""
         self.perturb(entry, unperturb=True)
+
+    def _classify_ilt_transition_states(self):
+        """
+        Return ``(ilt_labels, contaminated_labels)``, two ordered lists of transition-state labels.
+
+        ``ilt_labels`` are the TSes whose sensitivity row carries the combined-E0+Ea (ILT) semantics
+        rather than a plain dln(r)/dE0(TS): a TS qualifies when at least one of its path reactions is
+        both ILT-based (``not can_tst()``) AND carries Arrhenius kinetics, which is exactly when
+        perturb() shifts Ea alongside E0.
+
+        ``contaminated_labels`` (a subset of ``ilt_labels``) are TSes whose Arrhenius kinetics object
+        is shared with a path reaction of a *different* TS: perturbing one collaterally shifts the
+        other, so their coefficients are contaminated. Such sharing is unsupported input; perturb()
+        also warns about it at run time.
+
+        Both save() and plot() classify rows from this single source so the table, the YAML metadata
+        and the figure never disagree about which rows are ILT-based or contaminated.
+        """
+        ilt_labels = []
+        kinetics_to_ts = {}  # id(Arrhenius) -> set of TS labels among ILT path reactions
+        for rxn in self.job.network.path_reactions:
+            if rxn.transition_state is not None and not rxn.can_tst():
+                kinetics = rxn.kinetics if rxn.network_kinetics is None else rxn.network_kinetics
+                if not isinstance(kinetics, Arrhenius):
+                    continue
+                if rxn.transition_state.label not in ilt_labels:
+                    ilt_labels.append(rxn.transition_state.label)
+                kinetics_to_ts.setdefault(id(kinetics), set()).add(rxn.transition_state.label)
+        contaminated_labels = [label for label in ilt_labels
+                               if any(label in ts_set and len(ts_set) > 1
+                                      for ts_set in kinetics_to_ts.values())]
+        return ilt_labels, contaminated_labels
 
     def save(self, wells, transition_states):
         """Save the SA output as tabulated data as well as in YAML format"""
@@ -492,15 +518,38 @@ class PDepSensitivity(object):
         path = os.path.join(self.output_directory, filename)
         sa_data = dict()
         sa_data['structures'] = dict()
+        # Classify TS rows once (shared with plot()): which carry the combined-E0+Ea (ILT) semantics
+        # rather than a plain dln(r)/dE0(TS), and which are contaminated by an Arrhenius kinetics
+        # object shared across transition states. The '(TS) ' prefix matches the entry keys used below.
+        ilt_raw_labels, contaminated_raw_labels = self._classify_ilt_transition_states()
+        ilt_ts_labels = ['(TS) ' + label for label in ilt_raw_labels]
+        contaminated_ts_labels = ['(TS) ' + label for label in contaminated_raw_labels]
+        # Only emit the top-level `metadata` key when it actually carries something, so an all-RRKM
+        # network's YAML keeps the pre-existing shape (`structures` + reaction strings) byte-for-byte
+        # and consumers that never dealt with ILT markers see no new key.
+        metadata = {}
+        if ilt_ts_labels:
+            metadata['ilt_transition_states'] = ilt_ts_labels
+        if contaminated_ts_labels:
+            metadata['contaminated_transition_states'] = contaminated_ts_labels
+        if metadata:
+            sa_data['metadata'] = metadata
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1}, and are given in `mol/J` units.\n"
-                       "For a TS owned by an ILT-based path reaction whose E0 was synthesized from\n"
-                       "that reaction's Arrhenius Ea (E0(TS) = sum(E0(reactants)) + Ea), the Ea is\n"
-                       "perturbed by the same amount alongside E0, so that row's coefficient is a\n"
-                       "derivative along the coordinate that raises the synthetic barrier (TS E0\n"
-                       "and Ea together), not a plain dln(r)/dE0(TS).\n\n\n".format(network_str, self.perturbation))
+                       "For a TS owned by an ILT-based path reaction (no statmech modes, so its\n"
+                       "microcanonical rate comes from the high-pressure-limit Arrhenius kinetics),\n"
+                       "the Arrhenius Ea is perturbed by the same amount alongside E0, so that row's\n"
+                       "coefficient is a derivative along the coordinate that raises the barrier\n"
+                       "(TS E0 and Ea together), not a plain dln(r)/dE0(TS).\n\n\n".format(network_str, self.perturbation))
+            if contaminated_ts_labels:
+                sa_f.write("WARNING: rows marked '(!)' belong to a transition state whose Arrhenius\n"
+                           "kinetics object is shared with a path reaction of a DIFFERENT transition\n"
+                           "state. Perturbing one collaterally shifts the other, so these coefficients\n"
+                           "are contaminated and unreliable. Give each path reaction its own kinetics\n"
+                           "object. (The same labels are listed under metadata.contaminated_transition_"
+                           "states in sa_coefficients.yml.)\n\n\n")
             for rxn in self.job.network.net_reactions:
                 for species in rxn.reactants + rxn.products:
                     if species.label not in sa_data['structures']:
@@ -520,7 +569,14 @@ class PDepSensitivity(object):
                         entry_label = '(TS) ' + entry.label
                     elif isinstance(entry, Configuration):
                         entry_label = ' + '.join([species.label for species in entry.species])
-                    mod_entry_label = entry_label + ' ' * (max_label - len(entry_label))
+                    # Flag contaminated TS rows in the table with a '(!)' suffix. The marker goes on
+                    # the display label only; the YAML data key (entry_label) stays clean so consumers
+                    # keying on '(TS) <label>' are unaffected -- the marker is carried in the YAML via
+                    # metadata.contaminated_transition_states instead.
+                    display_label = entry_label
+                    if isinstance(entry, TransitionState) and entry_label in contaminated_ts_labels:
+                        display_label = entry_label + ' (!)'
+                    mod_entry_label = display_label + ' ' * max(1, max_label - len(display_label))
                     for i, condition in enumerate(self.conditions):
                         sa_f.write('| {0} | {1:6.1f}          | {2:8.2f}       | {3:+1.2e}               |\n'.format(
                             mod_entry_label, condition[0].value_si, condition[1].value_si * 1e-5,
@@ -545,8 +601,19 @@ class PDepSensitivity(object):
         for rxn in self.job.network.net_reactions:
             plt.rcdefaults()
             ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)[1]
+            # Annotate the TS tick labels so the figure distinguishes the two derivative types it
+            # plots on one axis: a plain dln(k)/dE0 for wells and RRKM-based TSes, versus the
+            # combined-E0+Ea derivative for ILT-based TSes (see save()). Contaminated rows (shared
+            # kinetics across TSes) are flagged too, matching the '(!)' note in the text table.
+            ilt_raw_labels, contaminated_raw_labels = self._classify_ilt_transition_states()
             labels = [str(entry) for entry in wells]
-            labels.extend(ts.label for ts in transition_states)
+            for ts in transition_states:
+                if ts.label in contaminated_raw_labels:
+                    labels.append(ts.label + ' (E0+Ea, contaminated)')
+                elif ts.label in ilt_raw_labels:
+                    labels.append(ts.label + ' (E0+Ea)')
+                else:
+                    labels.append(ts.label)
             max_sa = min_sa = self.sa_coefficients[str(rxn)][wells[0]][0]
             for conformer_sa in self.sa_coefficients[str(rxn)].values():
                 for sa_condition in conformer_sa:
@@ -566,10 +633,11 @@ class PDepSensitivity(object):
                 axis.set_yticks(y_pos)
                 axis.set_yticklabels(labels)
                 axis.invert_yaxis()  # labels read top-to-bottom
-                # Note: for a TS row belonging to an ILT-based path reaction with a synthetic E0
-                # (E0(TS) = sum(E0(reactants)) + Ea), this coefficient is a derivative along the
-                # coordinate that raises E0 and Ea together, not a plain dln(k)/dE0(TS); see save().
-                axis.set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
+                # A generic label: for wells and RRKM-based TS rows this is dln(k)/dE0, but for a
+                # TS row belonging to an ILT-based path reaction it is a derivative along the
+                # coordinate that raises E0 and Ea together, not a plain dln(k)/dE0(TS) (see save()).
+                # The coefficient has units of mol/J (the reciprocal of the perturbed energy).
+                axis.set_xlabel(r'Sensitivity coefficient ($\frac{mol}{J}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
                 try:
