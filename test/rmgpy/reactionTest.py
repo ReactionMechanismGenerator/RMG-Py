@@ -57,9 +57,10 @@ from rmgpy.kinetics import (
     StickingCoefficient,
     SurfaceChargeTransfer,
 )
+from rmgpy.exceptions import KineticsError
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
-from rmgpy.reaction import Reaction
+from rmgpy.reaction import Reaction, _drop_zero_rate_samples
 from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.rotation import NonlinearRotor
@@ -3251,6 +3252,31 @@ class TestChargeTransferReaction:
                 assert order_of_magnitude(kf/kr) == order_of_magnitude(K)
 
 
+class TestReverseRateFitWithUnderflow:
+    """
+    Tests that a reverse rate coefficient can still be fitted when it underflows at low T.
+    """
+
+    def test_zero_samples_are_dropped_before_fitting(self):
+        """
+        A reverse rate coefficient that underflows to zero at the cold end of the fitting range
+        must not prevent the fit; the affected samples are dropped instead.
+        """
+        Tlist = np.array([300.0, 500.0, 700.0, 900.0, 1200.0, 1500.0])
+        klist = np.array([0.0, 1e-8, 1e-4, 1e-2, 1.0, 10.0])
+
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
+        assert len(Tfit) == 5
+        assert 300.0 not in Tfit
+        assert (kfit > 0).all()
+
+        # The surviving samples fit cleanly, where the full list would give NaN parameters.
+        arrhenius = Arrhenius().fit_to_data(Tfit, kfit, kunits="m^3/(mol*s)")
+        assert np.isfinite(arrhenius.A.value_si)
+        assert np.isfinite(arrhenius.n.value_si)
+        assert np.isfinite(arrhenius.Ea.value_si)
+
+
 class TestCollisionLimitViolation:
     """
     Contains unit tests of the Reaction.check_collision_limit_violation() method.
@@ -3326,12 +3352,14 @@ class TestCollisionLimitViolation:
     def test_no_violation_for_physical_rate(self):
         """A sane rate coefficient must not be reported as a collision limit violator."""
         rxn = self.make_reaction(A=1e3)
-        assert rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6) == []
+        violators, skipped = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
+        assert violators == []
+        assert skipped == 0
 
     def test_violation_is_detected_and_labelled(self):
         """An absurdly large rate coefficient must be reported in both directions."""
         rxn = self.make_reaction(A=1e20)
-        violators = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
+        violators, _ = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
 
         directions = [v[1] for v in violators]
         assert "forward" in directions
@@ -3371,7 +3399,7 @@ class TestCollisionLimitViolation:
 
             def get_rate_coefficient(self, T, P=0, surface_site_density=0, potential=0):
                 if T <= t_min:
-                    raise ValueError("simulated rate evaluation failure at t_min")
+                    raise KineticsError("simulated rate evaluation failure at t_min")
                 return k_at_t_max
 
         rxn = RateFailsAtTmin(
@@ -3380,13 +3408,14 @@ class TestCollisionLimitViolation:
             kinetics=Arrhenius(A=(1e3, "m^3/(mol*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K")),
         )
         with caplog.at_level(logging.WARNING):
-            violators = rxn.check_collision_limit_violation(
+            violators, skipped = rxn.check_collision_limit_violation(
                 t_min=t_min, t_max=t_max, p_min=pressure, p_max=pressure
             )
 
         # Guard the premise: if the override ever stopped reaching the compiled caller, the
         # assertion below would pass vacuously because the real rate is also under the limit.
         assert "Skipping forward collision limit check" in caplog.text
+        assert skipped == 1
 
         # k_at_t_max < limit_max, so the forward direction must not be reported. If the surviving
         # rate were compared against the orphaned t_min limit instead, it would be.
@@ -3401,10 +3430,11 @@ class TestCollisionLimitViolation:
         original = rxn.reactants[0].transport_data
         rxn.reactants[0].transport_data = TransportData(sigma=(0, "angstrom"), epsilon=(0, "K"))
         try:
-            violators = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
+            violators, skipped = rxn.check_collision_limit_violation(t_min=300, t_max=1500, p_min=1e5, p_max=1e6)
         finally:
             rxn.reactants[0].transport_data = original
 
         directions = [v[1] for v in violators]
         assert "forward" not in directions
         assert "reverse" in directions
+        assert skipped == 2  # forward direction skipped at both conditions
