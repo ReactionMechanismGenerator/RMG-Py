@@ -638,7 +638,7 @@ class TestCheckModelCollisionLimits:
 
         class ViolatingReaction(Reaction):
             def check_collision_limit_violation(self, t_min, t_max, p_min, p_max):
-                return [[self, "forward", 12.5, "1500.0 K, 1.0 bar"]]
+                return [[self, "forward", 12.5, "1500.0 K, 1.0 bar"]], 0
 
         exploding = self.make_reaction(ExplodingReaction)
         violating = self.make_reaction(ViolatingReaction)
