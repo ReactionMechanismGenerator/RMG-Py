@@ -317,16 +317,6 @@ def common_atoms(cycle1, cycle2):
     return set1.intersection(set2)
 
 
-def combine_cycles(cycle1, cycle2):
-    """
-    INPUT: two cycles with type: list of atoms
-    OUTPUT: a combined cycle with type: list of atoms
-    """
-    set1 = set(cycle1)
-    set2 = set(cycle2)
-    return sorted(set1.union(set2))
-
-
 def is_aromatic_ring(submol):
     """
     This method takes a monoring submol (Molecule initialized with a list of atoms containing just 
