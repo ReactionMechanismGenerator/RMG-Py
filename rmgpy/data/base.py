@@ -1058,19 +1058,14 @@ class Database(object):
             if self.match_node_to_structure(child, structure, atoms, strict):
                 next_node.append(child)
 
-        if len(next_node) == 1:
+        if len(next_node) != 0:
+            # Multiple children match - pick the first in tree order.
             return self.descend_tree(structure, atoms, next_node[0], strict)
-        elif len(next_node) == 0:
+        else:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
             else:
                 return root
-        else:
-            # Multiple children match - pick the first in tree order.
-            # The tree is constructed deterministically, so this is deterministic.
-            # (Sorting by label can pick the wrong node when siblings overlap,
-            # e.g. Nitrites sorts before Nitro but Nitro is the intended match.)
-            return self.descend_tree(structure, atoms, next_node[0], strict)
 
     def are_siblings(self, node, node_other):
         """
