@@ -498,7 +498,7 @@ cdef class Graph(object):
         for index, vertex in enumerate(self.vertices):
             conn = get_vertex_connectivity_value(vertex)
             sort_key = getattr(vertex, 'sorting_key', None)
-            paired.append(((conn, sort_key if sort_key is not None else ()), index))
+            paired.append(((conn, sort_key if sort_key is not None else (conn,)), index))
 
         paired.sort()
         ordered = [self.vertices[idx] for _, idx in paired]
