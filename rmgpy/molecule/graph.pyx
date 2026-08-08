@@ -491,14 +491,23 @@ cdef class Graph(object):
 
         # Build sort keys with optional chemical tiebreaker (sorting_key attribute)
         # to ensure deterministic ordering when connectivity values are identical.
-        # Index is included as a final tiebreaker to avoid comparing vertex
-        # objects directly (GroupAtom has no __lt__).
         # Sort (key, index) pairs, then use the resulting index order to reorder.
         paired = []
         for index, vertex in enumerate(self.vertices):
             conn = get_vertex_connectivity_value(vertex)
             sort_key = getattr(vertex, 'sorting_key', None)
-            paired.append(((conn, sort_key if sort_key is not None else (conn,)), index))
+            paired.append(
+                (
+                    # the sorting key is a tuple of keys which are consumed in order.
+                    # we first attempt to sort by conn (always defined).
+                    # in the case of a tie, sort by the contents of the second element:
+                    #  - sort_key, which is a tuple of sortable things defined elsewhere, if it is defined
+                    #  - empty tuple, if sort_key is not defined
+                    # the latter results in a tie, which we 'break' by just not changing the order (stable sort)
+                    (conn, (sort_key if sort_key is not None else tuple())),
+                    index
+                )
+            )
 
         paired.sort()
         ordered = [self.vertices[idx] for _, idx in paired]
