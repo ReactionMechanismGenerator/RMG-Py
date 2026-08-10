@@ -491,12 +491,14 @@ class GroupAtom(Vertex):
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
-        respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
+        respects wildcards, e.g. ``R!H`` is equivalent to ``C``. If
+        ``check_labels`` is ``True``, the atoms must also have matching
+        `label` attributes.
 
         """
         cython.declare(group=GroupAtom)
@@ -506,8 +508,11 @@ class GroupAtom(Vertex):
             # Let the equivalent method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
-            return other.equivalent(self)
+            return other.equivalent(self, strict=True, check_labels=check_labels)
         group = other
+
+        if check_labels and self.label != group.label:
+            return False
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
@@ -589,19 +594,24 @@ class GroupAtom(Vertex):
         # Otherwise the two atom groups are equivalent
         return True
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive.
+        included in `other` or they are mutually exclusive. If
+        ``check_labels`` is ``True``, the atoms must also have matching
+        `label` attributes.
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
             # Let the is_specific_case_of method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
-            return other.is_specific_case_of(self)
+            return other.is_specific_case_of(self, check_labels=check_labels)
         group = other
+
+        if check_labels and self.label != group.label:
+            return False
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short,
@@ -2070,13 +2080,15 @@ class Group(Graph):
             if len(atom.radical_electrons) >= 1:
                 self.radicalCount += atom.radical_electrons[0]
 
-    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
+    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True, check_labels=False):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initial_map` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
-        be a :class:`Group` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised. If
+        ``check_labels`` is ``True``, atoms only match if their `label`
+        attributes also match.
         """
         if not strict:
             raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
@@ -2086,9 +2098,9 @@ class Group(Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order)
+        return Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=True, check_labels=check_labels)
 
-    def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
+    def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True, check_labels=False):
         """
         Returns ``True`` if `other` is isomorphic and ``False``
         otherwise, and the matching mapping. The `initial_map` attribute can be
@@ -2096,7 +2108,9 @@ class Group(Graph):
         atoms of `self` are the keys, while the atoms of `other` are the
         values). The returned mapping also uses the atoms of `self` for the keys
         and the atoms of `other` for the values. The `other` parameter must
-        be a :class:`Group` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised. If
+        ``check_labels`` is ``True``, atoms only match if their `label`
+        attributes also match.
         """
         if not strict:
             raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
@@ -2106,16 +2120,18 @@ class Group(Graph):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.find_isomorphism(self, other, initial_map, save_order=save_order)
+        return Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=True, check_labels=check_labels)
 
-    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
+    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, check_labels=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` if self is more specific than other.
         The `initial_map` attribute can be used to specify a required
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
-        be a :class:`Group` object, or a :class:`TypeError` is raised.
+        be a :class:`Group` object, or a :class:`TypeError` is raised. If
+        ``check_labels`` is ``True``, atoms only match if their `label`
+        attributes also match.
         """
         cython.declare(group=Group)
         cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
@@ -2149,13 +2165,13 @@ class Group(Graph):
                         continue
                     for i, key in enumerate(keys):
                         initial_map[key] = atmlist[i]
-                    if (self.is_mapping_valid(other, initial_map, equivalent=False) and
-                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)):
+                    if (self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels) and
+                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)):
                         return True
                 else:
                     return False
             else:
-                if not self.is_mapping_valid(other, initial_map, equivalent=False):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
                     return False
 
         if self.multiplicity:
@@ -2186,9 +2202,9 @@ class Group(Graph):
         else:
             if group.facet: return False
         # Do the isomorphism comparison
-        return Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
+        return Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)
 
-    def find_subgraph_isomorphisms(self, other, initial_map=None, save_order=False):
+    def find_subgraph_isomorphisms(self, other, initial_map=None, save_order=False, check_labels=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` is self is more specific than other.
@@ -2198,7 +2214,8 @@ class Group(Graph):
         atoms of `other` are the values). The returned mappings also use the
         atoms of `self` for the keys and the atoms of `other` for the values.
         The `other` parameter must be a :class:`Group` object, or a
-        :class:`TypeError` is raised.
+        :class:`TypeError` is raised. If ``check_labels`` is ``True``, atoms
+        only match if their `label` attributes also match.
         """
         cython.declare(group=Group)
         cython.declare(mult1=cython.short, mult2=cython.short, m1=str, m2=str)
@@ -2242,14 +2259,15 @@ class Group(Graph):
                 return []
 
         # Do the isomorphism comparison
-        return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
+        return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
 
-    def is_identical(self, other, save_order=False):
+    def is_identical(self, other, save_order=False, check_labels=False):
         """
         Returns ``True`` if `other` is identical and ``False`` otherwise.
         The function `is_isomorphic` respects wildcards, while this function
         does not, make it more useful for checking groups to groups (as
-        opposed to molecules to groups)
+        opposed to molecules to groups). If ``check_labels`` is ``True``,
+        atoms only match if their `label` attributes also match.
         """
         # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -2260,9 +2278,9 @@ class Group(Graph):
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
-        if not self.is_subgraph_isomorphic(other, None, save_order=save_order):
+        if not self.is_subgraph_isomorphic(other, None, save_order=save_order, check_labels=check_labels):
             return False
-        elif not other.is_subgraph_isomorphic(self, None, save_order=save_order):
+        elif not other.is_subgraph_isomorphic(self, None, save_order=save_order, check_labels=check_labels):
             return False
         else:
             return True
