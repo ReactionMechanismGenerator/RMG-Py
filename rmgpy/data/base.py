@@ -1059,7 +1059,7 @@ class Database(object):
                 next_node.append(child)
 
         if len(next_node) != 0:
-            # Multiple children match - pick the first in tree order.
+            # at least one child matches - pick the first in tree order.
             return self.descend_tree(structure, atoms, next_node[0], strict)
         else:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
