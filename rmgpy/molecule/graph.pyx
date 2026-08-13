@@ -490,7 +490,7 @@ cdef class Graph(object):
         self.update_connectivity_values()
 
         # Build sort keys with optional chemical tiebreaker (sorting_key attribute)
-        # to ensure deterministic ordering when connectivity values are identical.
+        # for when connectivity values are identical.
         # Sort (key, index) pairs, then use the resulting index order to reorder.
         paired = []
         for index, vertex in enumerate(self.vertices):
