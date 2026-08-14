@@ -139,14 +139,46 @@ class Settings(dict):
                     self["test_data.directory"] = value
                     self.sources["test_data.directory"] = "from {0}".format(self.filename)
 
+    @staticmethod
+    def default_database_directory(rmg_py_dir):
+        """
+        Return the default database directory for the RMG-Py checkout at
+        `rmg_py_dir`, along with a string saying where it came from.
+
+        If the checkout is a worktree named ``RMG-Py-<suffix>`` and a matching
+        ``RMG-database-<suffix>`` sits beside it, that paired database is used.
+        This lets several RMG-Py worktrees each use their own database
+        worktree, rather than all of them sharing the single ``RMG-database``
+        next door.
+
+        Otherwise the historical default is returned unchanged: the
+        ``RMG-database`` directory alongside the RMG-Py checkout.
+        """
+        parent_dir, checkout_name = os.path.split(rmg_py_dir)
+        prefix = "RMG-Py-"
+        if checkout_name.startswith(prefix):
+            paired = os.path.realpath(
+                os.path.join(parent_dir, "RMG-database-" + checkout_name[len(prefix):], "input")
+            )
+            if os.path.isdir(paired):
+                return paired, "Default, paired RMG-database worktree beside this RMG-Py worktree"
+
+        return (
+            os.path.realpath(os.path.join(rmg_py_dir, "..", "RMG-database", "input")),
+            "Default, relative to RMG-Py source code",
+        )
+
     def reset(self):
         """
         Reset all settings to their default values.
         """
         self.filename = None
         rmgpy_module_dir = os.path.abspath(os.path.dirname(__file__))
-        self["database.directory"] = os.path.realpath(os.path.join(rmgpy_module_dir, "..", "..", "RMG-database", "input"))
-        self.sources["database.directory"] = "Default, relative to RMG-Py source code"
+        database_dir, database_source = self.default_database_directory(
+            os.path.abspath(os.path.join(rmgpy_module_dir, ".."))
+        )
+        self["database.directory"] = database_dir
+        self.sources["database.directory"] = database_source
         self["test_data.directory"] = os.path.realpath(os.path.join(rmgpy_module_dir, "..", "test", "rmgpy", "test_data"))
         self.sources["test_data.directory"] = "Default, relative to RMG-Py source code"
 
