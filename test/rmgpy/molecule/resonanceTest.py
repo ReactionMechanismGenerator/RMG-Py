@@ -1362,6 +1362,128 @@ multiplicity 2
                 atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
                 assert atom1_nb == atom2_nb
 
+    def test_resonance_without_changing_atom_order3(self):
+        """Test generating resonance structures for polycyclic aromatics without changing the atom order"""
+        mol = Molecule().from_adjacency_list(
+            """
+1  O u0 p2 c0 {2,S} {12,S}
+2  C u0 p0 c0 {1,S} {3,S} {11,D}
+3  C u0 p0 c0 {2,S} {4,D} {13,S}
+4  C u0 p0 c0 {3,D} {5,S} {14,S}
+5  C u0 p0 c0 {4,S} {6,D} {15,S}
+6  C u0 p0 c0 {5,D} {7,S} {11,S}
+7  C u0 p0 c0 {6,S} {8,D} {16,S}
+8  C u0 p0 c0 {7,D} {9,S} {17,S}
+9  C u0 p0 c0 {8,S} {10,D} {18,S}
+10 C u0 p0 c0 {9,D} {11,S} {19,S}
+11 C u0 p0 c0 {2,D} {6,S} {10,S}
+12 H u0 p0 c0 {1,S}
+13 H u0 p0 c0 {3,S}
+14 H u0 p0 c0 {4,S}
+15 H u0 p0 c0 {5,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {8,S}
+18 H u0 p0 c0 {9,S}
+19 H u0 p0 c0 {10,S}
+"""
+        )
+
+        res_mols = mol.copy(deep=True).generate_resonance_structures(save_order=True)
+
+        # Assign atom ids
+        for molecule in [mol] + res_mols:
+            for idx, atom in enumerate(molecule.atoms):
+                atom.id = idx
+
+        # Compare the atom symbols and their nearest neighbors
+        for res_mol in res_mols:
+            for atom1, atom2 in zip(mol.atoms, res_mol.atoms):
+                assert atom1.element.symbol == atom2.element.symbol
+                atom1_nb = {nb.id for nb in list(atom1.bonds.keys())}
+                atom2_nb = {nb.id for nb in list(atom2.bonds.keys())}
+                assert atom1_nb == atom2_nb
+
+    def test_resonance_with_save_order_keeps_clar_structures(self):
+        """Test that save_order does not discard the Clar structures of a charged polycyclic aromatic
+
+        The charge filtration heuristics compare ``atom.sorting_label``, which is left unset until
+        something sorts the molecule. When the Clar structures were the only ones whose atoms had
+        been sorted, ``stabilize_charges_by_proximity`` popped exactly them. The default path is
+        pinned here too.
+        """
+        adjlist = """
+1  O u0 p3 c-1 {2,S}
+2  N u0 p0 c+1 {1,S} {3,D} {4,S}
+3  O u0 p2 c0 {2,D}
+4  C u0 p0 c0 {2,S} {5,S} {13,D}
+5  C u0 p0 c0 {4,S} {6,D} {14,S}
+6  C u0 p0 c0 {5,D} {7,S} {15,S}
+7  C u0 p0 c0 {6,S} {8,D} {16,S}
+8  C u0 p0 c0 {7,D} {9,S} {13,S}
+9  C u0 p0 c0 {8,S} {10,D} {17,S}
+10 C u0 p0 c0 {9,D} {11,S} {18,S}
+11 C u0 p0 c0 {10,S} {12,D} {19,S}
+12 C u0 p0 c0 {11,D} {13,S} {20,S}
+13 C u0 p0 c0 {4,D} {8,S} {12,S}
+14 H u0 p0 c0 {5,S}
+15 H u0 p0 c0 {6,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {9,S}
+18 H u0 p0 c0 {10,S}
+19 H u0 p0 c0 {11,S}
+20 H u0 p0 c0 {12,S}
+"""
+
+        def count_aromatic(mol_list):
+            return sum(1 for mol in mol_list if any(bond.is_benzene() for bond in mol.get_all_edges()))
+
+        def distinct(mol_list):
+            # is_isomorphic re-sorts its operands, so compare copies and leave mol_list untouched
+            reps = []
+            for mol in mol_list:
+                candidate = mol.copy(deep=True)
+                if not any(candidate.is_isomorphic(rep) for rep in reps):
+                    reps.append(candidate)
+            return reps
+
+        # 1-nitronaphthalene
+        sorted_list = generate_resonance_structures(
+            Molecule().from_adjacency_list(adjlist), keep_isomorphic=True, save_order=False
+        )
+        saved_list = generate_resonance_structures(
+            Molecule().from_adjacency_list(adjlist), keep_isomorphic=True, save_order=True
+        )
+        unique_list = generate_resonance_structures(
+            Molecule().from_adjacency_list(adjlist), keep_isomorphic=False, save_order=True
+        )
+        unique_sorted_list = generate_resonance_structures(
+            Molecule().from_adjacency_list(adjlist), keep_isomorphic=False, save_order=False
+        )
+
+        assert len(distinct(saved_list)) == len(distinct(sorted_list)) == 4
+        assert count_aromatic(distinct(saved_list)) == count_aromatic(distinct(sorted_list)) == 3
+
+        # the default path: the delocalized structure, the two Clar sextets, and the unreactive input
+        assert len(unique_list) == len(unique_sorted_list) == 4
+        assert sum(1 for mol in unique_list if mol.reactive) == 3
+        assert count_aromatic(unique_list) == 3
+
+    def test_resonance_with_save_order_non_polycyclic_aromatic(self):
+        """Test that save_order does not change the structures of a non-polycyclic aromatic
+
+        RMG counts only six-membered all-carbon rings as aromatic, so these reach
+        generate_aromatic_resonance_structure rather than generate_clar_structures, covering the
+        other save_order-aware dispatch. Indole is bicyclic but only one of its rings counts.
+        """
+        for smiles, expected in (("[CH2]c1ccccc1", 5), ("[O]c1ccc(O)cc1", 5), ("c1ccc2[nH]ccc2c1", 2)):
+            sorted_list = generate_resonance_structures(
+                Molecule().from_smiles(smiles), keep_isomorphic=True, save_order=False
+            )
+            saved_list = generate_resonance_structures(
+                Molecule().from_smiles(smiles), keep_isomorphic=True, save_order=True
+            )
+            assert len(saved_list) == len(sorted_list) == expected
+
     def test_adsorbate_resonance_cc1(self):
         """Test if all three resonance structures for X#CC#X are generated"""
         adjlist = """
