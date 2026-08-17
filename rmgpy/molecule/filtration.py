@@ -249,7 +249,7 @@ def charge_filtration(filtered_list, charge_span_list):
                 for atom2, bond in atom.edges.items():
                     index2 = indices[id(atom2)]
                     # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
-                    if index2 > index1 and bond.is_double() or bond.is_triple():
+                    if index2 > index1 and (bond.is_double() or bond.is_triple()):
                         mul_bond_sorting_list.append((index1, index2))
         # Find unique radical and multiple bond sites in charged_list and append to unique_charged_list:
         unique_charged_list = []
