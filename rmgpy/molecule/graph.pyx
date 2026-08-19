@@ -560,6 +560,22 @@ cdef class Graph(object):
         """
         return vf2.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
 
+    cpdef bint is_intersection_isomorphic(self, Graph other, dict initial_map=None, bint save_order=False, bint check_labels=False) except -2:
+        """
+        Returns :data:`True` if `other` is intersection isomorphic and :data:`False`
+        otherwise. Uses the VF2 algorithm of Vento and Foggia.
+        """
+        return vf2.is_intersection_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)
+
+    cpdef list find_intersection_isomorphisms(self, Graph other, dict initial_map=None, bint save_order=False, bint check_labels=False):
+        """
+        Returns :data:`True` if `other` is intersection isomorphic and :data:`False`
+        otherwise. Also returns the lists all of valid mappings.
+
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        return vf2.find_intersection_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
+
     cpdef bint is_cyclic(self) except -2:
         """
         Return ``True`` if one or more cycles are present in the graph or
