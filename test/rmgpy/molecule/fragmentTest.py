@@ -160,7 +160,7 @@ class TestFragment:
 
         atom_H4 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
-        atom_C.atomtype = ATOMTYPES["Cs"]
+        atom_C.atomtype = ATOMTYPES["Css"]
         atom_H1.atomtype = ATOMTYPES["H"]
         atom_H2.atomtype = ATOMTYPES["H"]
         atom_H3.atomtype = ATOMTYPES["H"]
@@ -197,7 +197,7 @@ class TestFragment:
         atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         # construct fragment manually
-        atom_C.atomtype = ATOMTYPES["Cs"]
+        atom_C.atomtype = ATOMTYPES["Css"]
         atom_H1.atomtype = ATOMTYPES["H"]
         atom_H2.atomtype = ATOMTYPES["H"]
 
@@ -235,7 +235,7 @@ class TestFragment:
         atom_H2 = Atom(element=get_element("H"), radical_electrons=0, charge=0, lone_pairs=0)
 
         # construct fragment manually
-        atom_C.atomtype = ATOMTYPES["Cs"]
+        atom_C.atomtype = ATOMTYPES["Css"]
         atom_H1.atomtype = ATOMTYPES["H"]
         atom_H2.atomtype = ATOMTYPES["H"]
 
@@ -319,7 +319,7 @@ class TestFragment:
         fragment.assign_representative_molecule()
 
         adj = """
-                1 * Cs u1 {2,S}
+                1 * Css u1 {2,S}
                 2   N u0 {1,S}
                   """
         other = Group().from_adjacency_list(adj)
@@ -404,7 +404,7 @@ class TestFragment:
             if isinstance(v, Atom) and v.is_carbon():
                 break
 
-        assert v.atomtype == ATOMTYPES["Cs"]
+        assert v.atomtype == ATOMTYPES["Css"]
 
     def test_update(self):
         atom_C = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
@@ -437,7 +437,7 @@ class TestFragment:
             if isinstance(v, Atom) and v.is_carbon():
                 break
 
-        assert v.atomtype == ATOMTYPES["Cs"]
+        assert v.atomtype == ATOMTYPES["Css"]
         assert fragment.get_net_charge() == 0
         assert fragment.multiplicity == 1
 

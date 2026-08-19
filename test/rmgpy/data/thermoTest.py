@@ -2091,7 +2091,7 @@ class TestCyclicThermo:
     def test_get_bicyclic_correction_thermo_data_from_heuristic1(self):
         """
         Test bicyclic correction estimated properly from heuristic formula
-        The test molecule "C1=CCC2C1=C2" has a shared atom with Cd atomtype,
+        The test molecule "C1=CCC2C1=C2" has a shared atom with Cdb atomtype,
         but in the correction estimation we stil expect the five-member ring
         part to match Cyclopentene
         """

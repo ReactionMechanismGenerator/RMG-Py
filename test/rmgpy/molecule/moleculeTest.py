@@ -1317,8 +1317,8 @@ multiplicity 2
         molecule = Molecule().from_smiles("C=CC=C[CH]C")
         group = Group().from_adjacency_list(
             """
-        1 Cd u0 p0 c0 {2,D}
-        2 Cd u0 p0 c0 {1,D}
+        1 Cdb u0 p0 c0 {2,D}
+        2 Cdb u0 p0 c0 {1,D}
         """
         )
 
@@ -1338,14 +1338,14 @@ multiplicity 2
         matches to atoms whose `label` attributes also agree.
         """
         molecule = Molecule().from_smiles("C=CC=C[CH]C")
-        # Capture a reference to one of the molecule's Cd atoms (the first
+        # Capture a reference to one of the molecule's Cdb atoms (the first
         # atom of the first C=C) before running any isomorphism checks,
         # since those checks may reorder molecule.atoms in place.
         target_atom = molecule.atoms[0]
         group = Group().from_adjacency_list(
             """
-        1 *1 Cd u0 p0 c0 {2,D}
-        2    Cd u0 p0 c0 {1,D}
+        1 *1 Cdb u0 p0 c0 {2,D}
+        2    Cdb u0 p0 c0 {1,D}
         """
         )
 
@@ -1355,7 +1355,7 @@ multiplicity 2
         assert not molecule.is_subgraph_isomorphic(group, check_labels=True, save_order=True)
         assert molecule.find_subgraph_isomorphisms(group, check_labels=True, save_order=True) == []
 
-        # Label the captured Cd atom to match the group's labeled atom.
+        # Label the captured Cdb atom to match the group's labeled atom.
         target_atom.label = "*1"
 
         assert molecule.is_subgraph_isomorphic(group, check_labels=True, save_order=True)
