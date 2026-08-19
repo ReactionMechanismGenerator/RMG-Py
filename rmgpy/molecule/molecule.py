@@ -2598,6 +2598,7 @@ class Molecule(Graph):
                                              label=atom.label,
                                              site=[atom.site] if atom.site else [],
                                              morphology=[atom.morphology] if atom.morphology else [],
+                                             props={k: (v if isinstance(v, bool) else [v]) for k, v in atom.props.items()},
                                              )
 
         group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal] if self.metal else [],
