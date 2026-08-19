@@ -611,6 +611,12 @@ class Atom(Vertex):
         if self.is_electron():
             self.charge = -1
             return
+        if self.element.symbol not in elements.PeriodicSystem.valence_electrons:
+            # Elements without a dedicated atom type (e.g. the generic surface-site
+            # elements in ``atomtype.surface_elements``) have no tracked valence
+            # electron chemistry, so treat them as uncharged.
+            self.charge = 0
+            return
 
         valence_electron = elements.PeriodicSystem.valence_electrons[self.element.symbol]
         order = self.get_total_bond_order()
@@ -1608,11 +1614,11 @@ class Molecule(Graph):
             try:
                 atom.atomtype = get_atomtype(atom, atom.edges)
             except AtomTypeError:
-                if log_species:
+                if log_species and raise_exception:
                     logging.error("Could not update atomtypes for this molecule:\n{0}".format(self.to_adjacency_list()))
                 if raise_exception:
                     raise
-                atom.atomtype = ATOMTYPES['R']
+                atom.atomtype = ATOMTYPES['Rx']
 
     def update_multiplicity(self):
         """
@@ -2482,7 +2488,8 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, order=cython.double)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
+            if (atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium()
+                    or atom1.element.symbol not in elements.PeriodicSystem.valence_electrons):
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
