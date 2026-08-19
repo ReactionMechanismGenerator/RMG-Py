@@ -114,6 +114,28 @@ class TestAtomType:
         """
         assert self.atomtype.is_specific_case_of(rmgpy.molecule.atomtype.ATOMTYPES["C"])
 
+    def test_has_intersection_with(self):
+        """
+        Test the AtomType.has_intersection_with() method.
+        """
+        # An atom type always has an intersection with itself
+        assert self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cd"])
+        # Mutually exclusive sibling atom types (both specific cases of "C") have no intersection
+        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cs"])
+        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Ct"])
+        # A specific atom type and one of its generic ancestors intersect (in either order),
+        # since every atom matching the specific type also matches the generic one
+        c = rmgpy.molecule.atomtype.ATOMTYPES["C"]
+        assert self.atomtype.is_specific_case_of(c)
+        assert self.atomtype.has_intersection_with(c)
+        assert c.has_intersection_with(self.atomtype)
+        # An unrelated generic atom type does not intersect with a specific atom type
+        # that isn't one of its specific cases
+        n = rmgpy.molecule.atomtype.ATOMTYPES["N"]
+        assert not self.atomtype.is_specific_case_of(n)
+        assert not self.atomtype.has_intersection_with(n)
+        assert not n.has_intersection_with(self.atomtype)
+
     def test_set_actions(self):
         """
         Test the AtomType.set_actions() method.

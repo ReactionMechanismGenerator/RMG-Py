@@ -560,6 +560,36 @@ class TestGroupAtom:
                     assert not atom1.is_specific_case_of(atom2gen), "{0!s} is a specific case of {1!s}".format(atom1, atom2gen)
                     assert not atom1gen.is_specific_case_of(atom2), "{0!s} is a specific case of {1!s}".format(atom1gen, atom2)
 
+    def test_has_intersection_with(self):
+        """
+        Test the GroupAtom.has_intersection_with() method.
+        """
+        Cs, Cd, Ct = ATOMTYPES["Cs"], ATOMTYPES["Cd"], ATOMTYPES["Ct"]
+
+        atom1 = GroupAtom(atomtype=[Cs, Cd], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom2 = GroupAtom(atomtype=[Cd, Ct], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        # Neither atom1 nor atom2 is a specific case of the other, but their
+        # atom type lists overlap at Cd, so their realizations intersect
+        assert not atom1.is_specific_case_of(atom2)
+        assert not atom2.is_specific_case_of(atom1)
+        assert atom1.has_intersection_with(atom2)
+        assert atom2.has_intersection_with(atom1)
+
+        # Mutually exclusive atom types never intersect
+        atom3 = GroupAtom(atomtype=[Cs], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom4 = GroupAtom(atomtype=[Ct], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        assert not atom3.has_intersection_with(atom4)
+
+        # Same atom types, but disjoint radical electron counts, do not intersect
+        atom5 = GroupAtom(atomtype=[Cs, Cd], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom6 = GroupAtom(atomtype=[Cs, Cd], radical_electrons=[1], charge=[0], lone_pairs=[0], label="*1")
+        assert not atom5.has_intersection_with(atom6)
+
+        # check_labels=True requires matching labels even when everything else intersects
+        atom7 = GroupAtom(atomtype=[Cs, Cd], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*2")
+        assert atom1.has_intersection_with(atom7, check_labels=False)
+        assert not atom1.has_intersection_with(atom7, check_labels=True)
+
     def test_copy(self):
         """
         Test the GroupAtom.copy() method.
@@ -919,6 +949,21 @@ class TestGroupBond:
                 else:
                     assert not bond1.is_specific_case_of(bond2)
 
+    def test_has_intersection_with(self):
+        """
+        Test the GroupBond.has_intersection_with() method.
+        """
+        for order1 in self.orderList:
+            for order2 in self.orderList:
+                bond1 = GroupBond(None, None, order=order1)
+                bond2 = GroupBond(None, None, order=order2)
+                if set(order1).isdisjoint(order2):
+                    assert not bond1.has_intersection_with(bond2)
+                    assert not bond2.has_intersection_with(bond1)
+                else:
+                    assert bond1.has_intersection_with(bond2)
+                    assert bond2.has_intersection_with(bond1)
+
     def test_copy(self):
         """
         Test the GroupBond.copy() method.
@@ -1139,6 +1184,83 @@ class TestGroup:
             assert atom1 in self.group.atoms
             assert atom2 in group.atoms
             assert atom1.equivalent(atom2)
+
+    def test_is_intersection_isomorphic(self):
+        """
+        Test the Group.is_intersection_isomorphic() method.
+        """
+        group_a = Group().from_adjacency_list(
+            """
+1 *1 [Cs,Cd]   u0 {2,S}
+2 *2 [O2s,O2d] u0 {1,S}
+"""
+        )
+        group_b = Group().from_adjacency_list(
+            """
+1 *1 [Cd,Ct] u0 {2,S}
+2 *2 O2s     u0 {1,S}
+"""
+        )
+        # Neither group is a subgraph of the other...
+        assert not group_a.is_subgraph_isomorphic(group_b)
+        assert not group_b.is_subgraph_isomorphic(group_a)
+        # ...but they share realizations where atom 1 is Cd and atom 2 is O2s
+        assert group_a.is_intersection_isomorphic(group_b)
+        assert group_b.is_intersection_isomorphic(group_a)
+
+        # Groups with no overlapping realization at any atom are not intersection isomorphic
+        group_c = Group().from_adjacency_list(
+            """
+1 *1 Cs  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        group_d = Group().from_adjacency_list(
+            """
+1 *1 Ct  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        assert not group_c.is_intersection_isomorphic(group_d)
+        assert not group_d.is_intersection_isomorphic(group_c)
+
+    def test_find_intersection_isomorphisms(self):
+        """
+        Test the Group.find_intersection_isomorphisms() method.
+        """
+        group_a = Group().from_adjacency_list(
+            """
+1 *1 [Cs,Cd]   u0 {2,S}
+2 *2 [O2s,O2d] u0 {1,S}
+"""
+        )
+        group_b = Group().from_adjacency_list(
+            """
+1 *1 [Cd,Ct] u0 {2,S}
+2 *2 O2s     u0 {1,S}
+"""
+        )
+        result = group_a.find_intersection_isomorphisms(group_b)
+        assert len(result) == 1
+        for atom1, atom2 in result[0].items():
+            assert atom1 in group_a.atoms
+            assert atom2 in group_b.atoms
+            assert atom1.has_intersection_with(atom2)
+
+        # No overlapping realization means no intersection mappings are found
+        group_c = Group().from_adjacency_list(
+            """
+1 *1 Cs  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        group_d = Group().from_adjacency_list(
+            """
+1 *1 Ct  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        assert group_c.find_intersection_isomorphisms(group_d) == []
 
     def test_generate_extensions(self):
         """
