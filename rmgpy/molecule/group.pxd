@@ -78,6 +78,8 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint is_specific_case_of(self, Vertex other, bint check_labels=?) except -2
 
+    cpdef bint has_intersection_with(self, Vertex other, bint check_labels=?) except -2
+
     cpdef bint is_surface_site(self) except -2
 
     cpdef bint is_bonded_to_surface(self) except -2
@@ -132,6 +134,8 @@ cdef class GroupBond(Edge):
     cpdef bint equivalent(self, Edge other) except -2
 
     cpdef bint is_specific_case_of(self, Edge other) except -2
+
+    cpdef bint has_intersection_with(self, Edge other) except -2
 
     cpdef make_bond(self, mol.Molecule molecule, mol.Atom atom1, mol.Atom atom2)
 

@@ -213,6 +213,13 @@ class AtomType:
         """
         return self is other or self in other.specific
 
+    def has_intersection_with(self, other):
+        """
+        Returns ``True`` if atom type `atomType1` and
+        atom type `atomType2` could correspond to the same atom ``False``  otherwise.
+        """
+        return self is other or self in other.specific or other in self.specific or not set(self.specific).isdisjoint(other.specific)
+
     def get_features(self):
         """
         Returns a list of the features that are checked to determine atomtype
