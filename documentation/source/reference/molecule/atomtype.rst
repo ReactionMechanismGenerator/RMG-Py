@@ -30,10 +30,10 @@ Atom type       Description
 *Carbon atom types*
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``C``           carbon atom with any local bond structure
-``Ca``          carbon atom with two lone pairs and no bonds
-``Cs``          carbon atom with up to four single bonds
+``Car``         carbon atom with two lone pairs and no bonds
+``Css``         carbon atom with up to four single bonds
 ``Csc``         charged carbon atom with up to three single bonds
-``Cd``          carbon atom with one double bond (not to O or S) and up to two single bonds
+``Cdb``         carbon atom with one double bond (not to O or S) and up to two single bonds
 ``Cdc``         charged carbon atom with one double bond and up to one single bond
 ``CO``          carbon atom with one double bond to oxygen and up to two single bonds
 ``CS``          carbon atom with one double bond to sulfur and up to two single bonds
