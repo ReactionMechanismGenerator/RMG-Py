@@ -977,7 +977,10 @@ class GroupAtom(Vertex):
         # For some reason the default when no lone pairs is set to -100,
         # Based on git history, it is probably because RDKit requires a number instead of None
         if new_atom.lone_pairs == -100:
-            new_atom.lone_pairs = default_lone_pairs[new_atom.symbol]
+            # Elements without a dedicated atom type (e.g. the generic surface-site
+            # elements in ``surface_elements``) have no meaningful default lone pair
+            # count, so fall back to 0.
+            new_atom.lone_pairs = default_lone_pairs.get(new_atom.symbol, 0)
 
         return new_atom
 
