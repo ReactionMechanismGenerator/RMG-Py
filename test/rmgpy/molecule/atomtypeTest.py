@@ -46,7 +46,7 @@ class TestAtomType:
     """
 
     def setup_class(self):
-        self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES["Cd"]
+        self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES["Cdb"]
 
     def test_pickle(self):
         """
@@ -106,7 +106,7 @@ class TestAtomType:
         """
         Test the AtomType.equivalent() method.
         """
-        assert self.atomtype.equivalent(rmgpy.molecule.atomtype.ATOMTYPES["Cd"])
+        assert self.atomtype.equivalent(rmgpy.molecule.atomtype.ATOMTYPES["Cdb"])
 
     def test_is_specfic_case_of(self):
         """
@@ -119,9 +119,9 @@ class TestAtomType:
         Test the AtomType.has_intersection_with() method.
         """
         # An atom type always has an intersection with itself
-        assert self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cd"])
+        assert self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cdb"])
         # Mutually exclusive sibling atom types (both specific cases of "C") have no intersection
-        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cs"])
+        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Css"])
         assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Ct"])
         # A specific atom type and one of its generic ancestors intersect (in either order),
         # since every atom matching the specific type also matches the generic one
@@ -871,9 +871,9 @@ class TestGetAtomType:
         """
         Test that get_atomtype() returns appropriate carbon atom types.
         """
-        assert self.atom_type(self.mol1, 0) == "Cs"
+        assert self.atom_type(self.mol1, 0) == "Css"
         assert self.atom_type(self.mol52, 5) == "Csc"
-        assert self.atom_type(self.mol1, 5) == "Cd"
+        assert self.atom_type(self.mol1, 5) == "Cdb"
         assert self.atom_type(self.mol60, 1) == "Cdc"
         assert self.atom_type(self.mol1, 2) == "CO"
         assert self.atom_type(self.mol19, 0) == "CS"
@@ -1043,7 +1043,7 @@ class TestGetAtomType:
         """
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
-        assert self.atom_type(self.mol77, 0) == "Cs"
+        assert self.atom_type(self.mol77, 0) == "Css"
         assert self.atom_type(self.mol77, 1) == "H0"
         assert self.atom_type(self.mol77, 3) == "Xv"
         assert self.atom_type(self.mol78, 0) == "Xv"
