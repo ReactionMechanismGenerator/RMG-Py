@@ -587,6 +587,12 @@ class GroupAtom(Vertex):
                 else:
                     return False
         # Other properties must have an equivalent in other (and vice versa)
+        if 'Ncoord' in self.props and 'Ncoord' in group.props:
+            for cn in self.props['Ncoord']:
+                for cn2 in group.props['Ncoord']:
+                    if cn == cn2: break
+                else:
+                    return False
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
             if self.props['inRing'] != group.props['inRing']:
@@ -673,6 +679,14 @@ class GroupAtom(Vertex):
         else:
             if group.morphology: return False
         # Other properties must have an equivalent in other
+        if 'Ncoord' in self.props and 'Ncoord' in group.props:
+            for cn in self.props['Ncoord']:
+                for cn2 in group.props['Ncoord']:
+                    if cn == cn2: break
+                else:
+                    return False
+        elif 'Ncoord' not in self.props and 'Ncoord' in group.props:
+            return False
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
             if self.props['inRing'] != group.props['inRing']:
