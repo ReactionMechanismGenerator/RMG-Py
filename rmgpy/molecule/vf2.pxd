@@ -36,6 +36,7 @@ cdef class VF2:
     cdef dict initial_mapping
     cdef bint subgraph
     cdef bint find_all
+    cdef bint intersection
     cdef bint strict
     cdef bint check_labels
 
@@ -50,7 +51,11 @@ cdef class VF2:
 
     cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint check_labels=?)
 
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint save_order=?, bint strict=?, bint check_labels=?)
+    cpdef bint is_intersection_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint check_labels=?) except -2
+
+    cpdef list find_intersection_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint check_labels=?)
+
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint intersection, bint save_order=?, bint strict=?, bint check_labels=?)
 
     cdef bint match(self, int call_depth) except -2
         
