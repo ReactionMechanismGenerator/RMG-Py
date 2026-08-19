@@ -201,7 +201,11 @@ cdef class Group(Graph):
     cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint check_labels=?) except -2
 
     cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
-    
+
+    cpdef bint is_intersection_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint check_labels=?) except -2
+
+    cpdef list find_intersection_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
+
     cpdef bint is_identical(self, Graph other, bint save_order=?, bint check_labels=?)
 
     cpdef bint is_surface_site(self) except -2
