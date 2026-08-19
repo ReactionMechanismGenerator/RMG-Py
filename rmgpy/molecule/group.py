@@ -682,6 +682,70 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
+    def has_intersection_with(self, other, check_labels=False):
+        """
+        Returns ``True`` if `self` and `other` could correspond to the same realized atom
+        ``False`` if not
+        """
+        cython.declare(group=GroupAtom)
+        group = other
+
+        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
+                       lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short,
+                       site1=str, site2=str, morphology1=str, morphology2=str)
+        # Compare two atom groups for intersection
+        breaking = False
+        for atomType1 in self.atomtype:
+            for atomType2 in group.atomtype:
+                if atomType1.has_intersection_with(atomType2):
+                    breaking = True
+                    break
+            if breaking:
+                break
+        else:
+            return False
+
+        if check_labels and self.label != other.label:
+            return False
+
+        if self.radical_electrons and group.radical_electrons:
+            if set(self.radical_electrons).isdisjoint(group.radical_electrons):
+                return False
+
+        if self.lone_pairs and group.lone_pairs:
+            if set(self.lone_pairs).isdisjoint(group.lone_pairs):
+                return False
+
+        if self.charge and group.charge:
+            if set(self.charge).isdisjoint(group.charge):
+                return False
+
+        if self.site and group.site:
+            if set(self.site).isdisjoint(group.site):
+                return False
+
+        if self.morphology and group.morphology:
+            if set(self.morphology).isdisjoint(group.morphology):
+                return False
+
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if isinstance(self.props['inRing'], bool) and isinstance(group.props['inRing'], bool):
+                if self.props['inRing'] != group.props['inRing']:
+                    return False
+            elif isinstance(self.props['inRing'], bool) and isinstance(group.props['inRing'], list):
+                if self.props['inRing'] not in group.props['inRing']:
+                    return False
+            elif isinstance(self.props['inRing'], list) and isinstance(group.props['inRing'], bool):
+                if group.props['inRing'] not in self.props['inRing']:
+                    return False
+            else:  # both lists
+                if set(self.props['inRing']).isdisjoint(group.props['inRing']):
+                    return False
+
+        # Otherwise an intersection exists
+        return True
+
     def is_surface_site(self):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
@@ -1266,6 +1330,20 @@ class GroupBond(Edge):
                 return False
         # Otherwise self is in fact a specific case of other
         return True
+
+    def has_intersection_with(self, other):
+        """
+        Returns ``True`` if `other` and `self` could be the same bond
+        """
+        cython.declare(gb=GroupBond)
+        gb = other
+
+        cython.declare(order1=float, order2=float)
+
+        if set(self.order).isdisjoint(gb.order):
+            return False
+        else:
+            return True
 
     def make_bond(self, molecule, atom1, atom2):
         """
