@@ -528,6 +528,76 @@ class TestGraph:
             assert graph1.is_mapping_valid(graph2, mapping)
             assert graph1.is_mapping_valid(graph2, mapping)
 
+    def test_intersection_isomorphism(self):
+        """
+        Check the intersection isomorphism functions.
+
+        Intersection isomorphism only makes sense for vertices/edges that carry
+        semantic information (it is not implemented on the base Vertex/Edge
+        classes), so this uses small subclasses that represent a wildcard set
+        of possible integer values, analogous to how GroupAtom stores a list
+        of possible atom types.
+        """
+
+        class ValueVertex(Vertex):
+            def __init__(self, values):
+                Vertex.__init__(self)
+                self.values = values
+
+            def equivalent(self, other, strict=True, check_labels=False):
+                return set(self.values) == set(other.values)
+
+            def is_specific_case_of(self, other, check_labels=False):
+                return set(self.values).issubset(other.values)
+
+            def has_intersection_with(self, other, check_labels=False):
+                return not set(self.values).isdisjoint(other.values)
+
+        class ValueEdge(Edge):
+            def equivalent(self, other):
+                return True
+
+            def is_specific_case_of(self, other):
+                return True
+
+            def has_intersection_with(self, other):
+                return True
+
+        a1, b1 = ValueVertex([1, 2]), ValueVertex([5])
+        graph1 = Graph()
+        graph1.add_vertex(a1)
+        graph1.add_vertex(b1)
+        graph1.add_edge(ValueEdge(a1, b1))
+
+        a2, b2 = ValueVertex([2, 3]), ValueVertex([5])
+        graph2 = Graph()
+        graph2.add_vertex(a2)
+        graph2.add_vertex(b2)
+        graph2.add_edge(ValueEdge(a2, b2))
+
+        # Neither graph is a subgraph of the other (1 not subset of {2,3} and vice versa)...
+        assert not graph1.is_subgraph_isomorphic(graph2)
+        assert not graph2.is_subgraph_isomorphic(graph1)
+        # ...but they intersect at value 2
+        assert graph1.is_intersection_isomorphic(graph2)
+        assert graph2.is_intersection_isomorphic(graph1)
+
+        map_list = graph1.find_intersection_isomorphisms(graph2)
+        assert len(map_list) == 1
+        for mapping in map_list:
+            for vertex1, vertex2 in mapping.items():
+                assert vertex1.has_intersection_with(vertex2)
+
+        # A graph with no overlapping vertex values has no intersection isomorphism
+        a3, b3 = ValueVertex([3, 4]), ValueVertex([5])
+        graph3 = Graph()
+        graph3.add_vertex(a3)
+        graph3.add_vertex(b3)
+        graph3.add_edge(ValueEdge(a3, b3))
+
+        assert not graph1.is_intersection_isomorphic(graph3)
+        assert graph1.find_intersection_isomorphisms(graph3) == []
+
     def test_pickle(self):
         """
         Test that a Graph object can be successfully pickled and unpickled
