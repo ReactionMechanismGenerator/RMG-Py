@@ -2087,7 +2087,7 @@ entry(
     group="""
 1 X  u0 p0 c0
 2 N  u0 p1 c0 {3,S} {4,S} {5,S}
-3 Cs u0 p0 c0 {2,S}
+3 Css u0 p0 c0 {2,S}
 4 R  u0 p0 c0 {2,S}
 5 R  u0 p0 c0 {2,S}
 """,

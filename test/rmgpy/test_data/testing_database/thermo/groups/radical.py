@@ -47,7 +47,7 @@ entry(
     index=3,
     label="CsJ",
     group="""
-1 * Cs u1
+1 * Css u1
 """,
     thermo="Cs_P",
     shortDesc="""""",
@@ -60,7 +60,7 @@ entry(
     index=4,
     label="CH3",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   H  u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -81,7 +81,7 @@ entry(
     index=5,
     label="Cs_P",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -102,8 +102,8 @@ entry(
     index=6,
     label="CsCsJ",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
 """,
@@ -118,8 +118,8 @@ entry(
     index=11,
     label="CJCOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
-2   Cs u0 {1,S} {3,S}
+1 * Css u1 {2,S} {4,S} {5,S}
+2   Css u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
@@ -141,8 +141,8 @@ entry(
     index=7,
     label="CCJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
@@ -165,8 +165,8 @@ entry(
     index=8,
     label="RCCJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
@@ -189,8 +189,8 @@ entry(
     index=9,
     label="Isobutyl",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
 5   H  u0 {1,S}
@@ -213,8 +213,8 @@ entry(
     index=10,
     label="Neopentyl",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
@@ -237,8 +237,8 @@ entry(
     index=3047,
     label="CJC(C)2C=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   CO u0 {1,S} {8,D}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
@@ -264,8 +264,8 @@ entry(
     index=3045,
     label="CJC(C=O)2C",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   CO u0 {1,S} {8,D}
 4   CO u0 {1,S} {9,D}
 5   C  u0 {1,S}
@@ -292,11 +292,11 @@ entry(
     index=3067,
     label="C=CC(C=O)2CJ",
     group="""
-1    Cs u0 {2,S} {3,S} {4,S} {5,S}
-2  * Cs u1 {1,S} {6,S} {7,S}
+1    Css u0 {2,S} {3,S} {4,S} {5,S}
+2  * Css u1 {1,S} {6,S} {7,S}
 3    CO u0 {1,S} {9,D}
 4    CO u0 {1,S} {10,D}
-5    Cd u0 {1,S} {8,D}
+5    Cdb u0 {1,S} {8,D}
 6    H  u0 {2,S}
 7    H  u0 {2,S}
 8    C  u0 {5,D}
@@ -321,10 +321,10 @@ entry(
     index=3066,
     label="C=CC(C)(C=O)CJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   CO u0 {1,S} {9,D}
-4   Cd u0 {1,S} {8,D}
+4   Cdb u0 {1,S} {8,D}
 5   C  u0 {1,S}
 6   H  u0 {2,S}
 7   H  u0 {2,S}
@@ -349,8 +349,8 @@ entry(
     index=3017,
     label="CJC(C)OC",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2 * Cs u1 {1,S} {5,S} {6,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2 * Css u1 {1,S} {5,S} {6,S}
 3   O2s u0 {1,S} {7,S}
 4   C  u0 {1,S}
 5   H  u0 {2,S}
@@ -375,8 +375,8 @@ entry(
     index=3018,
     label="CJC(C)2O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
 5   O2s u0 {1,S}
@@ -401,9 +401,9 @@ entry(
     index=3031,
     label="C=CC(C)(O)CJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
-3   Cd u0 {1,S} {8,D}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
+3   Cdb u0 {1,S} {8,D}
 4   O2s u0 {1,S}
 5   C  u0 {1,S}
 6   H  u0 {2,S}
@@ -428,10 +428,10 @@ entry(
     index=3065,
     label="C=CC(O)(C=O)CJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   CO u0 {1,S} {9,D}
-4   Cd u0 {1,S} {8,D}
+4   Cdb u0 {1,S} {8,D}
 5   O2s u0 {1,S}
 6   H  u0 {2,S}
 7   H  u0 {2,S}
@@ -456,8 +456,8 @@ entry(
     index=3046,
     label="CJC(C)(C=O)O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   CO u0 {1,S} {8,D}
 4   C  u0 {1,S}
 5   O2s u0 {1,S}
@@ -483,8 +483,8 @@ entry(
     index=3019,
     label="CJC(O)2C",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
 3   C  u0 {1,S}
 4   O2s u0 {1,S}
 5   O2s u0 {1,S}
@@ -509,9 +509,9 @@ entry(
     index=3032,
     label="C=CC(O)2CJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {6,S} {7,S}
-3   Cd u0 {1,S} {8,D}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {6,S} {7,S}
+3   Cdb u0 {1,S} {8,D}
 4   O2s u0 {1,S}
 5   O2s u0 {1,S}
 6   H  u0 {2,S}
@@ -536,8 +536,8 @@ entry(
     index=3044,
     label="CJC(C)C=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2 * Cs u1 {1,S} {5,S} {6,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2 * Css u1 {1,S} {5,S} {6,S}
 3   CO u0 {1,S} {7,D}
 4   C  u0 {1,S}
 5   H  u0 {2,S}
@@ -562,9 +562,9 @@ entry(
     index=3076,
     label="CJC(C)C=C=O",
     group="""
-1   Cs  u0 {2,S} {3,S} {5,S}
-2 * Cs  u1 {1,S} {6,S} {7,S}
-3   Cd  u0 {1,S} {4,D}
+1   Css  u0 {2,S} {3,S} {5,S}
+2 * Css  u1 {1,S} {6,S} {7,S}
+3   Cdb  u0 {1,S} {4,D}
 4   Cdd u0 {3,D} {8,D}
 5   C   u0 {1,S}
 6   H   u0 {2,S}
@@ -589,7 +589,7 @@ entry(
     index=12,
     label="Benzyl_P",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Cb u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -610,8 +610,8 @@ entry(
     index=13,
     label="Allyl_P",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
 """,
@@ -631,12 +631,12 @@ entry(
     index=14,
     label="C=CC=CCJ",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
-2   Cd u0 {1,S} {3,D}
-3   Cd u0 {2,D} {6,S}
+1 * Css u1 {2,S} {4,S} {5,S}
+2   Cdb u0 {1,S} {3,D}
+3   Cdb u0 {2,D} {6,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
-6   Cd u0 {3,S}
+6   Cdb u0 {3,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -654,9 +654,9 @@ entry(
     index=15,
     label="CTCC=CCJ",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
-2   Cd u0 {1,S} {3,D}
-3   Cd u0 {2,D} {6,S}
+1 * Css u1 {2,S} {4,S} {5,S}
+2   Cdb u0 {1,S} {3,D}
+3   Cdb u0 {2,D} {6,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
 6   Ct u0 {3,S}
@@ -677,8 +677,8 @@ entry(
     index=3029,
     label="C=C(O)CJ",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,S} {6,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,S} {6,D}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
 5   O2s u0 {2,S}
@@ -702,8 +702,8 @@ entry(
     index=3062,
     label="C=C(C=O)CJ",
     group="""
-1   Cd u0 {2,S} {3,S} {4,D}
-2 * Cs u1 {1,S} {5,S} {6,S}
+1   Cdb u0 {2,S} {3,S} {4,D}
+2 * Css u1 {1,S} {5,S} {6,S}
 3   CO u0 {1,S} {7,D}
 4   C  u0 {1,D}
 5   H  u0 {2,S}
@@ -728,8 +728,8 @@ entry(
     index=3074,
     label="CJC=C=O",
     group="""
-1 * Cs  u1 {2,S} {4,S} {5,S}
-2   Cd  u0 {1,S} {3,D}
+1 * Css  u1 {2,S} {4,S} {5,S}
+2   Cdb  u0 {1,S} {3,D}
 3   Cdd u0 {2,D} {6,D}
 4   H   u0 {1,S}
 5   H   u0 {1,S}
@@ -753,9 +753,9 @@ entry(
     index=3082,
     label="C=C(CJ)C=C=O",
     group="""
-1   Cd  u0 {2,S} {3,S} {5,D}
-2 * Cs  u1 {1,S} {6,S} {7,S}
-3   Cd  u0 {1,S} {4,D}
+1   Cdb  u0 {2,S} {3,S} {5,D}
+2 * Css  u1 {1,S} {6,S} {7,S}
+3   Cdb  u0 {1,S} {4,D}
 4   Cdd u0 {3,D} {8,D}
 5   C   u0 {1,D}
 6   H   u0 {2,S}
@@ -780,7 +780,7 @@ entry(
     index=17,
     label="Propargyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Ct u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -801,7 +801,7 @@ entry(
     index=3010,
     label="CJCO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S} {5,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -825,7 +825,7 @@ entry(
     index=3038,
     label="CJC=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -849,7 +849,7 @@ entry(
     index=16,
     label="C2JC=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D} {6,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -872,7 +872,7 @@ entry(
     index=3039,
     label="CJCC=O",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   C  u0 {1,S} {3,S}
 3   CO u0 {2,S} {6,D}
 4   H  u0 {1,S}
@@ -897,9 +897,9 @@ entry(
     index=3075,
     label="CJCC=C=O",
     group="""
-1 * Cs  u1 {2,S} {5,S} {6,S}
+1 * Css  u1 {2,S} {5,S} {6,S}
 2   C   u0 {1,S} {3,S}
-3   Cd  u0 {2,S} {4,D}
+3   Cdb  u0 {2,S} {4,D}
 4   Cdd u0 {3,D} {7,D}
 5   H   u0 {1,S}
 6   H   u0 {1,S}
@@ -923,7 +923,7 @@ entry(
     index=18,
     label="Cs_S",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -944,9 +944,9 @@ entry(
     index=19,
     label="(Cs)2CsJ",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
-3   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
+3   Css u0 {1,S}
 4   H  u0 {1,S}
 """,
     thermo="Cs_S",
@@ -960,9 +960,9 @@ entry(
     index=142,
     label="cyclopropane",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {3,S}
-3   Cs u0 {1,S} {2,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {3,S}
+3   Css u0 {1,S} {2,S}
 4   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -981,10 +981,10 @@ entry(
     index=152,
     label="bicyclo[1.1.0]butane-secondary",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {5,S}
-4   Cs u0 {1,S} {2,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {5,S}
+4   Css u0 {1,S} {2,S}
 5   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1003,11 +1003,11 @@ entry(
     index=151,
     label="spiro[2.2]pentane-secondary",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2 * Cs u1 {1,S} {3,S} {6,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {5,S}
-5   Cs u0 {1,S} {4,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2 * Css u1 {1,S} {3,S} {6,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {5,S}
+5   Css u0 {1,S} {4,S}
 6   H  u0 {2,S}
 """,
     thermo=ThermoData(
@@ -1026,11 +1026,11 @@ entry(
     index=154,
     label="bicyclo[2.1.0]pentane-secondary-C3",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {6,S}
-4   Cs u0 {2,S} {5,S}
-5   Cs u0 {1,S} {4,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {6,S}
+4   Css u0 {2,S} {5,S}
+5   Css u0 {1,S} {4,S}
 6   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1049,11 +1049,11 @@ entry(
     index=185,
     label="bicyclo[2.1.0]pent-2-ene-C5",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {6,S}
-4   Cd u0 {2,S} {5,D}
-5   Cd u0 {1,S} {4,D}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {6,S}
+4   Cdb u0 {2,S} {5,D}
+5   Cdb u0 {1,S} {4,D}
 6   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1072,12 +1072,12 @@ entry(
     index=190,
     label="tricyclo[2.1.1.0(1,4)]hex-2-ene-C5",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {6,S}
-2   Cs u0 {1,S} {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {6,S}
+2   Css u0 {1,S} {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {7,S}
 4   C  u0 {1,S} {2,S}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1096,9 +1096,9 @@ entry(
     index=197,
     label="tricyclo[1.1.1.0(1,3)]pentane-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {6,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {6,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
 6   H  u0 {3,S}
@@ -1119,12 +1119,12 @@ entry(
     index=157,
     label="bicyclo[3.1.0]hexane-C3",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {7,S}
-4   Cs u0 {2,S} {6,S}
-5   Cs u0 {1,S} {6,S}
-6   Cs u0 {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {7,S}
+4   Css u0 {2,S} {6,S}
+5   Css u0 {1,S} {6,S}
+6   Css u0 {4,S} {5,S}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1143,9 +1143,9 @@ entry(
     index=202,
     label="tricyclo[2.1.1.0(1,4)]hexane-C5",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {6,S}
-2   Cs u0 {1,S} {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {6,S}
+2   Css u0 {1,S} {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {7,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {6,S}
 6   C  u0 {1,S} {5,S}
@@ -1167,9 +1167,9 @@ entry(
     index=172,
     label="bicyclo[4.1.0]heptane-C3-7",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {8,S}
 4   C  u0 {2,S} {6,S}
 5   C  u0 {1,S} {7,S}
 6   C  u0 {4,S} {7,S}
@@ -1192,9 +1192,9 @@ entry(
     index=172,
     label="bicyclo[4.1.0]heptane-C3-7",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3 * Css u1 {1,S} {2,S} {8,S}
 4   C  u0 {2,S} {6,S}
 5   C  u0 {1,S} {7,S}
 6   C  u0 {4,S} {7,S}
@@ -1217,9 +1217,9 @@ entry(
     index=209,
     label="tricyclo[3.1.1.0(1,5)]heptane-C6",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {6,S}
-2   Cs u0 {1,S} {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
+1   Css u0 {2,S} {3,S} {4,S} {6,S}
+2   Css u0 {1,S} {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {7,S}
 6   C  u0 {1,S} {7,S}
@@ -1242,9 +1242,9 @@ entry(
     index=211,
     label="tricyclo[2.2.1.0(1,4)]heptane-C7",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S} {7,S}
-2   Cs u0 {1,S} {3,S} {4,S} {6,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
+1   Css u0 {2,S} {3,S} {5,S} {7,S}
+2   Css u0 {1,S} {3,S} {4,S} {6,S}
+3 * Css u1 {1,S} {2,S} {8,S}
 4   C  u0 {2,S} {5,S}
 5   C  u0 {1,S} {4,S}
 6   C  u0 {2,S} {7,S}
@@ -1267,10 +1267,10 @@ entry(
     index=143,
     label="cyclobutane",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S}
-3   Cs u0 {1,S} {4,S}
-4   Cs u0 {2,S} {3,S}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S}
+3   Css u0 {1,S} {4,S}
+4   Css u0 {2,S} {3,S}
 5   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -1289,11 +1289,11 @@ entry(
     index=153,
     label="bicyclo[2.1.0]pentane-secondary-C4",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {5,S} {6,S}
-4   Cs u0 {1,S} {2,S}
-5   Cs u0 {2,S} {3,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3 * Css u1 {1,S} {5,S} {6,S}
+4   Css u0 {1,S} {2,S}
+5   Css u0 {2,S} {3,S}
 6   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1312,12 +1312,12 @@ entry(
     index=158,
     label="bicyclo[2.2.0]hexane-secondary",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {1,S} {4,S} {7,S}
-4   Cs u0 {2,S} {3,S}
-5   Cs u0 {1,S} {6,S}
-6   Cs u0 {2,S} {5,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {1,S} {4,S} {7,S}
+4   Css u0 {2,S} {3,S}
+5   Css u0 {1,S} {6,S}
+6   Css u0 {2,S} {5,S}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1336,13 +1336,13 @@ entry(
     index=161,
     label="bicyclo[3.2.0]heptane-C5-6",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {1,S} {4,S} {8,S}
-4   Cs u0 {2,S} {3,S}
-5   Cs u0 {1,S} {7,S}
-6   Cs u0 {2,S} {7,S}
-7   Cs u0 {5,S} {6,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {1,S} {4,S} {8,S}
+4   Css u0 {2,S} {3,S}
+5   Css u0 {1,S} {7,S}
+6   Css u0 {2,S} {7,S}
+7   Css u0 {5,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1361,11 +1361,11 @@ entry(
     index=210,
     label="tricyclo[2.2.1.0(1,4)]heptane-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S} {7,S}
-3 * Cs u1 {1,S} {5,S} {8,S}
+1   Css u0 {2,S} {3,S} {4,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S} {7,S}
+3 * Css u1 {1,S} {5,S} {8,S}
 4   C  u0 {1,S} {2,S}
-5   Cs u0 {2,S} {3,S}
+5   Css u0 {2,S} {3,S}
 6   C  u0 {1,S} {7,S}
 7   C  u0 {2,S} {6,S}
 8   H  u0 {3,S}
@@ -1386,10 +1386,10 @@ entry(
     index=177,
     label="bicyclo[4.2.0]octane-C4-7",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {1,S} {4,S} {9,S}
-4   Cs u0 {2,S} {3,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {1,S} {4,S} {9,S}
+4   Css u0 {2,S} {3,S}
 5   C  u0 {1,S} {8,S}
 6   C  u0 {2,S} {7,S}
 7   C  u0 {6,S} {8,S}
@@ -1412,10 +1412,10 @@ entry(
     index=23,
     label="CCJCOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
-2   Cs u0 {1,S} {3,S}
+1 * Css u1 {2,S} {4,S} {5,S}
+2   Css u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
-4   Cs u0 {1,S}
+4   Css u0 {1,S}
 5   H  u0 {1,S}
 6   O2s u0 {3,S}
 """,
@@ -1435,11 +1435,11 @@ entry(
     index=179,
     label="cyclopentene-4",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {5,S}
-3   Cs u0 {1,S} {4,S}
-4   Cd u0 {3,S} {5,D}
-5   Cd u0 {2,S} {4,D}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {5,S}
+3   Css u0 {1,S} {4,S}
+4   Cdb u0 {3,S} {5,D}
+5   Cdb u0 {2,S} {4,D}
 6   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -1458,12 +1458,12 @@ entry(
     index=188,
     label="bicyclo[2.1.1]hex-2-ene-C5",
     group="""
-1   Cs u0 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {7,S}
+1   Css u0 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {7,S}
 4   C  u0 {1,S} {2,S}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1482,9 +1482,9 @@ entry(
     index=196,
     label="bicyclo[1.1.1]pentane-C2",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {6,S}
+1   Css u0 {3,S} {4,S} {5,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {6,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
 6   H  u0 {3,S}
@@ -1505,12 +1505,12 @@ entry(
     index=155,
     label="bicyclo[3.1.0]hexane-C5-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {6,S} {7,S}
-4   Cs u0 {1,S} {2,S}
-5   Cs u0 {2,S} {6,S}
-6   Cs u0 {3,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3 * Css u1 {1,S} {6,S} {7,S}
+4   Css u0 {1,S} {2,S}
+5   Css u0 {2,S} {6,S}
+6   Css u0 {3,S} {5,S}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1529,12 +1529,12 @@ entry(
     index=156,
     label="bicyclo[3.1.0]hexane-C5-3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {7,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {5,S} {6,S} {8,S}
-4   Cs u0 {1,S} {2,S}
-5   Cs u0 {1,S} {3,S}
-6   Cs u0 {2,S} {3,S}
+1   Css u0 {2,S} {4,S} {5,S} {7,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {5,S} {6,S} {8,S}
+4   Css u0 {1,S} {2,S}
+5   Css u0 {1,S} {3,S}
+6   Css u0 {2,S} {3,S}
 7   H  u0 {1,S}
 8   H  u0 {3,S}
 """,
@@ -1554,12 +1554,12 @@ entry(
     index=199,
     label="bicyclo[2.1.1]hexane-C2",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S}
-2   Cs u0 {4,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {3,S} {4,S} {5,S}
+2   Css u0 {4,S} {5,S} {6,S}
+3 * Css u1 {1,S} {6,S} {7,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
-6   Cs u0 {2,S} {3,S}
+6   Css u0 {2,S} {3,S}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1578,12 +1578,12 @@ entry(
     index=201,
     label="tricyclo[2.1.1.0(1,4)]hexane-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2   Cs u0 {1,S} {4,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {6,S} {7,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2   Css u0 {1,S} {4,S} {5,S} {6,S}
+3 * Css u1 {1,S} {6,S} {7,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
-6   Cs u0 {2,S} {3,S}
+6   Css u0 {2,S} {3,S}
 7   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1602,9 +1602,9 @@ entry(
     index=200,
     label="bicyclo[2.1.1]hexane-C5",
     group="""
-1   Cs u0 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {7,S}
+1   Css u0 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {7,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {6,S}
 6   C  u0 {1,S} {5,S}
@@ -1626,13 +1626,13 @@ entry(
     index=140,
     label="7-norbornyl",
     group="""
-1   Cs u0 {3,S} {4,S} {7,S}
-2   Cs u0 {3,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
-4   Cs u0 {1,S} {5,S}
-5   Cs u0 {2,S} {4,S}
-6   Cs u0 {2,S} {7,S}
-7   Cs u0 {1,S} {6,S}
+1   Css u0 {3,S} {4,S} {7,S}
+2   Css u0 {3,S} {5,S} {6,S}
+3 * Css u1 {1,S} {2,S} {8,S}
+4   Css u0 {1,S} {5,S}
+5   Css u0 {2,S} {4,S}
+6   Css u0 {2,S} {7,S}
+7   Css u0 {1,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1651,13 +1651,13 @@ entry(
     index=141,
     label="2-norbornyl",
     group="""
-1   Cs u0 {2,S} {4,S} {6,S} {8,S}
-2 * Cs u1 {1,S} {5,S} {9,S}
-3   Cs u0 {4,S} {5,S} {7,S}
-4   Cs u0 {1,S} {3,S}
-5   Cs u0 {2,S} {3,S}
-6   Cs u0 {1,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+1   Css u0 {2,S} {4,S} {6,S} {8,S}
+2 * Css u1 {1,S} {5,S} {9,S}
+3   Css u0 {4,S} {5,S} {7,S}
+4   Css u0 {1,S} {3,S}
+5   Css u0 {2,S} {3,S}
+6   Css u0 {1,S} {7,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {1,S}
 9   H  u0 {2,S}
 """,
@@ -1677,13 +1677,13 @@ entry(
     index=150,
     label="cycloheptane",
     group="""
-1 * Cs u1 {2,S} {3,S} {8,S}
-2   Cs u0 {1,S} {4,S}
-3   Cs u0 {1,S} {5,S}
-4   Cs u0 {2,S} {6,S}
-5   Cs u0 {3,S} {7,S}
-6   Cs u0 {4,S} {7,S}
-7   Cs u0 {5,S} {6,S}
+1 * Css u1 {2,S} {3,S} {8,S}
+2   Css u0 {1,S} {4,S}
+3   Css u0 {1,S} {5,S}
+4   Css u0 {2,S} {6,S}
+5   Css u0 {3,S} {7,S}
+6   Css u0 {4,S} {7,S}
+7   Css u0 {5,S} {6,S}
 8   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -1702,13 +1702,13 @@ entry(
     index=159,
     label="bicyclo[3.2.0]heptane-C5-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {7,S} {8,S}
-4   Cs u0 {1,S} {5,S}
-5   Cs u0 {2,S} {4,S}
-6   Cs u0 {2,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {5,S} {6,S}
+3 * Css u1 {1,S} {7,S} {8,S}
+4   Css u0 {1,S} {5,S}
+5   Css u0 {2,S} {4,S}
+6   Css u0 {2,S} {7,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1727,13 +1727,13 @@ entry(
     index=160,
     label="bicyclo[3.2.0]heptane-C5-3",
     group="""
-1   Cs u0 {2,S} {5,S} {6,S}
-2   Cs u0 {1,S} {4,S} {7,S}
-3 * Cs u1 {4,S} {5,S} {8,S}
-4   Cs u0 {2,S} {3,S}
-5   Cs u0 {1,S} {3,S}
-6   Cs u0 {1,S} {7,S}
-7   Cs u0 {2,S} {6,S}
+1   Css u0 {2,S} {5,S} {6,S}
+2   Css u0 {1,S} {4,S} {7,S}
+3 * Css u1 {4,S} {5,S} {8,S}
+4   Css u0 {2,S} {3,S}
+5   Css u0 {1,S} {3,S}
+6   Css u0 {1,S} {7,S}
+7   Css u0 {2,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1752,12 +1752,12 @@ entry(
     index=170,
     label="bicyclo[4.1.0]heptane-C6-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {6,S} {8,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3 * Css u1 {1,S} {6,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {7,S}
-6   Cs u0 {3,S} {7,S}
+6   Css u0 {3,S} {7,S}
 7   C  u0 {5,S} {6,S}
 8   H  u0 {3,S}
 """,
@@ -1777,13 +1777,13 @@ entry(
     index=171,
     label="bicyclo[4.1.0]heptane-C6-3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {5,S} {7,S} {8,S}
+1   Css u0 {2,S} {4,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {5,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
-5   Cs u0 {1,S} {3,S}
+5   Css u0 {1,S} {3,S}
 6   C  u0 {2,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1802,12 +1802,12 @@ entry(
     index=170,
     label="bicyclo[4.1.0]heptane-C6-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {6,S} {8,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3 * Css u1 {1,S} {6,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {7,S}
-6   Cs u0 {3,S} {7,S}
+6   Css u0 {3,S} {7,S}
 7   C  u0 {5,S} {6,S}
 8   H  u0 {3,S}
 """,
@@ -1827,13 +1827,13 @@ entry(
     index=171,
     label="bicyclo[4.1.0]heptane-C6-3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3 * Cs u1 {5,S} {7,S} {8,S}
+1   Css u0 {2,S} {4,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3 * Css u1 {5,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
-5   Cs u0 {1,S} {3,S}
+5   Css u0 {1,S} {3,S}
 6   C  u0 {2,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1852,13 +1852,13 @@ entry(
     index=204,
     label="bicyclo[3.1.1]heptane-C2",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S}
-2   Cs u0 {4,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {7,S} {8,S}
+1   Css u0 {3,S} {4,S} {5,S}
+2   Css u0 {4,S} {5,S} {6,S}
+3 * Css u1 {1,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
 6   C  u0 {2,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1877,13 +1877,13 @@ entry(
     index=207,
     label="tricyclo[3.1.1.0(1,5)]heptane-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2   Cs u0 {1,S} {4,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {7,S} {8,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2   Css u0 {1,S} {4,S} {5,S} {6,S}
+3 * Css u1 {1,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
 6   C  u0 {2,S} {7,S}
-7   Cs u0 {3,S} {6,S}
+7   Css u0 {3,S} {6,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1902,13 +1902,13 @@ entry(
     index=205,
     label="bicyclo[3.1.1]heptane-C3",
     group="""
-1   Cs u0 {4,S} {5,S} {7,S}
-2   Cs u0 {4,S} {5,S} {6,S}
-3 * Cs u1 {6,S} {7,S} {8,S}
+1   Css u0 {4,S} {5,S} {7,S}
+2   Css u0 {4,S} {5,S} {6,S}
+3 * Css u1 {6,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
-6   Cs u0 {2,S} {3,S}
-7   Cs u0 {1,S} {3,S}
+6   Css u0 {2,S} {3,S}
+7   Css u0 {1,S} {3,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1927,13 +1927,13 @@ entry(
     index=208,
     label="tricyclo[3.1.1.0(1,5)]heptane-C3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {7,S}
-2   Cs u0 {1,S} {4,S} {5,S} {6,S}
-3 * Cs u1 {6,S} {7,S} {8,S}
+1   Css u0 {2,S} {4,S} {5,S} {7,S}
+2   Css u0 {1,S} {4,S} {5,S} {6,S}
+3 * Css u1 {6,S} {7,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {1,S} {2,S}
-6   Cs u0 {2,S} {3,S}
-7   Cs u0 {1,S} {3,S}
+6   Css u0 {2,S} {3,S}
+7   Css u0 {1,S} {3,S}
 8   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -1952,9 +1952,9 @@ entry(
     index=206,
     label="bicyclo[3.1.1]heptane-C6",
     group="""
-1   Cs u0 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3 * Cs u1 {1,S} {2,S} {8,S}
+1   Css u0 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3 * Css u1 {1,S} {2,S} {8,S}
 4   C  u0 {1,S} {2,S}
 5   C  u0 {2,S} {7,S}
 6   C  u0 {1,S} {7,S}
@@ -1977,13 +1977,13 @@ entry(
     index=173,
     label="octahydro-pentalene-C5-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {7,S} {9,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {5,S} {6,S}
+3 * Css u1 {1,S} {7,S} {9,S}
 4   C  u0 {1,S} {8,S}
 5   C  u0 {2,S} {7,S}
 6   C  u0 {2,S} {8,S}
-7   Cs u0 {3,S} {5,S}
+7   Css u0 {3,S} {5,S}
 8   C  u0 {4,S} {6,S}
 9   H  u0 {3,S}
 """,
@@ -2003,11 +2003,11 @@ entry(
     index=174,
     label="octahydro-pentalene-C5-3",
     group="""
-1   Cs u0 {2,S} {4,S} {6,S}
-2   Cs u0 {1,S} {5,S} {7,S}
-3 * Cs u1 {4,S} {5,S} {9,S}
-4   Cs u0 {1,S} {3,S}
-5   Cs u0 {2,S} {3,S}
+1   Css u0 {2,S} {4,S} {6,S}
+2   Css u0 {1,S} {5,S} {7,S}
+3 * Css u1 {4,S} {5,S} {9,S}
+4   Css u0 {1,S} {3,S}
+5   Css u0 {2,S} {3,S}
 6   C  u0 {1,S} {8,S}
 7   C  u0 {2,S} {8,S}
 8   C  u0 {6,S} {7,S}
@@ -2029,13 +2029,13 @@ entry(
     index=175,
     label="bicyclo[4.2.0]octane-C6-2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {5,S} {6,S}
-3 * Cs u1 {1,S} {7,S} {9,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {5,S} {6,S}
+3 * Css u1 {1,S} {7,S} {9,S}
 4   C  u0 {1,S} {5,S}
 5   C  u0 {2,S} {4,S}
 6   C  u0 {2,S} {8,S}
-7   Cs u0 {3,S} {8,S}
+7   Css u0 {3,S} {8,S}
 8   C  u0 {6,S} {7,S}
 9   H  u0 {3,S}
 """,
@@ -2055,14 +2055,14 @@ entry(
     index=176,
     label="bicyclo[4.2.0]octane-C6-3",
     group="""
-1   Cs u0 {2,S} {4,S} {6,S}
-2   Cs u0 {1,S} {5,S} {7,S}
-3 * Cs u1 {4,S} {8,S} {9,S}
-4   Cs u0 {1,S} {3,S}
+1   Css u0 {2,S} {4,S} {6,S}
+2   Css u0 {1,S} {5,S} {7,S}
+3 * Css u1 {4,S} {8,S} {9,S}
+4   Css u0 {1,S} {3,S}
 5   C  u0 {2,S} {6,S}
 6   C  u0 {1,S} {5,S}
 7   C  u0 {2,S} {8,S}
-8   Cs u0 {3,S} {7,S}
+8   Css u0 {3,S} {7,S}
 9   H  u0 {3,S}
 """,
     thermo=ThermoData(
@@ -2081,10 +2081,10 @@ entry(
     index=213,
     label="bicyclo[2.2.2]octane-C2",
     group="""
-1   Cs u0 {3,S} {5,S} {6,S}
-2   Cs u0 {4,S} {7,S} {8,S}
-3 * Cs u1 {1,S} {4,S} {9,S}
-4   Cs u0 {2,S} {3,S}
+1   Css u0 {3,S} {5,S} {6,S}
+2   Css u0 {4,S} {7,S} {8,S}
+3 * Css u1 {1,S} {4,S} {9,S}
+4   Css u0 {2,S} {3,S}
 5   C  u0 {1,S} {7,S}
 6   C  u0 {1,S} {8,S}
 7   C  u0 {2,S} {5,S}
@@ -2107,10 +2107,10 @@ entry(
     index=214,
     label="tricyclo[2.2.2.0(1,4)]octane-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S} {6,S}
-2   Cs u0 {1,S} {4,S} {7,S} {8,S}
-3 * Cs u1 {1,S} {4,S} {9,S}
-4   Cs u0 {2,S} {3,S}
+1   Css u0 {2,S} {3,S} {5,S} {6,S}
+2   Css u0 {1,S} {4,S} {7,S} {8,S}
+3 * Css u1 {1,S} {4,S} {9,S}
+4   Css u0 {2,S} {3,S}
 5   C  u0 {1,S} {7,S}
 6   C  u0 {1,S} {8,S}
 7   C  u0 {2,S} {5,S}
@@ -2133,9 +2133,9 @@ entry(
     index=20,
     label="CCJC",
     group="""
-1    Cs u0 {3,S} {4,S} {5,S} {6,S}
-2    Cs u0 {3,S} {7,S} {8,S} {9,S}
-3  * Cs u1 {1,S} {2,S} {10,S}
+1    Css u0 {3,S} {4,S} {5,S} {6,S}
+2    Css u0 {3,S} {7,S} {8,S} {9,S}
+3  * Css u1 {1,S} {2,S} {10,S}
 4    H  u0 {1,S}
 5    H  u0 {1,S}
 6    H  u0 {1,S}
@@ -2160,9 +2160,9 @@ entry(
     index=21,
     label="RCCJC",
     group="""
-1    Cs u0 {3,S} {4,S} {5,S} {6,S}
-2    Cs u0 {3,S} {7,S} {8,S} {9,S}
-3  * Cs u1 {1,S} {2,S} {10,S}
+1    Css u0 {3,S} {4,S} {5,S} {6,S}
+2    Css u0 {3,S} {7,S} {8,S} {9,S}
+3  * Css u1 {1,S} {2,S} {10,S}
 4    C  u0 {1,S}
 5    H  u0 {1,S}
 6    H  u0 {1,S}
@@ -2187,9 +2187,9 @@ entry(
     index=22,
     label="RCCJCC",
     group="""
-1    Cs u0 {3,S} {4,S} {5,S} {6,S}
-2    Cs u0 {3,S} {7,S} {8,S} {9,S}
-3  * Cs u1 {1,S} {2,S} {10,S}
+1    Css u0 {3,S} {4,S} {5,S} {6,S}
+2    Css u0 {3,S} {7,S} {8,S} {9,S}
+3  * Css u1 {1,S} {2,S} {10,S}
 4    C  u0 {1,S}
 5    H  u0 {1,S}
 6    H  u0 {1,S}
@@ -2214,9 +2214,9 @@ entry(
     index=215,
     label="cyclopentane",
     group="""
-1    Cs u0 {3,S} {4,S} {6,S} {7,S}
-2    Cs u0 {3,S} {5,S} {8,S} {9,S}
-3  * Cs u1 {1,S} {2,S} {10,S}
+1    Css u0 {3,S} {4,S} {6,S} {7,S}
+2    Css u0 {3,S} {5,S} {8,S} {9,S}
+3  * Css u1 {1,S} {2,S} {10,S}
 4    C  u0 {1,S} {5,S}
 5    C  u0 {2,S} {4,S}
 6    H  u0 {1,S}
@@ -2241,9 +2241,9 @@ entry(
     index=216,
     label="cyclohexane",
     group="""
-1    Cs u0 {3,S} {4,S} {7,S} {8,S}
-2    Cs u0 {3,S} {5,S} {9,S} {10,S}
-3  * Cs u1 {1,S} {2,S} {11,S}
+1    Css u0 {3,S} {4,S} {7,S} {8,S}
+2    Css u0 {3,S} {5,S} {9,S} {10,S}
+3  * Css u1 {1,S} {2,S} {11,S}
 4    C  u0 {1,S} {6,S}
 5    C  u0 {2,S} {6,S}
 6    C  u0 {4,S} {5,S}
@@ -2269,7 +2269,7 @@ entry(
     index=24,
     label="Benzyl_S",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Cb u0 {1,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -2290,11 +2290,11 @@ entry(
     index=26,
     label="Indenyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
+1 * Css u1 {2,S} {3,S} {6,S}
 2   Cb u0 {1,S} {4,B}
-3   Cd u0 {1,S} {5,D}
+3   Cdb u0 {1,S} {5,D}
 4   Cb u0 {2,B} {5,S}
-5   Cd u0 {3,D} {4,S}
+5   Cdb u0 {3,D} {4,S}
 6   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2313,9 +2313,9 @@ entry(
     index=25,
     label="Allyl_S",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S}
-3   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S}
+3   Css u0 {1,S}
 4   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2334,10 +2334,10 @@ entry(
     index=147,
     label="cyclobutene-allyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S}
-3   Cd u0 {1,S} {4,D}
-4   Cd u0 {2,S} {3,D}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S}
+3   Cdb u0 {1,S} {4,D}
+4   Cdb u0 {2,S} {3,D}
 5   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2356,11 +2356,11 @@ entry(
     index=148,
     label="cyclopentene-allyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S}
-3   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S}
+3   Cdb u0 {1,S} {5,D}
 4   C  u0 {2,S} {5,S}
-5   Cd u0 {3,D} {4,S}
+5   Cdb u0 {3,D} {4,S}
 6   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2379,11 +2379,11 @@ entry(
     index=149,
     label="cyclohexene-allyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {7,S}
-2   Cs u0 {1,S} {4,S}
-3   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {7,S}
+2   Css u0 {1,S} {4,S}
+3   Cdb u0 {1,S} {5,D}
 4   C  u0 {2,S} {6,S}
-5   Cd u0 {3,D} {6,S}
+5   Cdb u0 {3,D} {6,S}
 6   C  u0 {4,S} {5,S}
 7   H  u0 {1,S}
 """,
@@ -2403,10 +2403,10 @@ entry(
     index=3033,
     label="C=CCJC(O)C=C",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {4,S} {6,S}
-3   Cd u0 {1,S} {8,D}
-4   Cd u0 {2,S} {7,D}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {4,S} {6,S}
+3   Cdb u0 {1,S} {8,D}
+4   Cdb u0 {2,S} {7,D}
 5   H  u0 {1,S}
 6   O2s u0 {2,S}
 7   C  u0 {4,D}
@@ -2430,9 +2430,9 @@ entry(
     index=27,
     label="C=CCJC=C",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S}
-3   Cd u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S}
+3   Cdb u0 {1,S}
 4   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2451,9 +2451,9 @@ entry(
     index=145,
     label="cyclopropenyl-allyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {3,D}
-3   Cd u0 {1,S} {2,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {3,D}
+3   Cdb u0 {1,S} {2,D}
 4   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2472,11 +2472,11 @@ entry(
     index=182,
     label="1,3-cyclopentadiene-allyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cd u0 {1,S} {4,D}
-3   Cd u0 {1,S} {5,D}
-4   Cd u0 {2,D} {5,S}
-5   Cd u0 {3,D} {4,S}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Cdb u0 {1,S} {4,D}
+3   Cdb u0 {1,S} {5,D}
+4   Cdb u0 {2,D} {5,S}
+5   Cdb u0 {3,D} {4,S}
 6   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2495,9 +2495,9 @@ entry(
     index=3081,
     label="C=CCJC=C=O",
     group="""
-1 * Cs  u1 {2,S} {3,S} {5,S}
-2   Cd  u0 {1,S} {4,D}
-3   Cd  u0 {1,S} {6,D}
+1 * Css  u1 {2,S} {3,S} {5,S}
+2   Cdb  u0 {1,S} {4,D}
+3   Cdb  u0 {1,S} {6,D}
 4   Cdd u0 {2,D} {7,D}
 5   H   u0 {1,S}
 6   C   u0 {3,D}
@@ -2521,9 +2521,9 @@ entry(
     index=28,
     label="Sec_Propargyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Ct u0 {1,S}
-3   Cs u0 {1,S}
+3   Css u0 {1,S}
 4   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -2542,7 +2542,7 @@ entry(
     index=3013,
     label="CCJCO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -2566,9 +2566,9 @@ entry(
     index=3028,
     label="C=CCJCO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S} {5,S}
-3   Cd u0 {1,S} {6,D}
+3   Cdb u0 {1,S} {6,D}
 4   H  u0 {1,S}
 5   O2s u0 {2,S}
 6   C  u0 {3,D}
@@ -2591,7 +2591,7 @@ entry(
     index=3040,
     label="CCJC=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -2615,9 +2615,9 @@ entry(
     index=26,
     label="CCJCHO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D} {6,S}
-3   Cs u0 {1,S}
+3   Css u0 {1,S}
 4   H  u0 {1,S}
 5   O2d u0 {2,D}
 6   H  u0 {2,S}
@@ -2638,7 +2638,7 @@ entry(
     index=3043,
     label="C=OCJC=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D}
 3   CO u0 {1,S} {6,D}
 4   H  u0 {1,S}
@@ -2663,7 +2663,7 @@ entry(
     index=3042,
     label="CCJCC=O",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   C  u0 {1,S} {3,S}
 3   CO u0 {2,S} {6,D}
 4   C  u0 {1,S}
@@ -2688,8 +2688,8 @@ entry(
     index=3078,
     label="CCJC(C)=C=O",
     group="""
-1 * Cs  u1 {2,S} {3,S} {5,S}
-2   Cd  u0 {1,S} {4,D}
+1 * Css  u1 {2,S} {3,S} {5,S}
+2   Cdb  u0 {1,S} {4,D}
 3   C   u0 {1,S} {6,S}
 4   Cdd u0 {2,D} {7,D}
 5   H   u0 {1,S}
@@ -2714,7 +2714,7 @@ entry(
     index=29,
     label="Cs_T",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -2730,10 +2730,10 @@ entry(
     index=30,
     label="Tertalkyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
-3   Cs u0 {1,S}
-4   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
+3   Css u0 {1,S}
+4   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2751,10 +2751,10 @@ entry(
     index=162,
     label="bicyclo[1.1.0]butane-tertiary",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
-2 * Cs u1 {1,S} {3,S} {4,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {2,S}
+1   Css u0 {2,S} {3,S} {4,S}
+2 * Css u1 {1,S} {3,S} {4,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {2,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2772,11 +2772,11 @@ entry(
     index=163,
     label="bicyclo[2.1.0]pentane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {2,S} {5,S}
-5   Cs u0 {1,S} {4,S}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {2,S} {5,S}
+5   Css u0 {1,S} {4,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2794,11 +2794,11 @@ entry(
     index=195,
     label="bicyclo[1.1.1]pentane-C1",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {2,S}
-5   Cs u0 {1,S} {2,S}
+1 * Css u1 {3,S} {4,S} {5,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {2,S}
+5   Css u0 {1,S} {2,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2816,11 +2816,11 @@ entry(
     index=31,
     label="C2CJCOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
-2   Cs u0 {1,S} {3,S}
+1 * Css u1 {2,S} {4,S} {5,S}
+2   Css u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
-4   Cs u0 {1,S}
-5   Cs u0 {1,S}
+4   Css u0 {1,S}
+5   Css u0 {1,S}
 6   O2s u0 {3,S}
 """,
     thermo=ThermoData(
@@ -2839,12 +2839,12 @@ entry(
     index=164,
     label="bicyclo[3.1.0]hexane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {2,S} {6,S}
-5   Cs u0 {1,S} {6,S}
-6   Cs u0 {4,S} {5,S}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {2,S} {6,S}
+5   Css u0 {1,S} {6,S}
+6   Css u0 {4,S} {5,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2862,12 +2862,12 @@ entry(
     index=165,
     label="bicyclo[2.2.0]hexane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3   Cs u0 {1,S} {4,S}
-4   Cs u0 {2,S} {3,S}
-5   Cs u0 {2,S} {6,S}
-6   Cs u0 {1,S} {5,S}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3   Css u0 {1,S} {4,S}
+4   Css u0 {2,S} {3,S}
+5   Css u0 {2,S} {6,S}
+6   Css u0 {1,S} {5,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2885,12 +2885,12 @@ entry(
     index=198,
     label="bicyclo[2.1.1]hexane-C1",
     group="""
-1 * Cs u1 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {2,S}
+1 * Css u1 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {2,S}
 5   C  u0 {2,S} {6,S}
-6   Cs u0 {1,S} {5,S}
+6   Css u0 {1,S} {5,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2908,13 +2908,13 @@ entry(
     index=139,
     label="bridgehead_norbornyl",
     group="""
-1 * Cs u1 {3,S} {4,S} {7,S}
-2   Cs u0 {3,S} {5,S} {6,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {5,S}
-5   Cs u0 {2,S} {4,S}
-6   Cs u0 {2,S} {7,S}
-7   Cs u0 {1,S} {6,S}
+1 * Css u1 {3,S} {4,S} {7,S}
+2   Css u0 {3,S} {5,S} {6,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {5,S}
+5   Css u0 {2,S} {4,S}
+6   Css u0 {2,S} {7,S}
+7   Css u0 {1,S} {6,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2932,13 +2932,13 @@ entry(
     index=166,
     label="bicyclo[3.2.0]heptane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3   Cs u0 {1,S} {4,S}
-4   Cs u0 {2,S} {3,S}
-5   Cs u0 {2,S} {7,S}
-6   Cs u0 {1,S} {7,S}
-7   Cs u0 {5,S} {6,S}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3   Css u0 {1,S} {4,S}
+4   Css u0 {2,S} {3,S}
+5   Css u0 {2,S} {7,S}
+6   Css u0 {1,S} {7,S}
+7   Css u0 {5,S} {6,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2956,13 +2956,13 @@ entry(
     index=167,
     label="bicyclo[4.1.0]heptane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {2,S} {6,S}
-5   Cs u0 {1,S} {7,S}
-6   Cs u0 {4,S} {7,S}
-7   Cs u0 {5,S} {6,S}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {2,S} {6,S}
+5   Css u0 {1,S} {7,S}
+6   Css u0 {4,S} {7,S}
+7   Css u0 {5,S} {6,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -2980,12 +2980,12 @@ entry(
     index=203,
     label="bicyclo[3.1.1]heptane-C1",
     group="""
-1 * Cs u1 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {2,S}
+1 * Css u1 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {2,S}
 5   C  u0 {2,S} {7,S}
-6   Cs u0 {1,S} {7,S}
+6   Css u0 {1,S} {7,S}
 7   C  u0 {5,S} {6,S}
 """,
     thermo=ThermoData(
@@ -3004,10 +3004,10 @@ entry(
     index=168,
     label="octahydro-pentalene-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S} {5,S} {6,S}
-3   Cs u0 {1,S} {8,S}
-4   Cs u0 {1,S} {7,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S} {5,S} {6,S}
+3   Css u0 {1,S} {8,S}
+4   Css u0 {1,S} {7,S}
 5   C  u0 {2,S} {7,S}
 6   C  u0 {2,S} {8,S}
 7   C  u0 {4,S} {5,S}
@@ -3029,12 +3029,12 @@ entry(
     index=169,
     label="bicyclo[4.2.0]octane-tertiary",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3   Cs u0 {1,S} {4,S}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3   Css u0 {1,S} {4,S}
 4   C  u0 {2,S} {3,S}
 5   C  u0 {2,S} {7,S}
-6   Cs u0 {1,S} {8,S}
+6   Css u0 {1,S} {8,S}
 7   C  u0 {5,S} {8,S}
 8   C  u0 {6,S} {7,S}
 """,
@@ -3054,14 +3054,14 @@ entry(
     index=212,
     label="bicyclo[2.2.2]octane-C1",
     group="""
-1 * Cs u1 {3,S} {6,S} {8,S}
-2   Cs u0 {4,S} {5,S} {7,S}
-3   Cs u0 {1,S} {4,S}
+1 * Css u1 {3,S} {6,S} {8,S}
+2   Css u0 {4,S} {5,S} {7,S}
+3   Css u0 {1,S} {4,S}
 4   C  u0 {2,S} {3,S}
 5   C  u0 {2,S} {6,S}
-6   Cs u0 {1,S} {5,S}
+6   Css u0 {1,S} {5,S}
 7   C  u0 {2,S} {8,S}
-8   Cs u0 {1,S} {7,S}
+8   Css u0 {1,S} {7,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3079,7 +3079,7 @@ entry(
     index=32,
     label="Benzyl_T",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Cb u0 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -3100,10 +3100,10 @@ entry(
     index=33,
     label="Allyl_T",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S}
-3   Cs u0 {1,S}
-4   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S}
+3   Css u0 {1,S}
+4   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3121,11 +3121,11 @@ entry(
     index=183,
     label="bicyclo[2.1.0]pent-2-ene-C1",
     group="""
-1 * Cs u1 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
-3   Cs u0 {1,S} {2,S}
-4   Cd u0 {2,S} {5,D}
-5   Cd u0 {1,S} {4,D}
+1 * Css u1 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
+3   Css u0 {1,S} {2,S}
+4   Cdb u0 {2,S} {5,D}
+5   Cdb u0 {1,S} {4,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3143,12 +3143,12 @@ entry(
     index=186,
     label="bicyclo[2.1.1]hex-2-ene-C1",
     group="""
-1 * Cs u1 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
-3   Cs u0 {1,S} {2,S}
-4   Cs u0 {1,S} {2,S}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+1 * Css u1 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
+3   Css u0 {1,S} {2,S}
+4   Css u0 {1,S} {2,S}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3166,10 +3166,10 @@ entry(
     index=35,
     label="Tert_Propargyl",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Ct u0 {1,S}
-3   Cs u0 {1,S}
-4   Cs u0 {1,S}
+3   Css u0 {1,S}
+4   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3187,10 +3187,10 @@ entry(
     index=501,
     label="C2CJCO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D} {6,S}
-3   Cs u0 {1,S}
-4   Cs u0 {1,S}
+3   Css u0 {1,S}
+4   Css u0 {1,S}
 5   O2d u0 {2,D}
 6   R  u0 {2,S}
 """,
@@ -3205,10 +3205,10 @@ entry(
     index=34,
     label="C2CJCHO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D} {6,S}
-3   Cs u0 {1,S}
-4   Cs u0 {1,S}
+3   Css u0 {1,S}
+4   Css u0 {1,S}
 5   O2d u0 {2,D}
 6   H  u0 {2,S}
 """,
@@ -3228,12 +3228,12 @@ entry(
     index=191,
     label="bicyclo[2.2.0]hexa-2,5-diene-C1",
     group="""
-1 * Cs u1 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3   Cd u0 {1,S} {4,D}
-4   Cd u0 {2,S} {3,D}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3   Cdb u0 {1,S} {4,D}
+4   Cdb u0 {2,S} {3,D}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3251,7 +3251,7 @@ entry(
     index=3016,
     label="CCJ(C)CO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -3275,8 +3275,8 @@ entry(
     index=3063,
     label="C=CCJ(C)C=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   CO u0 {1,S} {6,D}
 4   C  u0 {1,S}
 5   C  u0 {2,D}
@@ -3300,10 +3300,10 @@ entry(
     index=3064,
     label="C=CCJ(C=O)C=C",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   CO u0 {1,S} {7,D}
-4   Cd u0 {1,S} {6,D}
+4   Cdb u0 {1,S} {6,D}
 5   C  u0 {2,D}
 6   C  u0 {4,D}
 7   O2d u0 {3,D}
@@ -3326,8 +3326,8 @@ entry(
     index=3077,
     label="CCJ(C)C=C=O",
     group="""
-1 * Cs  u1 {2,S} {4,S} {5,S}
-2   Cd  u0 {1,S} {3,D}
+1 * Css  u1 {2,S} {4,S} {5,S}
+2   Cdb  u0 {1,S} {3,D}
 3   Cdd u0 {2,D} {6,D}
 4   C   u0 {1,S}
 5   C   u0 {1,S}
@@ -3351,9 +3351,9 @@ entry(
     index=3083,
     label="C=CCJ(C)C=C=O",
     group="""
-1 * Cs  u1 {2,S} {3,S} {5,S}
-2   Cd  u0 {1,S} {4,D}
-3   Cd  u0 {1,S} {6,D}
+1 * Css  u1 {2,S} {3,S} {5,S}
+2   Cdb  u0 {1,S} {4,D}
+3   Cdb  u0 {1,S} {6,D}
 4   Cdd u0 {2,D} {7,D}
 5   C   u0 {1,S}
 6   C   u0 {3,D}
@@ -3377,10 +3377,10 @@ entry(
     index=3084,
     label="C=CCJ(C=C=O)C=C",
     group="""
-1 * Cs  u1 {2,S} {3,S} {4,S}
-2   Cd  u0 {1,S} {5,D}
-3   Cd  u0 {1,S} {6,D}
-4   Cd  u0 {1,S} {7,D}
+1 * Css  u1 {2,S} {3,S} {4,S}
+2   Cdb  u0 {1,S} {5,D}
+3   Cdb  u0 {1,S} {6,D}
+4   Cdb  u0 {1,S} {7,D}
 5   Cdd u0 {2,D} {8,D}
 6   C   u0 {3,D}
 7   C   u0 {4,D}
@@ -3404,7 +3404,7 @@ entry(
     index=36,
     label="CsJO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -3427,7 +3427,7 @@ entry(
     index=37,
     label="CsJOH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -3449,7 +3449,7 @@ entry(
     index=38,
     label="CsJOC",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -3466,11 +3466,11 @@ entry(
     index=39,
     label="CsJOCs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
-5   Cs u0 {2,S}
+5   Css u0 {2,S}
 """,
     thermo="CsJOCH3",
     shortDesc="""""",
@@ -3483,8 +3483,8 @@ entry(
     index=40,
     label="CsJOCH3",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S} {6,S}
-2 * Cs u1 {3,S} {7,S} {8,S}
+1   Css u0 {3,S} {4,S} {5,S} {6,S}
+2 * Css u1 {3,S} {7,S} {8,S}
 3   O2s u0 {1,S} {2,S}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
@@ -3508,8 +3508,8 @@ entry(
     index=41,
     label="CsJOCC",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S} {6,S}
-2 * Cs u1 {3,S} {7,S} {8,S}
+1   Css u0 {3,S} {4,S} {5,S} {6,S}
+2 * Css u1 {3,S} {7,S} {8,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
 5   H  u0 {1,S}
@@ -3533,8 +3533,8 @@ entry(
     index=42,
     label="CsJOCC2",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S} {6,S}
-2 * Cs u1 {3,S} {7,S} {8,S}
+1   Css u0 {3,S} {4,S} {5,S} {6,S}
+2 * Css u1 {3,S} {7,S} {8,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
@@ -3558,8 +3558,8 @@ entry(
     index=43,
     label="CsJOCC3",
     group="""
-1   Cs u0 {3,S} {4,S} {5,S} {6,S}
-2 * Cs u1 {3,S} {7,S} {8,S}
+1   Css u0 {3,S} {4,S} {5,S} {6,S}
+2 * Css u1 {3,S} {7,S} {8,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
@@ -3583,11 +3583,11 @@ entry(
     index=44,
     label="CsJOCds",
     group="""
-1 * Cs      u1 {2,S} {3,S} {4,S}
+1 * Css      u1 {2,S} {3,S} {4,S}
 2   O2s      u0 {1,S} {5,S}
 3   H       u0 {1,S}
 4   H       u0 {1,S}
-5   [Cd,CO] u0 {2,S}
+5   [Cdb,CO] u0 {2,S}
 """,
     thermo="CsJOC(O)",
     shortDesc="""""",
@@ -3600,7 +3600,7 @@ entry(
     index=45,
     label="CsJOC(O)",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   CO u0 {2,S} {6,D}
 4   H  u0 {1,S}
@@ -3623,7 +3623,7 @@ entry(
     index=46,
     label="CsJOC(O)H",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   H  u0 {1,S}
@@ -3647,7 +3647,7 @@ entry(
     index=47,
     label="CsJOC(O)C",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   H  u0 {1,S}
@@ -3671,9 +3671,9 @@ entry(
     index=3027,
     label="C=COCJ",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
-3   Cd u0 {2,S} {6,D}
+3   Cdb u0 {2,S} {6,D}
 4   H  u0 {1,S}
 5   H  u0 {1,S}
 6   C  u0 {3,D}
@@ -3696,7 +3696,7 @@ entry(
     index=48,
     label="CsJOO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -3718,7 +3718,7 @@ entry(
     index=49,
     label="CsJOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   H  u0 {1,S}
@@ -3741,7 +3741,7 @@ entry(
     index=50,
     label="CsJOOC",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   H  u0 {1,S}
@@ -3764,7 +3764,7 @@ entry(
     index=51,
     label="CCsJO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -3787,7 +3787,7 @@ entry(
     index=52,
     label="CCsJOH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -3809,7 +3809,7 @@ entry(
     index=53,
     label="CCsJOC",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -3826,11 +3826,11 @@ entry(
     index=54,
     label="CCsJOCs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
-5   Cs u0 {2,S}
+5   Css u0 {2,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -3848,11 +3848,11 @@ entry(
     index=55,
     label="CCsJOCds",
     group="""
-1 * Cs      u1 {2,S} {3,S} {4,S}
+1 * Css      u1 {2,S} {3,S} {4,S}
 2   O2s      u0 {1,S} {5,S}
 3   C       u0 {1,S}
 4   H       u0 {1,S}
-5   [CO,Cd] u0 {2,S}
+5   [CO,Cdb] u0 {2,S}
 """,
     thermo="CCsJOC(O)",
     shortDesc="""""",
@@ -3865,7 +3865,7 @@ entry(
     index=56,
     label="CCsJOC(O)",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   CO u0 {2,S} {6,D}
 4   C  u0 {1,S}
@@ -3888,7 +3888,7 @@ entry(
     index=57,
     label="CCsJOC(O)H",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
@@ -3912,7 +3912,7 @@ entry(
     index=-1,
     label="CCsJOC(O)C",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
@@ -3931,8 +3931,8 @@ entry(
     index=3030,
     label="C=CCJ(O)C",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   O2s u0 {1,S} {6,S}
 4   H  u0 {1,S}
 5   C  u0 {2,D}
@@ -3956,7 +3956,7 @@ entry(
     index=58,
     label="CCsJOO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -3978,7 +3978,7 @@ entry(
     index=59,
     label="CCsJOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   C  u0 {1,S}
@@ -4001,7 +4001,7 @@ entry(
     index=60,
     label="CCsJOOC",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   C  u0 {1,S}
@@ -4024,8 +4024,8 @@ entry(
     index=3026,
     label="C=CCJO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   O2s u0 {1,S}
 4   H  u0 {1,S}
 5   C  u0 {2,D}
@@ -4048,7 +4048,7 @@ entry(
     index=3041,
     label="OCJC=O",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CO u0 {1,S} {5,D}
 3   O2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4072,7 +4072,7 @@ entry(
     index=61,
     label="C2CsJO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4095,7 +4095,7 @@ entry(
     index=62,
     label="C2CsJOH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4117,7 +4117,7 @@ entry(
     index=63,
     label="C2CsJOC",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4134,11 +4134,11 @@ entry(
     index=64,
     label="C2CsJOCs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
-5   Cs u0 {2,S}
+5   Css u0 {2,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -4156,11 +4156,11 @@ entry(
     index=65,
     label="C2CsJOCds",
     group="""
-1 * Cs      u1 {2,S} {3,S} {4,S}
+1 * Css      u1 {2,S} {3,S} {4,S}
 2   O2s      u0 {1,S} {5,S}
 3   C       u0 {1,S}
 4   C       u0 {1,S}
-5   [Cd,CO] u0 {2,S}
+5   [Cdb,CO] u0 {2,S}
 """,
     thermo="C2CsJOC(O)",
     shortDesc="""""",
@@ -4173,7 +4173,7 @@ entry(
     index=66,
     label="C2CsJOC(O)",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   CO u0 {2,S} {6,D}
 4   C  u0 {1,S}
@@ -4196,7 +4196,7 @@ entry(
     index=67,
     label="C2CsJOC(O)H",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
@@ -4220,7 +4220,7 @@ entry(
     index=68,
     label="C2CsJOC(O)C",
     group="""
-1 * Cs u1 {3,S} {4,S} {5,S}
+1 * Css u1 {3,S} {4,S} {5,S}
 2   CO u0 {3,S} {6,D} {7,S}
 3   O2s u0 {1,S} {2,S}
 4   C  u0 {1,S}
@@ -4244,7 +4244,7 @@ entry(
     index=69,
     label="C2CsJOO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4266,7 +4266,7 @@ entry(
     index=70,
     label="C2CsJOOH",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   C  u0 {1,S}
@@ -4289,7 +4289,7 @@ entry(
     index=71,
     label="C2CsJOOC",
     group="""
-1 * Cs u1 {2,S} {4,S} {5,S}
+1 * Css u1 {2,S} {4,S} {5,S}
 2   O2s u0 {1,S} {3,S}
 3   O2s u0 {2,S} {6,S}
 4   C  u0 {1,S}
@@ -4312,7 +4312,7 @@ entry(
     index=-1,
     label="CsJ-S",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   S2s u0 {1,S}
 3   R  u0 {1,S}
 4   R  u0 {1,S}
@@ -4328,7 +4328,7 @@ entry(
     index=244,
     label="CsJ-SsHH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   S2s u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -4349,7 +4349,7 @@ entry(
     index=-1,
     label="CsJ-CSH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4365,8 +4365,8 @@ entry(
     index=245,
     label="CsJ-CsSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
 """,
@@ -4386,7 +4386,7 @@ entry(
     index=247,
     label="CsJ-CtSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Ct u0 {1,S}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4407,7 +4407,7 @@ entry(
     index=248,
     label="CsJ-CbSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Cb u0 {1,S}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4428,8 +4428,8 @@ entry(
     index=246,
     label="CsJ-CdSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
 5   C  u0 {2,D}
@@ -4450,7 +4450,7 @@ entry(
     index=249,
     label="CsJ-C=SSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CS u0 {1,S} {5,D}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4472,7 +4472,7 @@ entry(
     index=-1,
     label="CsJ-CCS",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   C  u0 {1,S}
 4   S2s u0 {1,S}
@@ -4488,9 +4488,9 @@ entry(
     index=251,
     label="CsJ-CsCsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
-3   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
+3   Css u0 {1,S}
 4   S2s u0 {1,S}
 """,
     thermo=ThermoData(
@@ -4509,8 +4509,8 @@ entry(
     index=253,
     label="CsJ-CsCtSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
 3   Ct u0 {1,S}
 4   S2s u0 {1,S}
 """,
@@ -4530,8 +4530,8 @@ entry(
     index=254,
     label="CsJ-CsCbSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
 3   Cb u0 {1,S}
 4   S2s u0 {1,S}
 """,
@@ -4551,9 +4551,9 @@ entry(
     index=252,
     label="CsJ-CsCdSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
-3   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
+3   Css u0 {1,S}
 4   S2s u0 {1,S}
 5   C  u0 {2,D}
 """,
@@ -4573,9 +4573,9 @@ entry(
     index=255,
     label="CsJ-CsC=SSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CS u0 {1,S} {5,D}
-3   Cs u0 {1,S}
+3   Css u0 {1,S}
 4   S2s u0 {1,S}
 5   S2d u0 {2,D}
 """,
@@ -4595,7 +4595,7 @@ entry(
     index=-1,
     label="CsJ-SS",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   S2s u0 {1,S}
 3   S2s u0 {1,S}
 4   R  u0 {1,S}
@@ -4611,7 +4611,7 @@ entry(
     index=250,
     label="CsJ-SsSsH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   S2s u0 {1,S}
 3   S2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4632,7 +4632,7 @@ entry(
     index=-1,
     label="CsJ-CSS",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4648,8 +4648,8 @@ entry(
     index=256,
     label="CsJ-CsSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cs u0 {1,S}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Css u0 {1,S}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
 """,
@@ -4669,7 +4669,7 @@ entry(
     index=-1,
     label="CsJ-CtSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Ct u0 {1,S}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4685,7 +4685,7 @@ entry(
     index=-1,
     label="CsJ-CbSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   Cb u0 {1,S}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4701,8 +4701,8 @@ entry(
     index=-1,
     label="CsJ-CdSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
-2   Cd u0 {1,S} {5,D}
+1 * Css u1 {2,S} {3,S} {4,S}
+2   Cdb u0 {1,S} {5,D}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
 5   C  u0 {2,D}
@@ -4718,7 +4718,7 @@ entry(
     index=-1,
     label="CsJ-C=SSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   CS u0 {1,S} {5,D}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4735,7 +4735,7 @@ entry(
     index=-1,
     label="CsJ-SsSsSs",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   S2s u0 {1,S}
 3   S2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4751,7 +4751,7 @@ entry(
     index=264,
     label="CCsJOS",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   C  u0 {1,S}
 3   O2s u0 {1,S}
 4   S2s u0 {1,S}
@@ -4767,7 +4767,7 @@ entry(
     index=265,
     label="CCsJOHSH",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S} {5,S}
 3   S2s u0 {1,S} {6,S}
 4   C  u0 {1,S}
@@ -4790,7 +4790,7 @@ entry(
     index=300,
     label="CsJN",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   N  u0 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -4806,7 +4806,7 @@ entry(
     index=301,
     label="CCsJN",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   N  u0 {1,S}
 3   C  u0 {1,S}
 4   H  u0 {1,S}
@@ -4827,7 +4827,7 @@ entry(
     index=302,
     label="C2CsJN",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   N  u0 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4843,7 +4843,7 @@ entry(
     index=3012,
     label="OCJO",
     group="""
-1 * Cs u1 {2,S} {3,S} {4,S}
+1 * Css u1 {2,S} {3,S} {4,S}
 2   O2s u0 {1,S}
 3   O2s u0 {1,S}
 4   H  u0 {1,S}
@@ -4866,7 +4866,7 @@ entry(
     index=72,
     label="CdsJ",
     group="""
-1 * [Cd,CO] u1
+1 * [Cdb,CO] u1
 """,
     thermo="Cds_P",
     shortDesc="""""",
@@ -4930,7 +4930,7 @@ entry(
     group="""
 1 * CO u1 {2,D} {3,S}
 2   O2d u0 {1,D}
-3   Cs u0 {1,S}
+3   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -4948,7 +4948,7 @@ entry(
     index=3057,
     label="CC(C)CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
+1   Css u0 {2,S} {3,S} {4,S}
 2 * CO u1 {1,S} {5,D}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4972,7 +4972,7 @@ entry(
     index=3058,
     label="CC(C)2CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {6,D}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -4997,7 +4997,7 @@ entry(
     index=3060,
     label="CC(C)(C=O)CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {6,D}
 3   CO u0 {1,S} {7,D}
 4   C  u0 {1,S}
@@ -5023,10 +5023,10 @@ entry(
     index=3073,
     label="C=CC(C)(C=O)CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {7,D}
 3   CO u0 {1,S} {8,D}
-4   Cd u0 {1,S} {6,D}
+4   Cdb u0 {1,S} {6,D}
 5   C  u0 {1,S}
 6   C  u0 {4,D}
 7   O2d u0 {2,D}
@@ -5050,9 +5050,9 @@ entry(
     index=3071,
     label="C=CC(C)2CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {7,D}
-3   Cd u0 {1,S} {6,D}
+3   Cdb u0 {1,S} {6,D}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
 6   C  u0 {3,D}
@@ -5076,7 +5076,7 @@ entry(
     index=3059,
     label="CC(C)(O)CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {6,D}
 3   C  u0 {1,S}
 4   O2s u0 {1,S}
@@ -5101,9 +5101,9 @@ entry(
     index=3072,
     label="C=CC(C)(O)CJ=O",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * CO u1 {1,S} {7,D}
-3   Cd u0 {1,S} {6,D}
+3   Cdb u0 {1,S} {6,D}
 4   O2s u0 {1,S}
 5   C  u0 {1,S}
 6   C  u0 {3,D}
@@ -5128,9 +5128,9 @@ entry(
     label="C=CCJ=O",
     group="""
 1 * CO u1 {2,S} {3,D}
-2   Cd u0 {1,S} {4,D}
+2   Cdb u0 {1,S} {4,D}
 3   O2d u0 {1,D}
-4   Cd u0 {2,D}
+4   Cdb u0 {2,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5222,7 +5222,7 @@ entry(
     index=3070,
     label="C=C(C)CJ=O",
     group="""
-1   Cd u0 {2,S} {3,S} {4,D}
+1   Cdb u0 {2,S} {3,S} {4,D}
 2 * CO u1 {1,S} {5,D}
 3   C  u0 {1,S}
 4   C  u0 {1,D}
@@ -5329,7 +5329,7 @@ entry(
     index=87,
     label="(O)CJOCH3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {6,S}
+1   Css u0 {2,S} {4,S} {5,S} {6,S}
 2   O2s u0 {1,S} {3,S}
 3 * CO u1 {2,S} {7,D}
 4   H  u0 {1,S}
@@ -5353,7 +5353,7 @@ entry(
     index=88,
     label="(O)CJOCC",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {6,S}
+1   Css u0 {2,S} {4,S} {5,S} {6,S}
 2   O2s u0 {1,S} {3,S}
 3 * CO u1 {2,S} {7,D}
 4   C  u0 {1,S}
@@ -5377,7 +5377,7 @@ entry(
     index=89,
     label="(O)CJOCC2",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {6,S}
+1   Css u0 {2,S} {4,S} {5,S} {6,S}
 2   O2s u0 {1,S} {3,S}
 3 * CO u1 {2,S} {7,D}
 4   C  u0 {1,S}
@@ -5401,7 +5401,7 @@ entry(
     index=90,
     label="(O)CJOCC3",
     group="""
-1   Cs u0 {2,S} {4,S} {5,S} {6,S}
+1   Css u0 {2,S} {4,S} {5,S} {6,S}
 2   O2s u0 {1,S} {3,S}
 3 * CO u1 {2,S} {7,D}
 4   C  u0 {1,S}
@@ -5425,7 +5425,7 @@ entry(
     index=74,
     label="Cds_P",
     group="""
-1 * Cd u1 {2,D} {3,S}
+1 * Cdb u1 {2,D} {3,S}
 2   C  u0 {1,D}
 3   H  u0 {1,S}
 """,
@@ -5445,7 +5445,7 @@ entry(
     index=75,
     label="C=C=CJ",
     group="""
-1 * Cd  u1 {2,D} {3,S}
+1 * Cdb  u1 {2,D} {3,S}
 2   Cdd u0 {1,D} {4,D}
 3   H   u0 {1,S}
 4   C   u0 {2,D}
@@ -5466,7 +5466,7 @@ entry(
     index=77,
     label="Cds_S",
     group="""
-1 * Cd u1 {2,D} {3,S}
+1 * Cdb u1 {2,D} {3,S}
 2   C  u0 {1,D}
 3   C  u0 {1,S}
 """,
@@ -5486,9 +5486,9 @@ entry(
     index=78,
     label="C=CJC=C",
     group="""
-1 * Cd      u1 {2,D} {3,S}
-2   Cd      u0 {1,D}
-3   [Cd,CO] u0 {1,S}
+1 * Cdb      u1 {2,D} {3,S}
+2   Cdb      u0 {1,D}
+3   [Cdb,CO] u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5506,10 +5506,10 @@ entry(
     index=194,
     label="cyclobutadiene-C1",
     group="""
-1 * Cd u1 {2,D} {4,S}
-2   Cd u0 {1,D} {3,S}
-3   Cd u0 {2,S} {4,D}
-4   Cd u0 {1,S} {3,D}
+1 * Cdb u1 {2,D} {4,S}
+2   Cdb u0 {1,D} {3,S}
+3   Cdb u0 {2,S} {4,D}
+4   Cdb u0 {1,S} {3,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5527,12 +5527,12 @@ entry(
     index=193,
     label="bicyclo[2.2.0]hexa-1(4),2,5-triene-C2",
     group="""
-1   Cd u0 {2,D} {3,S} {6,S}
-2   Cd u0 {1,D} {4,S} {5,S}
-3 * Cd u1 {1,S} {4,D}
-4   Cd u0 {2,S} {3,D}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+1   Cdb u0 {2,D} {3,S} {6,S}
+2   Cdb u0 {1,D} {4,S} {5,S}
+3 * Cdb u1 {1,S} {4,D}
+4   Cdb u0 {2,S} {3,D}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5551,10 +5551,10 @@ entry(
     label="1,3-cyclopentadiene-vinyl-2",
     group="""
 1   C  u0 {2,S} {3,S}
-2   Cd u0 {1,S} {4,D}
-3   Cd u0 {1,S} {5,D}
-4 * Cd u1 {2,D} {5,S}
-5   Cd u0 {3,D} {4,S}
+2   Cdb u0 {1,S} {4,D}
+3   Cdb u0 {1,S} {5,D}
+4 * Cdb u1 {2,D} {5,S}
+5   Cdb u0 {3,D} {4,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5573,8 +5573,8 @@ entry(
     label="cyclopropenyl-vinyl",
     group="""
 1   C  u0 {2,S} {3,S}
-2 * Cd u1 {1,S} {3,D}
-3   Cd u0 {1,S} {2,D}
+2 * Cdb u1 {1,S} {3,D}
+3   Cdb u0 {1,S} {2,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5594,8 +5594,8 @@ entry(
     group="""
 1   C  u0 {2,S} {4,S}
 2   C  u0 {1,S} {3,S}
-3 * Cd u1 {2,S} {4,D}
-4   Cd u0 {1,S} {3,D}
+3 * Cdb u1 {2,S} {4,D}
+4   Cdb u0 {1,S} {3,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5613,11 +5613,11 @@ entry(
     index=184,
     label="bicyclo[2.1.0]pent-2-ene-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {5,S}
-2   Cs u0 {1,S} {3,S} {4,S}
+1   Css u0 {2,S} {3,S} {5,S}
+2   Css u0 {1,S} {3,S} {4,S}
 3   C  u0 {1,S} {2,S}
-4 * Cd u1 {2,S} {5,D}
-5   Cd u0 {1,S} {4,D}
+4 * Cdb u1 {2,S} {5,D}
+5   Cdb u0 {1,S} {4,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5635,12 +5635,12 @@ entry(
     index=189,
     label="tricyclo[2.1.1.0(1,4)]hex-2-ene-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {6,S}
-2   Cs u0 {1,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {6,S}
+2   Css u0 {1,S} {3,S} {4,S} {5,S}
 3   C  u0 {1,S} {2,S}
 4   C  u0 {1,S} {2,S}
-5 * Cd u1 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+5 * Cdb u1 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5658,12 +5658,12 @@ entry(
     index=192,
     label="bicyclo[2.2.0]hexa-2,5-diene-C2",
     group="""
-1   Cs u0 {2,S} {3,S} {6,S}
-2   Cs u0 {1,S} {4,S} {5,S}
-3 * Cd u1 {1,S} {4,D}
-4   Cd u0 {2,S} {3,D}
-5   Cd u0 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+1   Css u0 {2,S} {3,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S}
+3 * Cdb u1 {1,S} {4,D}
+4   Cdb u0 {2,S} {3,D}
+5   Cdb u0 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5684,8 +5684,8 @@ entry(
 1   C  u0 {2,S} {3,S}
 2   C  u0 {1,S} {5,S}
 3   C  u0 {1,S} {4,S}
-4 * Cd u1 {3,S} {5,D}
-5   Cd u0 {2,S} {4,D}
+4 * Cdb u1 {3,S} {5,D}
+5   Cdb u0 {2,S} {4,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5703,12 +5703,12 @@ entry(
     index=187,
     label="bicyclo[2.1.1]hex-2-ene-C2",
     group="""
-1   Cs u0 {3,S} {4,S} {6,S}
-2   Cs u0 {3,S} {4,S} {5,S}
+1   Css u0 {3,S} {4,S} {6,S}
+2   Css u0 {3,S} {4,S} {5,S}
 3   C  u0 {1,S} {2,S}
 4   C  u0 {1,S} {2,S}
-5 * Cd u1 {2,S} {6,D}
-6   Cd u0 {1,S} {5,D}
+5 * Cdb u1 {2,S} {6,D}
+6   Cdb u0 {1,S} {5,D}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5727,10 +5727,10 @@ entry(
     label="1,3-cyclopentadiene-vinyl-1",
     group="""
 1   C  u0 {2,S} {3,S}
-2 * Cd u1 {1,S} {4,D}
-3   Cd u0 {1,S} {5,D}
-4   Cd u0 {2,D} {5,S}
-5   Cd u0 {3,D} {4,S}
+2 * Cdb u1 {1,S} {4,D}
+3   Cdb u0 {1,S} {5,D}
+4   Cdb u0 {2,D} {5,S}
+5   Cdb u0 {3,D} {4,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -5748,7 +5748,7 @@ entry(
     index=3061,
     label="C=CJC=O",
     group="""
-1 * Cd u1 {2,S} {3,D}
+1 * Cdb u1 {2,S} {3,D}
 2   CO u0 {1,S} {4,D}
 3   C  u0 {1,D}
 4   O2d u0 {2,D}
@@ -5771,7 +5771,7 @@ entry(
     index=3079,
     label="CCCJ=C=O",
     group="""
-1 * Cd  u1 {2,S} {3,D}
+1 * Cdb  u1 {2,S} {3,D}
 2   C   u0 {1,S} {4,S}
 3   Cdd u0 {1,D} {5,D}
 4   C   u0 {2,S}
@@ -5795,8 +5795,8 @@ entry(
     index=3080,
     label="CC(C)CJ=C=O",
     group="""
-1   Cs  u0 {2,S} {4,S} {5,S}
-2 * Cd  u1 {1,S} {3,D}
+1   Css  u0 {2,S} {4,S} {5,S}
+2 * Cdb  u1 {1,S} {3,D}
 3   Cdd u0 {2,D} {6,D}
 4   C   u0 {1,S}
 5   C   u0 {1,S}
@@ -5820,8 +5820,8 @@ entry(
     index=3085,
     label="C=C(C)CJ=C=O",
     group="""
-1   Cd  u0 {2,S} {4,D} {5,S}
-2 * Cd  u1 {1,S} {3,D}
+1   Cdb  u0 {2,S} {4,D} {5,S}
+2 * Cdb  u1 {1,S} {3,D}
 3   Cdd u0 {2,D} {6,D}
 4   C   u0 {1,D}
 5   C   u0 {1,S}
@@ -5845,7 +5845,7 @@ entry(
     index=257,
     label="CdsJ-S2s",
     group="""
-1 * Cd u1 {2,S} {3,D}
+1 * Cdb u1 {2,S} {3,D}
 2   S2s u0 {1,S}
 3   C  u0 {1,D}
 """,
@@ -5865,7 +5865,7 @@ entry(
     index=3025,
     label="C=CJO",
     group="""
-1 * Cd u1 {2,D} {3,S}
+1 * Cdb u1 {2,D} {3,S}
 2   C  u0 {1,D}
 3   O2s u0 {1,S}
 """,
@@ -6006,7 +6006,7 @@ entry(
     label="C=SJ-Cd",
     group="""
 1 * CS u1 {2,S} {3,D}
-2   Cd u0 {1,S}
+2   Cdb u0 {1,S}
 3   S2d u0 {1,D}
 """,
     thermo=ThermoData(
@@ -6026,7 +6026,7 @@ entry(
     label="C=SJ-Cs",
     group="""
 1 * CS u1 {2,S} {3,D}
-2   Cs u0 {1,S}
+2   Css u0 {1,S}
 3   S2d u0 {1,D}
 """,
     thermo=ThermoData(
@@ -6092,7 +6092,7 @@ entry(
     label="CsOJ",
     group="""
 1 * O2s u1 {2,S}
-2   Cs u0 {1,S}
+2   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -6110,7 +6110,7 @@ entry(
     index=97,
     label="H3COJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * O2s u1 {1,S}
 3   H  u0 {1,S}
 4   H  u0 {1,S}
@@ -6132,7 +6132,7 @@ entry(
     index=3022,
     label="CC(C)OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S}
+1   Css u0 {2,S} {3,S} {4,S}
 2 * O2s u1 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -6155,7 +6155,7 @@ entry(
     index=3023,
     label="CC(C)2OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * O2s u1 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -6179,8 +6179,8 @@ entry(
     index=3036,
     label="C=CC(C)2OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2   Cd u0 {1,S} {6,D}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2   Cdb u0 {1,S} {6,D}
 3 * O2s u1 {1,S}
 4   C  u0 {1,S}
 5   C  u0 {1,S}
@@ -6204,9 +6204,9 @@ entry(
     index=3068,
     label="C=CC(C)(C=O)OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2   CO u0 {1,S} {7,D}
-3   Cd u0 {1,S} {6,D}
+3   Cdb u0 {1,S} {6,D}
 4 * O2s u1 {1,S}
 5   C  u0 {1,S}
 6   C  u0 {3,D}
@@ -6230,7 +6230,7 @@ entry(
     index=3051,
     label="CC(C)(C=O)OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2   CO u0 {1,S} {6,D}
 3 * O2s u1 {1,S}
 4   C  u0 {1,S}
@@ -6255,7 +6255,7 @@ entry(
     index=3024,
     label="CC(C)(O)OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2 * O2s u1 {1,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -6279,8 +6279,8 @@ entry(
     index=3037,
     label="C=CC(C)(O)OJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
-2   Cd u0 {1,S} {6,D}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
+2   Cdb u0 {1,S} {6,D}
 3 * O2s u1 {1,S}
 4   C  u0 {1,S}
 5   O2s u0 {1,S}
@@ -6305,7 +6305,7 @@ entry(
     label="CdsOJ",
     group="""
 1 * O2s      u1 {2,S}
-2   [Cd,CO] u0 {1,S}
+2   [Cdb,CO] u0 {1,S}
 """,
     thermo="RC=COJ",
     shortDesc="""""",
@@ -6319,7 +6319,7 @@ entry(
     label="RC=COJ",
     group="""
 1 * O2s u1 {2,S}
-2   Cd u0 {1,S}
+2   Cdb u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -6337,7 +6337,7 @@ entry(
     index=3034,
     label="C=COJ",
     group="""
-1   Cd u0 {2,S} {3,D}
+1   Cdb u0 {2,S} {3,D}
 2 * O2s u1 {1,S}
 3   C  u0 {1,D}
 """,
@@ -6359,7 +6359,7 @@ entry(
     index=3035,
     label="C=C(C)OJ",
     group="""
-1   Cd u0 {2,S} {3,D} {4,S}
+1   Cdb u0 {2,S} {3,D} {4,S}
 2 * O2s u1 {1,S}
 3   C  u0 {1,D}
 4   C  u0 {1,S}
@@ -6585,7 +6585,7 @@ entry(
     index=103,
     label="C3COOJ",
     group="""
-1   Cs u0 {2,S} {3,S} {4,S} {5,S}
+1   Css u0 {2,S} {3,S} {4,S} {5,S}
 2   O2s u0 {1,S} {6,S}
 3   C  u0 {1,S}
 4   C  u0 {1,S}
@@ -6688,7 +6688,7 @@ entry(
     label="SJ-Cs",
     group="""
 1 * S2s u1 {2,S}
-2   Cs u0 {1,S}
+2   Css u0 {1,S}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
@@ -6745,7 +6745,7 @@ entry(
     label="SJ-Cd",
     group="""
 1 * S2s u1 {2,S}
-2   Cd u0 {1,S} {3,D}
+2   Cdb u0 {1,S} {3,D}
 3   C  u0 {2,D}
 """,
     thermo=ThermoData(
@@ -6904,7 +6904,7 @@ entry(
     index=108,
     label="CsJ2_triplet",
     group="""
-1 * Cs u2
+1 * Css u2
 """,
     thermo="CH2_triplet",
     shortDesc="""""",
@@ -6917,7 +6917,7 @@ entry(
     index=110,
     label="CH2_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
+1 * Css u2 {2,S} {3,S}
 2   H  u0 {1,S}
 3   H  u0 {1,S}
 """,
@@ -6937,7 +6937,7 @@ entry(
     index=112,
     label="CsJ2_P_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
+1 * Css u2 {2,S} {3,S}
 2   C  u0 {1,S}
 3   H  u0 {1,S}
 """,
@@ -6952,8 +6952,8 @@ entry(
     index=113,
     label="CsCsJ2_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
-2   Cs u0 {1,S}
+1 * Css u2 {2,S} {3,S}
+2   Css u0 {1,S}
 3   H  u0 {1,S}
 """,
     thermo="CCJ2_triplet",
@@ -6967,8 +6967,8 @@ entry(
     index=115,
     label="CCJ2_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
-2   Cs u0 {1,S} {4,S} {5,S} {6,S}
+1 * Css u2 {2,S} {3,S}
+2   Css u0 {1,S} {4,S} {5,S} {6,S}
 3   H  u0 {1,S}
 4   H  u0 {2,S}
 5   H  u0 {2,S}
@@ -6990,7 +6990,7 @@ entry(
     index=118,
     label="PhCH_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
+1 * Css u2 {2,S} {3,S}
 2   Cb u0 {1,S}
 3   H  u0 {1,S}
 """,
@@ -7010,8 +7010,8 @@ entry(
     index=121,
     label="AllylJ2_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
-2   Cd u0 {1,S}
+1 * Css u2 {2,S} {3,S}
+2   Cdb u0 {1,S}
 3   H  u0 {1,S}
 """,
     thermo=ThermoData(
@@ -7030,7 +7030,7 @@ entry(
     index=123,
     label="CsJ2_S_triplet",
     group="""
-1 * Cs u2 {2,S} {3,S}
+1 * Css u2 {2,S} {3,S}
 2   C  u0 {1,S}
 3   C  u0 {1,S}
 """,
@@ -7045,7 +7045,7 @@ entry(
     index=124,
     label="CdJ2_triplet",
     group="""
-1 * [Cd,CO] u2
+1 * [Cdb,CO] u2
 """,
     thermo="CCdJ2_triplet",
     shortDesc="""""",
@@ -7058,7 +7058,7 @@ entry(
     index=126,
     label="CCdJ2_triplet",
     group="""
-1 * Cd u2 {2,D}
+1 * Cdb u2 {2,D}
 2   C  u0 {1,D}
 """,
     thermo="CCdJ2_singlet",
@@ -7213,7 +7213,7 @@ entry(
     label="CsCsJ2_singlet",
     group="""
 1 * C2s u0 p1 {2,S} {3,S}
-2   Cs u0 {1,S}
+2   Css u0 {1,S}
 3   H  u0 {1,S}
 """,
     thermo="CCJ2_singlet",
@@ -7228,7 +7228,7 @@ entry(
     label="CCJ2_singlet",
     group="""
 1 * C2s u0 p1 {2,S} {3,S}
-2   Cs u0 {1,S} {4,S} {5,S} {6,S}
+2   Css u0 {1,S} {4,S} {5,S} {6,S}
 3   H  u0 {1,S}
 4   H  u0 {2,S}
 5   H  u0 {2,S}
@@ -7266,7 +7266,7 @@ entry(
     label="AllylJ2_singlet",
     group="""
 1 * C2s u0 p1 {2,S} {3,S}
-2   Cd u0 {1,S}
+2   Cdb u0 {1,S}
 3   H  u0 {1,S}
 """,
     thermo="AllylJ2_triplet",
@@ -7436,7 +7436,7 @@ entry(
     index=133,
     label="CJ3",
     group="""
-1 * Cs u3
+1 * Css u3
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),

@@ -298,7 +298,7 @@ entry(
     index=25,
     label="CdsJ",
     group="""
-1 *3 Cd  u1 {2,D}
+1 *3 Cdb  u1 {2,D}
 2    R!H u0 {1,D}
 """,
     kinetics=None,
@@ -308,7 +308,7 @@ entry(
     index=36,
     label="CsJ",
     group="""
-1 *3 Cs u1 {2,S} {3,S}
+1 *3 Css u1 {2,S} {3,S}
 2    R  u0 {1,S}
 3    R  u0 {1,S}
 """,
@@ -351,7 +351,7 @@ entry(
     label="S-CsC",
     group="""
 1 *1 S2s u0 {2,S} {3,S}
-2    Cs u0 {1,S}
+2    Css u0 {1,S}
 3 *2 C  u0 {1,S}
 """,
     kinetics=None,
@@ -384,7 +384,7 @@ entry(
     label="S-CdC",
     group="""
 1 *1 S2s u0 {2,S} {3,S}
-2    Cd u0 {1,S} {4,D}
+2    Cdb u0 {1,S} {4,D}
 3 *2 C  u0 {1,S}
 4    C  u0 {2,D}
 """,
@@ -408,7 +408,7 @@ entry(
     group="""
 1 *1 S2s u0 {2,S} {3,S}
 2 *2 S2s u0 {1,S}
-3    Cs u0 {1,S}
+3    Css u0 {1,S}
 """,
     kinetics=None,
 )
@@ -441,7 +441,7 @@ entry(
     group="""
 1 *1 S2s u0 {2,S} {3,S}
 2 *2 S2s u0 {1,S}
-3    Cd u0 {1,S} {4,D}
+3    Cdb u0 {1,S} {4,D}
 4    C  u0 {3,D}
 """,
     kinetics=None,
