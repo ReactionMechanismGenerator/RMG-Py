@@ -227,7 +227,7 @@ entry(
     index=22,
     label="CH_quartet",
     group="""
-1 *3 Cs u3 p0 {2,S}
+1 *3 Css u3 p0 {2,S}
 2    H  u0 {1,S}
 """,
     kinetics=None,
