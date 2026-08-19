@@ -282,6 +282,9 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if 'Ncoord' in self.props and 'Ncoord' in ap.props:
+                if self.props['Ncoord'] != ap.props['Ncoord']:
+                    return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -339,6 +342,13 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if 'Ncoord' in self.props and 'Ncoord' in atom.props:
+                for cn in atom.props['Ncoord']:
+                    if self.props['Ncoord'] == cn: break
+                else:
+                    return False
+            elif 'Ncoord' not in self.props and 'Ncoord' in atom.props:
+                return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -1365,6 +1375,9 @@ class Molecule(Graph):
             self.sort_atoms()
         self.identify_ring_membership()
 
+        for atom in self.atoms:
+            atom.props['Ncoord'] = len(atom.bonds)
+
     def get_formula(self):
         """
         Return the molecular formula for the molecule.
@@ -1966,6 +1979,9 @@ class Molecule(Graph):
         # identify ring membership iff it's not a suspicious molecule
         if not self.is_electron():
             self.identify_ring_membership()
+
+        for atom in self.atoms:
+            atom.props['Ncoord'] = len(atom.bonds)
 
         # Check if multiplicity is possible
         n_rad = self.get_radical_count()
