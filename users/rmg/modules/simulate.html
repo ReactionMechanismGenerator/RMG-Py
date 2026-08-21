@@ -76,12 +76,12 @@ does not generate a RMG job.  See the following <code class="docutils literal no
 <code class="docutils literal notranslate"><span class="pre">$RMGPy/examples/sensitivity/input.py</span></code> folder</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'primaryThermoLibrary'</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!Intra_Disproportionation&#39;</span><span class="p">,</span><span class="s1">&#39;!Substitution_O&#39;</span><span class="p">,</span> <span class="s1">&#39;!surface&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'training'</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'!Intra_Disproportionation'</span><span class="p">,</span><span class="s1">'!Substitution_O'</span><span class="p">,</span> <span class="s1">'!surface'</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">'rate rules'</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Constraints on generated species</span>
@@ -91,23 +91,23 @@ does not generate a RMG job.  See the following <code class="docutils literal no
 
 <span class="c1"># List of species</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'ethane'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"CC"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1"># Reaction systems</span>
 <span class="n">simpleReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+    <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">),</span>
     <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;ethane&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"ethane"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;ethane&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="s1">'ethane'</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
-    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ethane&#39;</span><span class="p">],</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e6</span><span class="p">,</span><span class="s1">'s'</span><span class="p">),</span>
+    <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">'ethane'</span><span class="p">],</span>
     <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -126,7 +126,7 @@ does not generate a RMG job.  See the following <code class="docutils literal no
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">'si'</span><span class="p">,</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>

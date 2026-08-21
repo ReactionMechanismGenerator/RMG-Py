@@ -236,19 +236,19 @@ you will need <code class="docutils literal notranslate"><span class="pre">/opt/
 <p>This configuration will allow you to debug the rms_constant_V example, running through
 python.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: rmg.py rms_constant_V&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;rmg.py&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;examples/rmg/rms_constant_V/input.py&quot;</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Python: rmg.py rms_constant_V"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"python"</span><span class="p">,</span>
+    <span class="s2">"request"</span><span class="p">:</span> <span class="s2">"launch"</span><span class="p">,</span>
+    <span class="s2">"cwd"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{workspaceFolder}</span><span class="s2">/"</span><span class="p">,</span>
+    <span class="s2">"program"</span><span class="p">:</span> <span class="s2">"rmg.py"</span><span class="p">,</span>
+    <span class="s2">"python"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/python"</span><span class="p">,</span>
+    <span class="s2">"args"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"examples/rmg/rms_constant_V/input.py"</span><span class="p">,</span>
     <span class="p">],</span>
-    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="s2">"console"</span><span class="p">:</span> <span class="s2">"integratedTerminal"</span><span class="p">,</span>
+    <span class="s2">"env"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"PATH"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin:${env:PATH}"</span><span class="p">,</span>
+        <span class="s2">"PYTHONPATH"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{workspaceFolder}</span><span class="s2">/"</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">},</span>
 </pre></div>
@@ -256,55 +256,55 @@ python.</p>
 <p>This configuration will allow you to debug a subset of the unit tests.
 Open one of the many test files named <code class="docutils literal notranslate"><span class="pre">*Test.py</span></code> in <code class="docutils literal notranslate"><span class="pre">test/rmgpy</span></code> before you launch it:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: pytest Current File&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Python: pytest Current File"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"python"</span><span class="p">,</span>
+    <span class="s2">"request"</span><span class="p">:</span> <span class="s2">"launch"</span><span class="p">,</span>
+    <span class="s2">"program"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/pytest"</span><span class="p">,</span>
+    <span class="s2">"python"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/python"</span><span class="p">,</span>
+    <span class="s2">"args"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"--capture=no"</span><span class="p">,</span>
+        <span class="s2">"--verbose"</span><span class="p">,</span>
+        <span class="s2">"$</span><span class="si">{file}</span><span class="s2">"</span>
     <span class="p">],</span>
-    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="s2">"console"</span><span class="p">:</span> <span class="s2">"integratedTerminal"</span><span class="p">,</span>
+    <span class="s2">"env"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"PATH"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin:${env:PATH}"</span><span class="p">,</span>
+        <span class="s2">"PYTHONPATH"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{workspaceFolder}</span><span class="s2">/"</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">},</span>
 </pre></div>
 </div>
 <p>This configuration will allow you to debug running all the database tests.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Test RMG-database&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/test/database/databaseTest.py&quot;</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Test RMG-database"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"python"</span><span class="p">,</span>
+    <span class="s2">"request"</span><span class="p">:</span> <span class="s2">"launch"</span><span class="p">,</span>
+    <span class="s2">"program"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/pytest"</span><span class="p">,</span>
+    <span class="s2">"python"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/python"</span><span class="p">,</span>
+    <span class="s2">"args"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"--capture=no"</span><span class="p">,</span>
+        <span class="s2">"--verbose"</span><span class="p">,</span>
+        <span class="s2">"$</span><span class="si">{workspaceFolder}</span><span class="s2">/test/database/databaseTest.py"</span>
     <span class="p">],</span>
-    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;PATH&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin:${env:PATH}&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
+    <span class="s2">"console"</span><span class="p">:</span> <span class="s2">"integratedTerminal"</span><span class="p">,</span>
+    <span class="s2">"env"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"PATH"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin:${env:PATH}"</span><span class="p">,</span>
+        <span class="s2">"PYTHONPATH"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{workspaceFolder}</span><span class="s2">/"</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">},</span>
 </pre></div>
 </div>
 <p>This configuration will allow you to use the debugger breakpoints inside unit tests being run by the pytest framework:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: Debug Tests&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;purpose&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;debug-test&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;justMyCode&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-    <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PYTEST_ADDOPTS&quot;</span><span class="p">:</span> <span class="s2">&quot;--no-cov&quot;</span><span class="p">,}</span> <span class="o">//</span> <span class="n">without</span> <span class="n">disabling</span> <span class="n">coverage</span> <span class="n">VS</span> <span class="n">Code</span> <span class="n">doesn</span><span class="s1">&#39;t stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Python: Debug Tests"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"python"</span><span class="p">,</span>
+    <span class="s2">"request"</span><span class="p">:</span> <span class="s2">"launch"</span><span class="p">,</span>
+    <span class="s2">"program"</span><span class="p">:</span> <span class="s2">"$</span><span class="si">{file}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"purpose"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"debug-test"</span><span class="p">],</span>
+    <span class="s2">"python"</span><span class="p">:</span> <span class="s2">"/opt/miniconda3/envs/rmg_env/bin/python"</span><span class="p">,</span>
+    <span class="s2">"console"</span><span class="p">:</span> <span class="s2">"integratedTerminal"</span><span class="p">,</span>
+    <span class="s2">"justMyCode"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">"env"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"PYTEST_ADDOPTS"</span><span class="p">:</span> <span class="s2">"--no-cov"</span><span class="p">,}</span> <span class="o">//</span> <span class="n">without</span> <span class="n">disabling</span> <span class="n">coverage</span> <span class="n">VS</span> <span class="n">Code</span> <span class="n">doesn</span><span class="s1">'t stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run</span>
   <span class="p">}</span>
 </pre></div>
 </div>
@@ -347,15 +347,15 @@ and a folder containing the tests
 (<strong>select `test`</strong>).
 To configure the rest of the settings, find the <code class="docutils literal notranslate"><span class="pre">settings.json</span></code> file in your <code class="docutils literal notranslate"><span class="pre">.vscode</span></code> folder.
 You can use the following settings to configure the pytest framework:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;python.testing.pytestEnabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-<span class="s2">&quot;python.testing.pytestPath&quot;</span><span class="p">:</span> <span class="s2">&quot;python -m pytest&quot;</span><span class="p">,</span>
-<span class="s2">&quot;python.testing.pytestArgs&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;julia.pytestplugin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;--julia-compiled-modules=no&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;--ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;test/regression&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;not functional&quot;</span><span class="p">,</span>
-    <span class="o">//</span> <span class="s2">&quot;-n&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="o">//</span> <span class="n">number</span> <span class="n">of</span> <span class="n">parallel</span> <span class="n">processes</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">install</span> <span class="n">pytest</span><span class="o">-</span><span class="n">xdist</span>
-    <span class="s2">&quot;test&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"python.testing.pytestEnabled"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+<span class="s2">"python.testing.pytestPath"</span><span class="p">:</span> <span class="s2">"python -m pytest"</span><span class="p">,</span>
+<span class="s2">"python.testing.pytestArgs"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"julia.pytestplugin"</span><span class="p">,</span>
+    <span class="s2">"--julia-compiled-modules=no"</span><span class="p">,</span>
+    <span class="s2">"--ignore"</span><span class="p">,</span> <span class="s2">"test/regression"</span><span class="p">,</span>
+    <span class="s2">"-m"</span><span class="p">,</span> <span class="s2">"not functional"</span><span class="p">,</span>
+    <span class="o">//</span> <span class="s2">"-n"</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">,</span> <span class="o">//</span> <span class="n">number</span> <span class="n">of</span> <span class="n">parallel</span> <span class="n">processes</span><span class="p">,</span> <span class="k">if</span> <span class="n">you</span> <span class="n">install</span> <span class="n">pytest</span><span class="o">-</span><span class="n">xdist</span>
+    <span class="s2">"test"</span>
 <span class="p">],</span>
 </pre></div>
 </div>

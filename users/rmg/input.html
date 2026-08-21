@@ -95,7 +95,7 @@ set to its default value.  In particular, the thermodynamic properties for H and
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson’s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="#grimech3-0" id="id1"><span>[GRIMech3.0]</span></a> as a ThermoLibrary in your model, the syntax will be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'primaryThermoLibrary'</span><span class="p">,</span> <span class="s1">'GRI-Mech3.0'</span><span class="p">]</span>
 </pre></div>
 </div>
 <div role="list" class="citation-list">
@@ -126,13 +126,13 @@ from the start.</p>
 In the following example, the user has created
 a reaction library with a few additional reactions specific to n-butane, and these reactions
 are to be used in addition to the Glarborg C3 library:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'Glarborg/C3'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span>
 </pre></div>
 </div>
 <p>The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
 True means those reactions will be appended. Using just the string inputs would lead to
 a default value of <cite>False</cite>. In the previous example, this would look like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Glarborg/C3'</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>The reaction libraries are stored in <code class="file docutils literal notranslate"><span class="pre">$RMG-database/input/kinetics/libraries/</span></code>
@@ -156,11 +156,11 @@ Library.</p>
 <p>Users may direct RMG to use thermo and/or kinetic libraries which are not included in the RMG database,
 e.g., a library a user created that was intentionally saved to a path different than the conventional
 RMG-database location. In such cases, the user can specify the full path to the library in the input file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;path/to/your/thermo/library/file.py&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'path/to/your/thermo/library/file.py'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">kinetic</span><span class="o">/</span><span class="n">library</span><span class="o">/</span><span class="n">folder</span><span class="o">/</span><span class="s1">&#39;]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">kinetic</span><span class="o">/</span><span class="n">library</span><span class="o">/</span><span class="n">folder</span><span class="o">/</span><span class="s1">']</span>
 </pre></div>
 </div>
 <p>Combinations in any order of RMG’s legacy libraries and users’ external libraries are allowed,
@@ -178,7 +178,7 @@ see <a class="reference internal" href="#reactionlibraries"><span class="std std
 seed mechanism in the location section. Please note that the oxidation
 library should not be used for pyrolysis models. The syntax for the seed mechanisms
 is similar to that of the primary reaction libraries.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'GRI-Mech3.0'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>The seed mechanisms are stored in <code class="file docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/libraries/</span></code></p>
@@ -198,7 +198,7 @@ can be disabled by adding <cite>‘!training’</cite> to the list of depositori
 The <cite>NIST</cite> depository contains reactions taken from NIST’s gas kinetics database.
 The <cite>kineticsDepositories</cite> argument in the input file accepts a list of
 strings describing which depositories to include.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'training'</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -207,23 +207,23 @@ strings describing which depositories to include.:</p>
 <p>In this section users can specify the particular reaction families that they wish to use to generate their model.
 This can be specified with any combination of specific families and predefined sets from <code class="file docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/recommended.py</span></code>.</p>
 <p>For example, you can use only the <code class="file docutils literal notranslate"><span class="pre">H_Abstraction</span></code> family to build the model:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;H_Abstraction&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">'H_Abstraction'</span>
 </pre></div>
 </div>
 <p>You can also specify multiple families in a list:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H_Abstraction&#39;</span><span class="p">,</span> <span class="s1">&#39;Disproportionation&#39;</span><span class="p">,</span> <span class="s1">&#39;R_Recombination&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'H_Abstraction'</span><span class="p">,</span> <span class="s1">'Disproportionation'</span><span class="p">,</span> <span class="s1">'R_Recombination'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>To use a predefined set, simply specify its name:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">'default'</span>
 </pre></div>
 </div>
 <p>You can use a mix of predefined sets and kinetics families:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;SubstitutionS&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'default'</span><span class="p">,</span> <span class="s1">'SubstitutionS'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>It is also possible to request the inverse of a particular list:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!default&#39;</span><span class="p">,</span> <span class="s1">&#39;!SubstitutionS&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'!default'</span><span class="p">,</span> <span class="s1">'!SubstitutionS'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This will load all kinetics families except the ones in <code class="docutils literal notranslate"><span class="pre">'default'</span></code> and <code class="docutils literal notranslate"><span class="pre">'SubstitutionS'</span></code>.</p>
@@ -232,7 +232,7 @@ This can be specified with any combination of specific families and predefined s
 <section id="kinetics-estimator">
 <h3><span class="section-number">4.2.7. </span>Kinetics Estimator<a class="headerlink" href="#kinetics-estimator" title="Permalink to this heading">¶</a></h3>
 <p>The last section is specifying that RMG is estimating kinetics of reactions from rate rules. For more details on how kinetic estimations is working check <a class="reference internal" href="kinetics.html#kinetics"><span class="std std-ref">Kinetics Estimation</span></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">'rate rules'</span>
 </pre></div>
 </div>
 </section>
@@ -243,13 +243,13 @@ thermo libraries, kinetics libraries, transport libraries, seed mechanisms, and
 kinetics families automatically based on the species and reactor conditions in your
 input file. Use the <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> keyword in any library field:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
-        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-        <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'training'</span><span class="p">],</span>
+        <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">'rate rules'</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -269,9 +269,9 @@ triggered only when a reactive species containing nitrogen is present.</p>
 <p><strong>Mixing manual and auto selection.</strong> You can combine user-specified libraries
 with <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> in a list. The position of <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> controls the priority:
 libraries before it have higher priority, libraries after it have lower:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;myCustomLib&#39;</span><span class="p">,</span> <span class="s1">&#39;auto&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'myCustomLib'</span><span class="p">,</span> <span class="s1">'auto'</span><span class="p">]</span>
 
-<span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;myFallbackLib&#39;</span><span class="p">]</span>
+<span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'auto'</span><span class="p">,</span> <span class="s1">'myFallbackLib'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>If a library you listed manually also appears in the auto-selected set, it will
@@ -296,11 +296,11 @@ significant amounts of aromatics (e.g., fuel-rich partial oxidation), you can
 explicitly request the PAH libraries by adding the <code class="docutils literal notranslate"><span class="pre">'&lt;PAH_libs&gt;'</span></code> keyword
 to any library field:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
-        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PAH_libs&gt;&#39;</span><span class="p">],</span>
-        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PAH_libs&gt;&#39;</span><span class="p">],</span>
-        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'auto'</span><span class="p">,</span> <span class="s1">'&lt;PAH_libs&gt;'</span><span class="p">],</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'auto'</span><span class="p">,</span> <span class="s1">'&lt;PAH_libs&gt;'</span><span class="p">],</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">'auto'</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -330,24 +330,24 @@ be set as <code class="docutils literal notranslate"><span class="pre">True</spa
 <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacencyList</span></a>.</p>
 <p>The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">'CH4'</span><span class="p">,</span>
         <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
+        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">'CH4'</span><span class="p">,</span>
         <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                1 C 0</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>For long lists of initial core species, you can specify a coreSpeciesList, shown below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSpeciesList</span><span class="p">(</span>
-    <span class="n">species_dictionary_file</span><span class="o">=</span><span class="s2">&quot;path/to/your/species_dictionary.txt&quot;</span>
+    <span class="n">species_dictionary_file</span><span class="o">=</span><span class="s2">"path/to/your/species_dictionary.txt"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -368,20 +368,20 @@ The structure of the forbidden structure can be defined using either SMILES or
 <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">adjacencyList</span></a>.</p>
 <p>The following is an example of a forbidden structure item, based on bidentate CO2 using SMILES or adjacency list to define the structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CO2_bidentate&#39;</span><span class="p">,</span>
-        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;O=C(*)O*&quot;</span><span class="p">),</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">'CO2_bidentate'</span><span class="p">,</span>
+        <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"O=C(*)O*"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">forbidden</span><span class="p">(</span>
-        <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CO2_bidentate&#39;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s1">'CO2_bidentate'</span><span class="p">,</span>
         <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                1 O u0 p2 c0 {2,D}</span>
 <span class="sd">                2 C u0 p0 c0 {1,D} {3,S} {4,S}</span>
 <span class="sd">                3 X u0 p0 c0 {2,S}</span>
 <span class="sd">                4 O u0 p2 c0 {2,S} {5,S}</span>
 <span class="sd">                5 X u0 p0 c0 {4,S}</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
         <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -390,13 +390,13 @@ The structure of the forbidden structure can be defined using either SMILES or
 <p>The following is an example of a forbidden structure using <code class="docutils literal notranslate"><span class="pre">adjacencyListGroup</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">R-O-Cl</span></code> forbidden structure forbids any species which contain an “R-O-Cl” group from your mechanism.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;R-O-Cl,</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">"R-O-Cl,</span>
         <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyListGroup</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                1 R  ux {2,S}</span>
 <span class="sd">                2 O  ux {1,S} {3,S}</span>
 <span class="sd">                3 Cl ux {2,S}</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
         <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
@@ -420,19 +420,19 @@ characteristic flux in the system at that time divided by the maximum characteri
 in the system (measure of how much chemistry is happening at a moment relative to the main chemical process).</p>
 <p>The following is an example of a simple reactor system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">simpleReactor</span><span class="p">(</span>
-        <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1350</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">pressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">),</span>
         <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.104</span><span class="p">,</span>
-                <span class="s2">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">0.0156</span><span class="p">,</span>
-                <span class="s2">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.8797</span><span class="p">,</span>
+                <span class="s2">"CH4"</span><span class="p">:</span> <span class="mf">0.104</span><span class="p">,</span>
+                <span class="s2">"H2"</span><span class="p">:</span> <span class="mf">0.0156</span><span class="p">,</span>
+                <span class="s2">"N2"</span><span class="p">:</span> <span class="mf">0.8797</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+                <span class="s1">'CH4'</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s1">'s'</span><span class="p">),</span>
         <span class="n">terminationRateRatio</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span><span class="s1">&#39;H2&#39;</span><span class="p">],</span>
+        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">'CH4'</span><span class="p">,</span><span class="s1">'H2'</span><span class="p">],</span>
         <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
 <span class="p">)</span>
@@ -471,24 +471,24 @@ improve treatment of reaction conditions that otherwise would be between reactor
 focusing on reaction conditions at which the model terminates earlier.  An example with sensitivity analysis at a specified reaction condition
 is available below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">simpleReactor</span><span class="p">(</span>
-        <span class="n">temperature</span><span class="o">=</span><span class="p">[(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),(</span><span class="mi">1500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)],</span>
-        <span class="n">pressure</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">)],</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="p">[(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),(</span><span class="mi">1500</span><span class="p">,</span><span class="s1">'K'</span><span class="p">)],</span>
+        <span class="n">pressure</span><span class="o">=</span><span class="p">[(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">),(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">)],</span>
         <span class="n">nSims</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
         <span class="n">initialMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;ethane&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.15</span><span class="p">],</span>
-        <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-        <span class="s2">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
+        <span class="s2">"ethane"</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.15</span><span class="p">],</span>
+        <span class="s2">"O2"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="s2">"N2"</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;ethane&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="s1">'ethane'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e1</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
-        <span class="n">sensitivityTemperature</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">sensitivityPressure</span> <span class="o">=</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span>
-        <span class="n">sensitivityMoleFractions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ethane&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span><span class="s2">&quot;O2&quot;</span><span class="p">:</span><span class="mf">0.9</span><span class="p">},</span>
-        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ethane&quot;</span><span class="p">,</span><span class="s2">&quot;O2&quot;</span><span class="p">],</span>
+        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e1</span><span class="p">,</span><span class="s1">'s'</span><span class="p">),</span>
+        <span class="n">sensitivityTemperature</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">sensitivityPressure</span> <span class="o">=</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">),</span>
+        <span class="n">sensitivityMoleFractions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ethane"</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span><span class="s2">"O2"</span><span class="p">:</span><span class="mf">0.9</span><span class="p">},</span>
+        <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s2">"ethane"</span><span class="p">,</span><span class="s2">"O2"</span><span class="p">],</span>
         <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-        <span class="n">balanceSpecies</span> <span class="o">=</span> <span class="s2">&quot;N2&quot;</span><span class="p">,</span>
+        <span class="n">balanceSpecies</span> <span class="o">=</span> <span class="s2">"N2"</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
 </div>
@@ -604,7 +604,7 @@ how</p>
 <p>For example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
                 <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-                <span class="n">toleranceTransitoryDict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;NO&quot;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">},</span>
+                <span class="n">toleranceTransitoryDict</span><span class="o">=</span><span class="p">{</span><span class="s2">"NO"</span><span class="p">:</span><span class="mf">0.2</span><span class="p">},</span>
                 <span class="n">transitoryStepPeriod</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -753,9 +753,9 @@ quantum mechanical calculations with subsequent hydrogen bond incrementation is 
 thermodynamic parameters.</p>
 <p>The following is an example of the quantum mechanics options</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quantumMechanics</span><span class="p">(</span>
-        <span class="n">software</span><span class="o">=</span><span class="s1">&#39;mopac&#39;</span><span class="p">,</span>
-        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pm3&#39;</span><span class="p">,</span>
-        <span class="n">fileStore</span><span class="o">=</span><span class="s1">&#39;QMfiles&#39;</span><span class="p">,</span>
+        <span class="n">software</span><span class="o">=</span><span class="s1">'mopac'</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">'pm3'</span><span class="p">,</span>
+        <span class="n">fileStore</span><span class="o">=</span><span class="s1">'QMfiles'</span><span class="p">,</span>
         <span class="n">scratchDirectory</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -781,7 +781,7 @@ group additivity.</p>
 <p>The available options with their default values are</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlEstimator</span><span class="p">(</span>
     <span class="n">thermo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">'main'</span><span class="p">,</span>
     <span class="n">minHeavyAtoms</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">maxHeavyAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">minCarbonAtoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -793,9 +793,9 @@ group additivity.</p>
     <span class="n">onlyCyclics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">onlyHeterocyclics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">minCycleOverlap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">H298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-    <span class="n">S298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-    <span class="n">CpUncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">)</span>
+    <span class="n">H298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="s1">'kcal/mol'</span><span class="p">),</span>
+    <span class="n">S298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+    <span class="n">CpUncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">'cal/(mol*K)'</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -826,12 +826,12 @@ utilizes the steady-state/reservoir-state approach of Green and Bhatti <a class=
 and is more theoretically sound but more expensive.</p>
 <p>The following is an example of pressure dependence options</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
-        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
-        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">'modified strong collision'</span><span class="p">,</span>
+        <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
         <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
-        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
-        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
-        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+        <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">'Chebyshev'</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
         <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -840,11 +840,11 @@ and is more theoretically sound but more expensive.</p>
 <section id="method-used-for-estimating-pressure-dependent-kinetics">
 <h3><span class="section-number">4.10.1. </span>Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this heading">¶</a></h3>
 <p>To specify the modified strong collision approach, this item should read</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Modified Strong Collision&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">'Modified Strong Collision'</span>
 </pre></div>
 </div>
 <p>To specify the reservoir state approach, this item should read</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Reservoir State&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">'Reservoir State'</span>
 </pre></div>
 </div>
 <p>For more information on the two methods, consult the following resources :</p>
@@ -866,7 +866,7 @@ when solving the Master Equation. The default value for the minimum number of gr
 and accuracy of the Master Equation solver method.  However, for some pressure-dependent networks,
 this number of energy grains will result in the pressure-dependent <span class="math notranslate nohighlight">\(k(T, P)\)</span> being greater than
 the high-P limit</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">)</span>
 <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span>
 </pre></div>
 </div>
@@ -876,8 +876,8 @@ the high-P limit</p>
 <p>To generate the <span class="math notranslate nohighlight">\(k(T,P)\)</span> interpolation model, a set of temperatures and pressures must be used. RMG can do this automatically, but it must be told a few parameters.
 We need to specify the limits of the temperature and pressure for the fitting of the interpolation scheme and the number of points to be considered in between this limit.
 For typical combustion model temperatures of the experiments range from 300 - 2000 K and pressure 1E-2 to 100 bar</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -885,7 +885,7 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 <h3><span class="section-number">4.10.4. </span>Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this heading">¶</a></h3>
 <p>To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">'PDepArrhenius'</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>The auxillary information printed to the Chemkin chem.inp file will have the “PLOG”
@@ -896,7 +896,7 @@ the CHEMKIN manual.</p>
 to [-1,1], specify <cite>‘’Chebyshev’</cite> interpolation.
 You should also specify the number of temperature and pressure basis functions by adding the appropriate integers.
 For example, the following specifies that six basis functions in temperature and four in pressure should be used</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">'Chebyshev'</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The auxillary information printed to the Chemkin chem.inp file will have the “CHEB”
@@ -935,19 +935,19 @@ worse, as the original authors would have included any important reactions.</p>
 parameter takes a list of chemical formulas identifying the networks that should
 be considered complete. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
-    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
-    <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">'modified strong collision'</span><span class="p">,</span>
+    <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
     <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
-    <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
-    <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
-    <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+    <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">'bar'</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+    <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">'Chebyshev'</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
     <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-    <span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH2O2&#39;</span><span class="p">],</span>
+    <span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">'CH2O2'</span><span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Multiple networks can be specified in the list:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH2O2&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6&#39;</span><span class="p">],</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">'CH2O2'</span><span class="p">,</span> <span class="s1">'C2H6'</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>When a network is marked as completed, RMG will not add any new reactions to it,
@@ -1034,10 +1034,10 @@ Int J Chem Kinet. 2020; 52: 266– 282. <a class="reference external" href="http
 <span id="miscellaneousoptions"></span><h2><span class="section-number">4.12. </span>Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this heading">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Seed&#39;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">'Seed'</span><span class="p">,</span>
     <span class="n">generateSeedEachIteration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">saveSeedToDatabase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">'si'</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1083,13 +1083,13 @@ flag for this writer only.</p></li>
 </ul>
 <p>Examples:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Chemkin: save only at the end, also writing edge species</span>
-<span class="n">generateChemkin</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;saveEdge&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">generateChemkin</span><span class="o">=</span><span class="p">{</span><span class="s1">'saveInterval'</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'saveEdge'</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
 <span class="c1"># RMS YAML: save every 5 iterations</span>
-<span class="n">generateRMSYAML</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="n">generateRMSYAML</span><span class="o">=</span><span class="p">{</span><span class="s1">'saveInterval'</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
 
 <span class="c1"># Cantera YAML v2: save every iteration, no edge species</span>
-<span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;saveEdge&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="p">{</span><span class="s1">'saveInterval'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'saveEdge'</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </pre></div>
 </div>
 <dl>
@@ -1140,7 +1140,7 @@ Please report discrepancies on the <a class="reference external" href="https://g
 such as total number of carbon atoms or electrons per species. These are applied to
 all of RMG’s reaction families.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
-    <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;input species&#39;</span><span class="p">,</span><span class="s1">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s1">&#39;reaction libraries&#39;</span><span class="p">],</span>
+    <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s1">'input species'</span><span class="p">,</span><span class="s1">'seed mechanisms'</span><span class="p">,</span><span class="s1">'reaction libraries'</span><span class="p">],</span>
     <span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">maximumNitrogenAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
@@ -1191,7 +1191,7 @@ If fragments are not desired, the <code class="docutils literal notranslate"><sp
 <p>The only method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are
 many scenarios when the user might want to do this, including continuing on a job that ran out of time or crashed as the
 result of a now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;seed&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">'seed'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">path</span></code> flag is the path to the seed mechanism folder, which contains three subfolders that must be titled as
@@ -1202,10 +1202,10 @@ edgeSeed (path to edge seed mechanism folder containing files named <code class=
 go into the model edge), filters (an h5 binary file storing the uni-, bi-, and optionally tri-molecular thresholds
 generated by RMG from previous run (must be RMG version &gt; 2.4.1)), speciesMap (a YAML file specifying what species are
 at each index in the filters).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">coreSeed</span><span class="o">=</span><span class="s1">&#39;seed/seed&#39;</span>  <span class="c1"># Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`</span>
-                <span class="n">edgeSeed</span><span class="o">=</span><span class="s1">&#39;seed/seed_edge&#39;</span>  <span class="c1"># Path to edge seed folder containing `reactions.py` and `dictionary.txt`</span>
-                <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;seed/filters/filters.h5&#39;</span><span class="p">,</span>
-                <span class="n">speciesMap</span><span class="o">=</span><span class="s1">&#39;seed/filters/species_map.yml&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">coreSeed</span><span class="o">=</span><span class="s1">'seed/seed'</span>  <span class="c1"># Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`</span>
+                <span class="n">edgeSeed</span><span class="o">=</span><span class="s1">'seed/seed_edge'</span>  <span class="c1"># Path to edge seed folder containing `reactions.py` and `dictionary.txt`</span>
+                <span class="n">filters</span><span class="o">=</span><span class="s1">'seed/filters/filters.h5'</span><span class="p">,</span>
+                <span class="n">speciesMap</span><span class="o">=</span><span class="s1">'seed/filters/species_map.yml'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Then, to restart from the seed mechanism the input file is submitted as normal.</p>

@@ -82,19 +82,19 @@ metal database by using <code class="docutils literal notranslate"><span class="
 The full database of available metals can be found in <code class="docutils literal notranslate"><span class="pre">input/surface/libraries/metal.py</span></code>.</p>
 <p>Here is an example catalyst properties block for Pt(111):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
-    <span class="n">metal</span> <span class="o">=</span> <span class="s2">&quot;Pt111&quot;</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s2">"Pt111"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Here is an example custom catalyst properties block for Pt(111):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                        <span class="s1">'H'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'O'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'C'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'N'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
                     <span class="p">},</span>
-    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">2.483e-9</span><span class="p">,</span> <span class="s1">&#39;mol/cm^2&#39;</span><span class="p">),</span>
+    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">2.483e-9</span><span class="p">,</span> <span class="s1">'mol/cm^2'</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -116,18 +116,18 @@ The ratio of catalyst surface area to gas phase volume (<cite>surfaceVolumeRatio
 and so may be different in each <code class="docutils literal notranslate"><span class="pre">surfaceReactor</span></code> simulation.</p>
 <p>The following is an example of a surface reactor system for catalytic combustion of methane over a Pt catalyst:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">surfaceReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">),</span>
     <span class="n">initialGasMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.0500</span><span class="p">,</span>
-        <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="mf">0.1995</span><span class="p">,</span>
-        <span class="s2">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.7505</span><span class="p">,</span>
+        <span class="s2">"CH4"</span><span class="p">:</span> <span class="mf">0.0500</span><span class="p">,</span>
+        <span class="s2">"O2"</span><span class="p">:</span> <span class="mf">0.1995</span><span class="p">,</span>
+        <span class="s2">"N2"</span><span class="p">:</span> <span class="mf">0.7505</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">initialSurfaceCoverages</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"X"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0e4</span><span class="p">,</span> <span class="s1">&#39;m^-1&#39;</span><span class="p">),</span>
-    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;CH4&quot;</span><span class="p">:</span><span class="mf">0.9</span> <span class="p">},</span>
+    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0e4</span><span class="p">,</span> <span class="s1">'m^-1'</span><span class="p">),</span>
+    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"CH4"</span><span class="p">:</span><span class="mf">0.9</span> <span class="p">},</span>
     <span class="n">terminationRateRatio</span><span class="o">=</span><span class="mf">0.01</span>
 <span class="p">)</span>
 </pre></div>
@@ -141,9 +141,9 @@ Specific to heterogeneous chemistry and surface reactions is the metal-adsorbate
 Firstly, there needs to be a species representation for the binding site in the RMG-Cat input file.
 This can be added as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'X'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;1 X u0&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">"1 X u0"</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -198,7 +198,7 @@ RMG-Cat uses a precompiled adsorption correction with the thermodynamic properti
 of the gas-phase precursor (<a class="reference internal" href="#goldsmith2017" id="id3"><span>[Goldsmith2017]</span></a>).</p>
 <p>Following is an example for how a thermo library for species adsorbed on platinum
 is provided in the input file database module:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">'surfaceThermoPt111'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This can be added along with other gas-phase reaction libraries for coupling
@@ -215,22 +215,22 @@ Currently the database has adsorption corrections for nickel
 <p>An example of an adsorption correction entry is shown below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C-*R3&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"C-*R3"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 X  u0 p0 c0 {2,S}</span>
 <span class="sd">2 C  u0 p0 c0 {1,S} {3,[S,D]} {4,[S,D]}</span>
 <span class="sd">3 R  u0 px c0 {2,[S,D]}</span>
 <span class="sd">4 R  u0 px c0 {2,[S,D]}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span><span class="o">=</span><span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span><span class="o">=</span><span class="p">([</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">],</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span><span class="o">=</span><span class="p">([</span><span class="o">-</span><span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.61</span><span class="p">,</span> <span class="mf">1.42</span><span class="p">,</span> <span class="mf">2.02</span><span class="p">,</span> <span class="mf">2.81</span><span class="p">,</span> <span class="mf">3.26</span><span class="p">,</span> <span class="mf">3.73</span><span class="p">],</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">41.64</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">32.73</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span><span class="o">=</span><span class="p">([</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">],</span> <span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span><span class="o">=</span><span class="p">([</span><span class="o">-</span><span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.61</span><span class="p">,</span> <span class="mf">1.42</span><span class="p">,</span> <span class="mf">2.02</span><span class="p">,</span> <span class="mf">2.81</span><span class="p">,</span> <span class="mf">3.26</span><span class="p">,</span> <span class="mf">3.73</span><span class="p">],</span> <span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">41.64</span><span class="p">,</span> <span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">S298</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">32.73</span><span class="p">,</span> <span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;&quot;&quot;Came from CH3 single-bonded on Pt(111)&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">longDesc</span><span class="o">=</span><span class="sa">u</span><span class="s2">&quot;&quot;&quot;Calculated by Katrin Blondal at Brown University using statistical mechanics</span>
+    <span class="n">shortDesc</span><span class="o">=</span><span class="sa">u</span><span class="s2">"""Came from CH3 single-bonded on Pt(111)"""</span><span class="p">,</span>
+    <span class="n">longDesc</span><span class="o">=</span><span class="sa">u</span><span class="s2">"""Calculated by Katrin Blondal at Brown University using statistical mechanics</span>
 <span class="s2">            (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb).</span>
 <span class="s2">            Based on DFT calculations by Jelena Jelic at KIT.</span>
 <span class="s2">            DFT binding energy: -1.770 eV.</span>
@@ -239,7 +239,7 @@ Currently the database has adsorption corrections for nickel
 <span class="s2">   CR3</span>
 <span class="s2">   |</span>
 <span class="s2">***********</span>
-<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">"""</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -248,7 +248,7 @@ This enables RMG-Cat to determine which species in the thermo database is the cl
 match for the adsorbate in question, using a hierachical tree for functional groups.
 This is defined at the bottom of the adsorption corrections files, e.g.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="p">(</span>
-<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">"""</span>
 <span class="s2">L1: R*</span>
 <span class="s2">    L2: R*single_chemisorbed</span>
 <span class="s2">        L3: C*</span>
@@ -305,10 +305,10 @@ The following is an example using the default binding energies of the four atoms
 Deviating from these values will result in adsorption energies being modified,
 even for species taken from the thermochemistry libraries:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># default values for Pt(111)</span>
-                    <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                    <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
+                    <span class="s1">'H'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.754</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                    <span class="s1">'O'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.811</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                    <span class="s1">'C'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">7.025</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                    <span class="s1">'N'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.632</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
                    <span class="p">}</span>
 </pre></div>
 </div>
@@ -323,7 +323,7 @@ These include adsorption/desorption, bond fission and H abstraction (<a class="r
 For surface reaction families to be considered in the mechanism generation,
 the ‘surface’ kinetics family keyword needs to be included in the database
 section of the input file as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsFamilies</span><span class="o">=</span><span class="p">[</span><span class="s1">'surface'</span><span class="p">,</span> <span class="s1">'default'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This allows for RMG-Cat to consider both surface and gas reaction families.
@@ -341,7 +341,7 @@ predefined reaction families (<a class="reference internal" href="#goldsmith2017
 <p>Following is an example where a mechanism for catalytic partial oxidation of methane
 on platinum by Quiceno et al. (<a class="reference internal" href="#deutschmann2006" id="id10"><span>[Deutschmann2006]</span></a>) is provided as a reaction library
 in the database section of the input file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/CPOX_Pt/Deutschmann2006&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'Surface/CPOX_Pt/Deutschmann2006'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>Gas-phase reaction libraries should be included there as well
@@ -374,7 +374,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <h3><span class="section-number">16.5.1. </span>input file specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this heading">¶</a></h3>
 <p>Coverage dependent parameters are applied if the “coverage_dependence” attribute is set to “True” in the catalyst properties block:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
-    <span class="n">metal</span> <span class="o">=</span> <span class="s2">&quot;Pt111&quot;</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s2">"Pt111"</span>
     <span class="n">coverageDependence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -386,28 +386,28 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the “coverage_dependence” field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;NH_X + X &lt;=&gt; N_X + H_X&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"NH_X + X &lt;=&gt; N_X + H_X"</span><span class="p">,</span>
     <span class="n">kinetics</span> <span class="o">=</span> <span class="n">SurfaceArrhenius</span><span class="p">(</span>
-        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.22E20</span><span class="p">,</span> <span class="s1">&#39;cm^2/(mol*s)&#39;</span><span class="p">),</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.22E20</span><span class="p">,</span> <span class="s1">'cm^2/(mol*s)'</span><span class="p">),</span>
         <span class="n">n</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">Ea</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">coverage_dependence</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;N_X&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:(</span><span class="mf">15.5</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">)},</span>
-                               <span class="s1">&#39;H_X&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">)}},</span>
+        <span class="n">Ea</span> <span class="o">=</span> <span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">coverage_dependence</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'N_X'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'m'</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'E'</span><span class="p">:(</span><span class="mf">15.5</span><span class="p">,</span> <span class="s1">'kcal/mol'</span><span class="p">)},</span>
+                               <span class="s1">'H_X'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'m'</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'E'</span><span class="p">:(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">'kcal/mol'</span><span class="p">)}},</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;Surface_Dissociation&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">&quot;The role of adsorbate–adsorbate interactions in the rate controlling step</span>
-<span class="s2">and the most abundant reaction intermediate of NH3 decomposition on Ru&quot;</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""Surface_Dissociation"""</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""</span>
+<span class="s2">"The role of adsorbate–adsorbate interactions in the rate controlling step</span>
+<span class="s2">and the most abundant reaction intermediate of NH3 decomposition on Ru"</span>
 <span class="s2">D.G. Vlachos et al. (2004). Catalysis Letters 96, 13–22.</span>
 <span class="s2">https://doi.org/10.1023/B:CATL.0000029523.22277.e1</span>
-<span class="s2">This reaction used RMG&#39;s surface site density of Ru0001 = 2.630E-9(mol/cm^2) to calculate the A factor.</span>
+<span class="s2">This reaction used RMG's surface site density of Ru0001 = 2.630E-9(mol/cm^2) to calculate the A factor.</span>
 <span class="s2">A = 1.9E12(1/s)/2.630E-9(mol/cm^2) = 7.22E20 cm^2/(mol*s)</span>
 <span class="s2">This is R5 in Table 2 (set A)</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">metal</span> <span class="o">=</span> <span class="s2">&quot;Ru&quot;</span><span class="p">,</span>
-    <span class="n">facet</span> <span class="o">=</span> <span class="s2">&quot;0001&quot;</span><span class="p">,</span>
+<span class="s2">"""</span><span class="p">,</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s2">"Ru"</span><span class="p">,</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="s2">"0001"</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -421,184 +421,184 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>This is a simple input file steam reforming of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoNi111&#39;</span><span class="p">,</span> <span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">],</span> 
-    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/Methane/Deutschmann_Ni&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)],</span> <span class="c1"># when Pt is used change the library to Surface/CPOX_Pt/Deutschmann2006</span>
+    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">'surfaceThermoNi111'</span><span class="p">,</span> <span class="s1">'surfaceThermoPt111'</span><span class="p">,</span> <span class="s1">'primaryThermoLibrary'</span><span class="p">,</span> <span class="s1">'thermo_DFT_CCSDTF12_BAC'</span><span class="p">],</span> 
+    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'Surface/Methane/Deutschmann_Ni'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)],</span> <span class="c1"># when Pt is used change the library to Surface/CPOX_Pt/Deutschmann2006</span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'training'</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'surface'</span><span class="p">,</span><span class="s1">'default'</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">'rate rules'</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">bindingEnergies</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># values for Ni(111)</span>
-                        <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.892</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.989</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">6.798</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span>
-                        <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">5.164</span><span class="p">,</span> <span class="s1">&#39;eV/molecule&#39;</span><span class="p">),</span> 
+                        <span class="s1">'H'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.892</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'O'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">4.989</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'C'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">6.798</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span>
+                        <span class="s1">'N'</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">5.164</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span> 
                       <span class="p">},</span>
-    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">3.148e-9</span><span class="p">,</span> <span class="s1">&#39;mol/cm^2&#39;</span><span class="p">),</span> <span class="c1"># values for Ni(111)</span>
+    <span class="n">surfaceSiteDensity</span><span class="o">=</span><span class="p">(</span><span class="mf">3.148e-9</span><span class="p">,</span> <span class="s1">'mol/cm^2'</span><span class="p">),</span> <span class="c1"># values for Ni(111)</span>
 <span class="p">)</span>
 
 <span class="c1"># List of species</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH4'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[CH4]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[CH4]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1">#species(</span>
-<span class="c1">#    label=&#39;water&#39;,</span>
+<span class="c1">#    label='water',</span>
 <span class="c1">#    reactive=True,</span>
 <span class="c1">#    structure=adjacencyList(</span>
-<span class="c1">#       &quot;&quot;&quot;</span>
+<span class="c1">#       """</span>
 <span class="c1">#1 O u0 p2 {2,S} {3,S} {4,vdW}</span>
 <span class="c1">#2 H u0 p0 {1,S}</span>
 <span class="c1">#3 H u0 p0 {1,S}</span>
 <span class="c1">#4 X u0 p0 {1,vdW}</span>
-<span class="c1">#&quot;&quot;&quot;),</span>
+<span class="c1">#"""),</span>
 <span class="c1">#)</span>
 
 <span class="c1">#species(</span>
-<span class="c1">#   label=&#39;c2h4&#39;,</span>
+<span class="c1">#   label='c2h4',</span>
 <span class="c1">#   reactive=True,</span>
 <span class="c1">#   structure=adjacencyList(</span>
-<span class="c1">#       &quot;&quot;&quot;</span>
+<span class="c1">#       """</span>
 <span class="c1">#1 C u0 p0 c0 {2,D} {3,S} {4,S}</span>
 <span class="c1">#2 C u0 p0 c0 {1,D} {5,S} {6,S}</span>
 <span class="c1">#3 H u0 p0 c0 {1,S}</span>
 <span class="c1">#4 H u0 p0 c0 {1,S}</span>
 <span class="c1">#5 H u0 p0 c0 {2,S}</span>
 <span class="c1">#6 H u0 p0 c0 {2,S}</span>
-<span class="c1">#&quot;&quot;&quot;),</span>
+<span class="c1">#"""),</span>
 <span class="c1">#)</span>
 
 <span class="n">species</span><span class="p">(</span>
-   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span>
+   <span class="n">label</span><span class="o">=</span><span class="s1">'O2'</span><span class="p">,</span>
    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
-<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">       </span><span class="sd">"""</span>
 <span class="sd">1 O u1 p2 c0 {2,S}</span>
 <span class="sd">2 O u1 p2 c0 {1,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">),</span>
+<span class="sd">"""</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CO2&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CO2'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;O=C=O&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"O=C=O"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'H2O'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;O&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"O"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H2&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'H2'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[H][H]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[H][H]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CO&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CO'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[C-]#[O+]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[C-]#[O+]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'C2H6'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"CC"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH2O&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH2O'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C=O&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C=O"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH3&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH3'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[CH3]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[CH3]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C3H8&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'C3H8'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CCC&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"CCC"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'H'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[H]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[H]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C2H5&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'C2H5'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C[CH2]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C[CH2]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH3OH&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH3OH'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CO&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"CO"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;HCO&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'HCO'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[CH]=O&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[CH]=O"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH3CHO&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH3CHO'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;CC=O&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"CC=O"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;OH&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'OH'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[OH]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[OH]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;C2H4&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'C2H4'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C=C&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C=C"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1">#-------</span>
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'site'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;1 X u0&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">"1 X u0"</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="c1">#----------</span>
 <span class="c1"># Reaction systems</span>
 <span class="n">surfaceReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">),</span>
     <span class="n">initialGasMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="s2">&quot;CO2&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-        <span class="s2">&quot;H2O&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
-        <span class="s2">&quot;H2&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="s2">&quot;CH3OH&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="s2">&quot;C2H4&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"CH4"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"O2"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"CO2"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+        <span class="s2">"H2O"</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+        <span class="s2">"H2"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"CH3OH"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"C2H4"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">initialSurfaceCoverages</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"site"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.e5</span><span class="p">,</span> <span class="s1">&#39;m^-1&#39;</span><span class="p">),</span>
-    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;CH4&quot;</span><span class="p">:</span><span class="mf">0.9</span><span class="p">,},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.e5</span><span class="p">,</span> <span class="s1">'m^-1'</span><span class="p">),</span>
+    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"CH4"</span><span class="p">:</span><span class="mf">0.9</span><span class="p">,},</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="s1">'s'</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -614,7 +614,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">'si'</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="c1"># Enable to make plots of core and edge size etc.. But takes a lot of the total runtime!</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -629,70 +629,70 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>This is an input file for catalytic partial oxidation (CPOX) of methane</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;surfaceThermoPt111&#39;</span><span class="p">,</span> <span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;thermo_DFT_CCSDTF12_BAC&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">],</span> <span class="c1"># &#39;surfaceThermoPt&#39; is the default. Thermo data is derived using bindingEnergies for other metals </span>
-    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Surface/CPOX_Pt/Deutschmann2006_adjusted&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span> <span class="c1"># when Ni is used change the library to Surface/Deutschmann_Ni </span>
+    <span class="n">thermoLibraries</span><span class="o">=</span><span class="p">[</span><span class="s1">'surfaceThermoPt111'</span><span class="p">,</span> <span class="s1">'primaryThermoLibrary'</span><span class="p">,</span> <span class="s1">'thermo_DFT_CCSDTF12_BAC'</span><span class="p">,</span><span class="s1">'DFT_QCI_thermo'</span><span class="p">],</span> <span class="c1"># 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals </span>
+    <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">'Surface/CPOX_Pt/Deutschmann2006_adjusted'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)],</span> <span class="c1"># when Ni is used change the library to Surface/Deutschmann_Ni </span>
     <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[],</span>
-    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span><span class="s1">&#39;default&#39;</span><span class="p">],</span>
-    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
+    <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'training'</span><span class="p">],</span>
+    <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'surface'</span><span class="p">,</span><span class="s1">'default'</span><span class="p">],</span>
+    <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">'rate rules'</span><span class="p">,</span>
 
 <span class="p">)</span>
 
 <span class="n">catalystProperties</span><span class="p">(</span>
-    <span class="n">metal</span> <span class="o">=</span> <span class="s1">&#39;Pt111&#39;</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s1">'Pt111'</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH4'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;[CH4]&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"[CH4]"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;O2&#39;</span><span class="p">,</span>
+   <span class="n">label</span><span class="o">=</span><span class="s1">'O2'</span><span class="p">,</span>
    <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span>
-<span class="w">       </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">       </span><span class="sd">"""</span>
 <span class="sd">1 O u1 p2 c0 {2,S}</span>
 <span class="sd">2 O u1 p2 c0 {1,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">),</span>
+<span class="sd">"""</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;N2&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'N2'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;N#N&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"N#N"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;vacantX&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'vacantX'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;1 X u0&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">"1 X u0"</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1"># If you would like to forbid the bidentate form of absorbed CO2 from your model,</span>
 <span class="c1"># use the following `CO2_bidentate` forbidden structure</span>
 <span class="c1"># forbidden(</span>
-<span class="c1">#     label=&#39;CO2_bidentate&#39;,</span>
-<span class="c1">#     structure=SMILES(&quot;O=C(*)O*&quot;),</span>
+<span class="c1">#     label='CO2_bidentate',</span>
+<span class="c1">#     structure=SMILES("O=C(*)O*"),</span>
 <span class="c1"># )</span>
 
 <span class="c1">#----------</span>
 <span class="c1"># Reaction systems</span>
 <span class="n">surfaceReactor</span><span class="p">(</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">),</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+    <span class="n">initialPressure</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">'bar'</span><span class="p">),</span>
     <span class="n">initialGasMoleFractions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;CH4&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-        <span class="s2">&quot;O2&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
-        <span class="s2">&quot;N2&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+        <span class="s2">"CH4"</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="s2">"O2"</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="s2">"N2"</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">initialSurfaceCoverages</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;vacantX&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"vacantX"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.e5</span><span class="p">,</span> <span class="s1">&#39;m^-1&#39;</span><span class="p">),</span>
-    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;CH4&quot;</span><span class="p">:</span><span class="mf">0.99</span><span class="p">,},</span>
-    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">),</span>
+    <span class="n">surfaceVolumeRatio</span><span class="o">=</span><span class="p">(</span><span class="mf">1.e5</span><span class="p">,</span> <span class="s1">'m^-1'</span><span class="p">),</span>
+    <span class="n">terminationConversion</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"CH4"</span><span class="p">:</span><span class="mf">0.99</span><span class="p">,},</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="s1">'s'</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">simulator</span><span class="p">(</span>
@@ -708,7 +708,7 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
-    <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
+    <span class="n">units</span><span class="o">=</span><span class="s1">'si'</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="c1"># Enable to make plots of core and edge size etc. But takes a lot of the total runtime!</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>

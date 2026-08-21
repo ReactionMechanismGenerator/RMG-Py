@@ -78,10 +78,10 @@ extrapolation of the heat capacity data as a function of temperature.</p>
 <span id="thermolibrarytype"></span><h3><span class="section-number">12.2.1.1. </span>Library types<a class="headerlink" href="#library-types" title="Permalink to this heading">¶</a></h3>
 <p>Two types of thermo libraries are available in RMG: “gas phase” and “liquid thermo” libraries respectively identified thanks to the absence or presence of the keyword
 <cite>solvent = “solvent_name”</cite> in the header of a thermo library. Here is an example of a liquid thermo library header:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;example_liquid_thermo_library&quot;</span>
-<span class="n">solvent</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span>
-<span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;test&quot;</span>
-<span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="s2">"example_liquid_thermo_library"</span>
+<span class="n">solvent</span> <span class="o">=</span> <span class="s2">"octane"</span>
+<span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"test"</span>
+<span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""</span>
 </pre></div>
 </div>
 <p>In this example the library name is “example_liquid_thermo_library” and thermo data provided was obtained in <cite>octane</cite> solvent.
@@ -102,23 +102,23 @@ with the extension .py, e.g. ‘DFT_QCI_thermo.py’.</p>
 <p>An example of a species thermochemistry entry is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"H2"</span><span class="p">,</span>
     <span class="n">molecule</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 H 0 0 {2,S}</span>
 <span class="sd">2 H 0 0 {1,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.949</span><span class="p">,</span><span class="mf">6.954</span><span class="p">,</span><span class="mf">6.995</span><span class="p">,</span><span class="mf">7.095</span><span class="p">,</span><span class="mf">7.493</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">31.095</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.948</span><span class="p">,</span><span class="mf">6.949</span><span class="p">,</span><span class="mf">6.954</span><span class="p">,</span><span class="mf">6.995</span><span class="p">,</span><span class="mf">7.095</span><span class="p">,</span><span class="mf">7.493</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">31.095</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -168,7 +168,7 @@ with the extension .py, e.g. ‘groups.py’:</p>
 <p>Like many other entities in RMG, the database of each type of group contribution
 is organized in a hierarchical tree, and is defined at the bottom of the database file. E.g.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="p">(</span>
-<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">"""</span>
 <span class="s2">L1: R</span>
 <span class="s2">    L2: C</span>
 <span class="s2">        L3: Cbf</span>
@@ -193,26 +193,26 @@ is organized in a hierarchical tree, and is defined at the bottom of the databas
 <p>An example of a GAV entry in group.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cbf-CbCbCbf&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"Cbf-CbCbCbf"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 * Cbf 0 {2,B} {3,B} {4,B}</span>
 <span class="sd">2   Cb  0 {1,B}</span>
 <span class="sd">3   Cb  0 {1,B}</span>
 <span class="sd">4   Cbf 0 {1,B}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">3.01</span><span class="p">,</span><span class="mf">3.68</span><span class="p">,</span><span class="mf">4.2</span><span class="p">,</span><span class="mf">4.61</span><span class="p">,</span><span class="mf">5.2</span><span class="p">,</span><span class="mf">5.7</span><span class="p">,</span><span class="mf">6.2</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;+|-&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.17</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">3.01</span><span class="p">,</span><span class="mf">3.68</span><span class="p">,</span><span class="mf">4.2</span><span class="p">,</span><span class="mf">4.61</span><span class="p">,</span><span class="mf">5.2</span><span class="p">,</span><span class="mf">5.7</span><span class="p">,</span><span class="mf">6.2</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">,</span>
+                  <span class="s1">'+|-'</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">,</span><span class="s1">'+|-'</span><span class="p">,</span><span class="mf">0.17</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">,</span><span class="s1">'+|-'</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""Cbf-CbfCbCb STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714"""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 <span class="sd">Taken from STEIN and FAHR; J. PHYS. CHEM. 1985, 89, 17, 3714</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -227,24 +227,24 @@ specification. A short description ‘shortDesc’ specifies the origin of the d
 An example of a  monocyclic RSC entry in ring.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cyclopropane&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"Cyclopropane"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 * Cs 0 {2,S} {3,S}</span>
 <span class="sd">2   Cs 0 {1,S} {3,S}</span>
 <span class="sd">3   Cs 0 {1,S} {2,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">3.227</span><span class="p">,</span><span class="o">-</span><span class="mf">2.849</span><span class="p">,</span><span class="o">-</span><span class="mf">2.536</span><span class="p">,</span><span class="o">-</span><span class="mf">2.35</span><span class="p">,</span><span class="o">-</span><span class="mf">2.191</span><span class="p">,</span><span class="o">-</span><span class="mf">2.111</span><span class="p">,</span><span class="o">-</span><span class="mf">1.76</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">27.53</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">32.0088</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">3.227</span><span class="p">,</span><span class="o">-</span><span class="mf">2.849</span><span class="p">,</span><span class="o">-</span><span class="mf">2.536</span><span class="p">,</span><span class="o">-</span><span class="mf">2.35</span><span class="p">,</span><span class="o">-</span><span class="mf">2.191</span><span class="p">,</span><span class="o">-</span><span class="mf">2.111</span><span class="p">,</span><span class="o">-</span><span class="mf">1.76</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">27.53</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">32.0088</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;Cyclopropane ring BENSON&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""Cyclopropane ring BENSON"""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -254,9 +254,9 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <p>An example of a  polycyclic RSC entry in polycyclic.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;norbornane&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"norbornane"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 * Cs 0 {3,S} {4,S} {7,S}</span>
 <span class="sd">2   Cs 0 {3,S} {5,S} {6,S}</span>
 <span class="sd">3   Cs 0 {1,S} {2,S}</span>
@@ -264,18 +264,18 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <span class="sd">5   Cs 0 {2,S} {4,S}</span>
 <span class="sd">6   Cs 0 {2,S} {7,S}</span>
 <span class="sd">7   Cs 0 {1,S} {6,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">4.5</span><span class="p">,</span><span class="o">-</span><span class="mf">3.942</span><span class="p">,</span><span class="o">-</span><span class="mf">3.291</span><span class="p">,</span><span class="o">-</span><span class="mf">2.759</span><span class="p">,</span><span class="o">-</span><span class="mf">2.08</span><span class="p">,</span><span class="o">-</span><span class="mf">1.628</span><span class="p">,</span><span class="o">-</span><span class="mf">0.898</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.14</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">53.47</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="o">-</span><span class="mf">4.5</span><span class="p">,</span><span class="o">-</span><span class="mf">3.942</span><span class="p">,</span><span class="o">-</span><span class="mf">3.291</span><span class="p">,</span><span class="o">-</span><span class="mf">2.759</span><span class="p">,</span><span class="o">-</span><span class="mf">2.08</span><span class="p">,</span><span class="o">-</span><span class="mf">1.628</span><span class="p">,</span><span class="o">-</span><span class="mf">0.898</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">16.14</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">53.47</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -285,25 +285,25 @@ searches through polycyclic.py to identify an adequate RSC.</p>
 <p>An example of a HBI entry in radical.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CH3&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"CH3"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 * C 1 {2,S} {3,S} {4,S}</span>
 <span class="sd">2   H 0 {1,S}</span>
 <span class="sd">3   H 0 {1,S}</span>
 <span class="sd">4   H 0 {1,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.34</span><span class="p">,</span><span class="o">-</span><span class="mf">0.33</span><span class="p">,</span><span class="o">-</span><span class="mf">1.07</span><span class="p">,</span><span class="o">-</span><span class="mf">2.43</span><span class="p">,</span><span class="o">-</span><span class="mf">3.54</span><span class="p">,</span><span class="o">-</span><span class="mf">5.43</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">104.81</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="s1">&#39;+|-&#39;</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.52</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mf">0.71</span><span class="p">,</span><span class="mf">0.34</span><span class="p">,</span><span class="o">-</span><span class="mf">0.33</span><span class="p">,</span><span class="o">-</span><span class="mf">1.07</span><span class="p">,</span><span class="o">-</span><span class="mf">2.43</span><span class="p">,</span><span class="o">-</span><span class="mf">3.54</span><span class="p">,</span><span class="o">-</span><span class="mf">5.43</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">104.81</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">,</span><span class="s1">'+|-'</span><span class="p">,</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.52</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;Calculated in relation to methane from NIST values&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""Calculated in relation to methane from NIST values"""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -316,9 +316,9 @@ cis-, ortho- and ketene-corrections.</p>
 <p>An example of a NNI entry in gauche.py is shown here below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Cs(Cs(CsCsR)Cs(CsCsR)RR)&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"Cs(Cs(CsCsR)Cs(CsCsR)RR)"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1  * Cs                         0 {2,S} {3,S} {4,S} {5,S}</span>
 <span class="sd">2    Cs                         0 {1,S} {6,S} {7,S} {8,S}</span>
 <span class="sd">3    Cs                         0 {1,S} {9,S} {10,S} {11,S}</span>
@@ -330,18 +330,18 @@ cis-, ortho- and ketene-corrections.</p>
 <span class="sd">9    Cs                         0 {3,S}</span>
 <span class="sd">10   Cs                         0 {3,S}</span>
 <span class="sd">11   {Cd,Cdd,Ct,Cb,Cbf,Os,CO,H} 0 {3,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
     <span class="n">thermo</span> <span class="o">=</span> <span class="n">ThermoData</span><span class="p">(</span>
-        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
-        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
-        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+        <span class="n">Tdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">,</span><span class="mi">800</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1500</span><span class="p">],</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Cpdata</span> <span class="o">=</span> <span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
+        <span class="n">H298</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span><span class="s1">'kcal/mol'</span><span class="p">),</span>
+        <span class="n">S298</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s1">'cal/(mol*K)'</span><span class="p">),</span>
     <span class="p">),</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>

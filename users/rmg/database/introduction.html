@@ -529,7 +529,7 @@ table below shows all atoms types in RMG.</p>
 </tbody>
 </table>
 <p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">"X_H_or_Xrad_H"</span><span class="p">,</span>
 <span class="n">group</span><span class="o">=</span><span class="n">OR</span><span class="p">{</span><span class="n">X_H</span><span class="p">,</span> <span class="n">Xrad_H</span><span class="p">},</span>
 </pre></div>
 </div>
@@ -545,9 +545,9 @@ or products that are forbidden.  These groups are stored in in the file located 
 families, a <cite>forbidden</cite> group must be created, like the following group
 in the <code class="docutils literal notranslate"><span class="pre">intra_H_migration</span></code> family:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;bridged56_1254&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"bridged56_1254"</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">1 *1 C 1 {2,S} {6,S}</span>
 <span class="sd">2 *4 C 0 {1,S} {3,S} {7,S}</span>
 <span class="sd">3    C 0 {2,S} {4,S}</span>
@@ -556,12 +556,12 @@ in the <code class="docutils literal notranslate"><span class="pre">intra_H_migr
 <span class="sd">6    C 0 {1,S} {5,S}</span>
 <span class="sd">7    C 0 {2,S} {5,S}</span>
 <span class="sd">8 *3 H 0 {4,S}</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -578,32 +578,32 @@ and should not be specified in the groups.py file. To specify a forbidden molecu
 or species, simply replace the <code class="docutils literal notranslate"><span class="pre">group</span></code> keyword with <code class="docutils literal notranslate"><span class="pre">molecule</span></code> or <code class="docutils literal notranslate"><span class="pre">species</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This forbids a molecule</span>
 <span class="n">forbidden</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"C_quintet"</span><span class="p">,</span>
     <span class="n">molecule</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">multiplicity 5</span>
 <span class="sd">1 C u4 p0</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># This forbids a species</span>
 <span class="n">forbidden</span><span class="p">(</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"C_quintet"</span><span class="p">,</span>
     <span class="n">species</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">multiplicity 5</span>
 <span class="sd">1 C u4 p0</span>
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
-    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
     <span class="n">longDesc</span> <span class="o">=</span>
-<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">"""</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>

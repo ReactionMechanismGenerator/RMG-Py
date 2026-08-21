@@ -338,9 +338,9 @@ limits at zero and infinite temperature.</p>
 <p>Here is an example of a NASA entry:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-<span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;octane&quot;</span><span class="p">,</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s2">"octane"</span><span class="p">,</span>
 <span class="n">molecule</span> <span class="o">=</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    1 C 0 {2,S}</span>
 <span class="sd">    2 C 0 {1,S} {3,S}</span>
 <span class="sd">    3 C 0 {2,S} {4,S}</span>
@@ -349,22 +349,22 @@ limits at zero and infinite temperature.</p>
 <span class="sd">    6 C 0 {5,S} {7,S}</span>
 <span class="sd">    7 C 0 {6,S} {8,S}</span>
 <span class="sd">    8 C 0 {7,S}</span>
-<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">    """</span><span class="p">,</span>
 <span class="n">thermo</span> <span class="o">=</span> <span class="n">NASA</span><span class="p">(</span>
     <span class="n">polynomials</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.25245480E+01</span><span class="p">,</span><span class="o">-</span><span class="mf">1.01018826E-02</span><span class="p">,</span><span class="mf">2.21992610E-04</span><span class="p">,</span><span class="o">-</span><span class="mf">2.84863722E-07</span><span class="p">,</span><span class="mf">1.12410138E-10</span><span class="p">,</span><span class="o">-</span><span class="mf">2.98434398E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">1.97109989E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
-        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">2.09430708E+01</span><span class="p">,</span><span class="mf">4.41691018E-02</span><span class="p">,</span><span class="o">-</span><span class="mf">1.53261633E-05</span><span class="p">,</span><span class="mf">2.30544803E-09</span><span class="p">,</span><span class="o">-</span><span class="mf">1.29765727E-13</span><span class="p">,</span><span class="o">-</span><span class="mf">3.55755088E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">8.10637726E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.25245480E+01</span><span class="p">,</span><span class="o">-</span><span class="mf">1.01018826E-02</span><span class="p">,</span><span class="mf">2.21992610E-04</span><span class="p">,</span><span class="o">-</span><span class="mf">2.84863722E-07</span><span class="p">,</span><span class="mf">1.12410138E-10</span><span class="p">,</span><span class="o">-</span><span class="mf">2.98434398E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">1.97109989E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">)),</span>
+        <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">2.09430708E+01</span><span class="p">,</span><span class="mf">4.41691018E-02</span><span class="p">,</span><span class="o">-</span><span class="mf">1.53261633E-05</span><span class="p">,</span><span class="mf">2.30544803E-09</span><span class="p">,</span><span class="o">-</span><span class="mf">1.29765727E-13</span><span class="p">,</span><span class="o">-</span><span class="mf">3.55755088E+04</span><span class="p">,</span><span class="o">-</span><span class="mf">8.10637726E+01</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">)),</span>
     <span class="p">],</span>
-    <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
-    <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+    <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+    <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6000</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
 <span class="p">),</span>
-<span class="n">reference</span> <span class="o">=</span> <span class="n">Reference</span><span class="p">(</span><span class="n">authors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;check on burcat&quot;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;burcat&#39;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">&quot;1999&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://www.me.berkeley.edu/gri-mech/version30/text30.html&quot;</span><span class="p">),</span>
-<span class="n">referenceType</span> <span class="o">=</span> <span class="s2">&quot;review&quot;</span><span class="p">,</span>
-<span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="n">reference</span> <span class="o">=</span> <span class="n">Reference</span><span class="p">(</span><span class="n">authors</span><span class="o">=</span><span class="p">[</span><span class="s2">"check on burcat"</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">'burcat'</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="s2">"1999"</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">"http://www.me.berkeley.edu/gri-mech/version30/text30.html"</span><span class="p">),</span>
+<span class="n">referenceType</span> <span class="o">=</span> <span class="s2">"review"</span><span class="p">,</span>
+<span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">""""""</span><span class="p">,</span>
 <span class="n">longDesc</span> <span class="o">=</span>
-<span class="w">    </span><span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">u</span><span class="sd">"""</span>
 
-<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+<span class="sd">    """</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>

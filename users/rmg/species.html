@@ -93,27 +93,27 @@ more information on adjacency lists, see the <a class="reference internal" href=
 such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
 species:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'CH4'</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C"</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Replacing the structure with any of the following representations will also produce
 the same species:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">"</span>
 <span class="mi">1</span> <span class="n">C</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">4</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">5</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="s2">&quot;),</span>
+<span class="s2">"),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s2">&quot;[CH4]&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">SMARTS</span><span class="p">(</span><span class="s2">"[CH4]"</span><span class="p">),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">"C"</span><span class="p">),</span>
 
-<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s2">&quot;InChI=1S/CH4/h1H4&quot;</span><span class="p">),</span>
+<span class="n">structure</span><span class="o">=</span><span class="n">InChI</span><span class="p">(</span><span class="s2">"InChI=1S/CH4/h1H4"</span><span class="p">),</span>
 </pre></div>
 </div>
 <p>Be careful using the SMILES shorthand with lowercase letters for aromatics,

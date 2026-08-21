@@ -65,18 +65,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>The thermo estimation module can be run stand-alone. An example input file for
 this module is shown below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
-    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+    <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'primaryThermoLibrary'</span><span class="p">,</span> <span class="s1">'GRI-Mech3.0'</span><span class="p">]</span>
 <span class="p">)</span>
 
 <span class="n">species</span><span class="p">(</span>
-    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Cineole&#39;</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC12CCC(CC1)C(C)(C)O2&#39;</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">'Cineole'</span><span class="p">,</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s1">'CC12CCC(CC1)C(C)(C)O2'</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">quantumMechanics</span><span class="p">(</span>
-    <span class="n">software</span><span class="o">=</span><span class="s1">&#39;mopac&#39;</span><span class="p">,</span><span class="c1">#mopac or gaussian</span>
-    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pm3&#39;</span><span class="p">,</span><span class="c1">#pm3, pm6, pm7</span>
-    <span class="n">fileStore</span><span class="o">=</span><span class="s1">&#39;QMfiles&#39;</span><span class="p">,</span> <span class="c1"># defaults to inside the output folder.</span>
+    <span class="n">software</span><span class="o">=</span><span class="s1">'mopac'</span><span class="p">,</span><span class="c1">#mopac or gaussian</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">'pm3'</span><span class="p">,</span><span class="c1">#pm3, pm6, pm7</span>
+    <span class="n">fileStore</span><span class="o">=</span><span class="s1">'QMfiles'</span><span class="p">,</span> <span class="c1"># defaults to inside the output folder.</span>
     <span class="n">onlyCyclics</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="c1">#True, False</span>
     <span class="n">maxRadicalNumber</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="c1"># 0, 1</span>
 <span class="p">)</span>
@@ -93,7 +93,7 @@ set to its default value.  In particular, the thermodynamic properties for H and
 must be specified in one of the primary thermo libraries as they cannot be estimated
 by Benson’s method.</p>
 <p>For example, if you wish to use the GRI-Mech 3.0 mechanism <a class="reference internal" href="../input.html#grimech3-0" id="id1"><span>[GRIMech3.0]</span></a> as a ThermoLibrary in your model, the syntax will be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'primaryThermoLibrary'</span><span class="p">,</span><span class="s1">'GRI-Mech3.0'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>This library is located in the
