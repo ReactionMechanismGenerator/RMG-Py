@@ -8,7 +8,7 @@ RMG-Py Version 4.0.0
 ====================
 Date: June 10, 2026
 
-The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/compare/3.3.0...4.0.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Py v4.0.0 Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/4.0.0>`_.
 
 - New Features
     - Introduced an automated database selection feature
@@ -32,7 +32,7 @@ The below list is a summary. For a complete list of all changes, see the `Offici
 
 - Bug Fixes
     - Fixed duplicate reactions from identical templates being erroneously added to mechanisms
-    - Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state $E_0$ values in Arkane output files
+    - Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state :math:`E_0` values in Arkane output files
     - Corrected constant-species index mapping in `SimpleReactor`
     - Improved RDKit `GetSSSR` non-determinism
     - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
@@ -43,25 +43,25 @@ RMG-Database Version 4.0.0
 ==========================
 Date: June 10, 2026
 
-The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/compare/3.3.0...4.0.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Database v4.0.0 Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/4.0.0>`_.
 
 - Features
     - Expanded datasets with a new Formic Acid library and example coverage-dependent thermo libraries
-    - Added data for electrocatalytic $\text{CO}_2$ reduction ($\text{CO}_2\text{RR}$) kinetics and adsorbates
+    - Added data for electrocatalytic :math:`CO_2` reduction (:math:`CO_2\mathrm{RR}`) kinetics and adsorbates
     - Added BEEF uncertainty covariance data support
-    - Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $\text{Pt}(111)$
+    - Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for :math:`\mathrm{Pt}(111)`
     - Introduced a `recommended_libraries.yml` configuration file
 
 - Bugfixes
     - Fixed incorrect entry details in the `Glarborg/C2` database
     - Fixed thermodynamic discontinuity issues found in the formic acid dataset
-    - Corrected temperature minimum settings ($T_{min}$) from 300 K to 298 K in NASA polynomials for $\text{CO}_2\text{RR}$ adsorbates on $\text{Ag}(111)$
+    - Corrected temperature minimum settings (:math:`T_{min}`) from 300 K to 298 K in NASA polynomials for :math:`CO_2\mathrm{RR}` adsorbates on :math:`\mathrm{Ag}(111)`
 
 RMG-Py Version 3.3.0
 ====================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Py v3.3.0 Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
 
 - Software Improvements
     - RMG-Py now uses Python 3.9
@@ -86,7 +86,7 @@ RMG-Database Version 3.3.0
 ==========================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Database v3.3.0 Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
 
 - Features
     - Electrochemistry with Lithium

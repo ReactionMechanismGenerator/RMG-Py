@@ -1611,7 +1611,9 @@ class ThermoDatabase(object):
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
                 bonded_atom = list(site.bonds.keys())[0]
                 bond = site.bonds[bonded_atom]
-                if bond.is_single():
+                if bond.is_van_der_waals():
+                    bond_order = 0.
+                elif bond.is_single():
                     bond_order = 1.
                 elif bond.is_double():
                     bond_order = 2.

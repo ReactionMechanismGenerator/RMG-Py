@@ -1,12 +1,21 @@
+# This example demonstrates CO2RR mechanism generation on Ag(111).
+# Ag-specific data are provided through the CO2RR_Adsorbates_Ag111
+# thermochemistry library and CO2RR_DFT_Ag111 reaction library.
+# Species or reactions outside these curated Ag(111) entries are estimated
+# using RMG's existing surface thermochemistry and kinetics workflows,
+# including Pt(111)-based surface estimates with LSR corrections where applicable.
+
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo', 'electrocatThermo', 
-    # 'CO2RR_Adsorbates_Ag111'
+    thermoLibraries=['surfaceThermoPt111', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo', 'electrocatThermo',
+    'CO2RR_Adsorbates_Ag111',
     ],
-    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006_adjusted', False)],
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006_adjusted', False),
+                         'CO2RR_DFT_Ag111',
+                         ],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['electrochem', 
+    kineticsFamilies = ['electrochem',
                         # 'surface',
                         'Surface_Abstraction',
                         'Surface_Abstraction_vdW',
@@ -106,7 +115,7 @@ species(
     label='OCX',
     reactive=True,
     structure=adjacencyList("""
-1 O u0 p2 c0 {2,D} 
+1 O u0 p2 c0 {2,D}
 2 C u0 p0 c0 {1,D} {3,D}
 3 X u0 p0 c0 {2,D}
 """),
@@ -116,7 +125,7 @@ species(
     label='OX',
     reactive=True,
     structure=adjacencyList("""
-1 O u0 p2 c0 {2,D} 
+1 O u0 p2 c0 {2,D}
 2 X u0 p0 c0 {1,D}
 """),
 )
@@ -252,33 +261,6 @@ liquidSurfaceReactor(
     # constantSpecies=["proton"],
  )
 
-# liquidSurfaceReactor(
-#     temperature=(300,'K'),
-#     liqPotential=(0,'V'),
-#     surfPotential=(-0.5,'V'),
-#     initialConcentrations={
-#         "CO2": (1e-3,'mol/cm^3'),
-#         "proton": (1e-4,'mol/m^3'),
-#     },
-# 	initialSurfaceCoverages={
-#         # "HX": 0.5,
-#         # # "CXO2": 0.0,
-#         "CHO2X": 0.1,
-#         "CO2HX": 0.1,
-#         "vacantX": 0.1,
-#         "CO2X": 0.4,
-#         'OX': 0.1,
-#         'OCX': 0.1,
-#         'CH2O2X': 0.05,
-#         'CHOX': 0.04,
-#         'CH2OX': 0.01
-#     },
-#     surfaceVolumeRatio=(1.0e5, 'm^-1'),
-#     terminationTime=(1.0e3,'sec'),
-#     # terminationConversion={'CO2': 0.90},
-#     # constantSpecies=["proton"],
-#  )
-
 solvation(
 	solvent='water'
 )
@@ -311,7 +293,7 @@ options(
 generatedSpeciesConstraints(
     allowed=['input species','reaction libraries'],
     maximumSurfaceSites=2,
-    maximumCarbonAtoms=3,
+    maximumCarbonAtoms=2,
     maximumOxygenAtoms=2,
     maximumRadicalElectrons=1,
 )
