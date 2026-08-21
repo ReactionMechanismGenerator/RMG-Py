@@ -72,29 +72,27 @@ jobs:
           uname -a
           sysctl hw.memsize hw.ncpu hw.physicalcpu 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -3 || true
 
-      - name: Configure Auto-upload
-        if: >
-          (github.event_name == 'push' && github.ref == 'refs/heads/stable') ||
-          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/stable')
-        run: |
-          conda config --set anaconda_upload yes
-
       - name: Build Binary
         env:
           CONDA_VERBOSITY: "1"
+          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
-          # set a default value to the conda_token if needed (like from forks)
-          : "${CONDA_TOKEN:=${{ secrets.ANACONDA_TOKEN }}}"
-          : "${CONDA_TOKEN:=default_value}"
-          echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
           conda config --add channels rmg
           conda config --add channels conda-forge
           # --add prepends, so the final channel order is [conda-forge, rmg, ...].
-          # Strict priority makes the solver skip lower-priority channels entirely
-          # for any package the higher-priority channel offers.
           conda config --set channel_priority strict
-          CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build --token $CONDA_TOKEN --user rmg .
 
+          if [[ "${GITHUB_REF}" == "refs/heads/stable" ]] && \
+             [[ "${GITHUB_EVENT_NAME}" == "push" || "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            CONDA_NPY=${{ matrix.numpy-version }} \
+            CONDA_PY=${{ matrix.python-version }} \
+            conda build --token "$CONDA_TOKEN" --user rmg .
+          else
+            CONDA_NPY=${{ matrix.numpy-version }} \
+            CONDA_PY=${{ matrix.python-version }} \
+            conda build --no-anaconda-upload .
+          fi
+  
   result:
     if: ${{ always() }}
     runs-on: ubuntu-latest
