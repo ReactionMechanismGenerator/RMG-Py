@@ -119,7 +119,9 @@ jobs:
         if: matrix.include-rms == 'with RMS'
         uses: julia-actions/install-juliaup@v3
         with:
-          channel: '1.10'
+          # Pinned to a patch version, not the 1.10 channel: juliacall segfaults on
+          # import under Julia 1.10.12, and the channel floats to the newest patch.
+          channel: '1.10.11'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
@@ -189,7 +191,9 @@ jobs:
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v3
         with:
-          channel: '1.10'
+          # Pinned to a patch version, not the 1.10 channel: juliacall segfaults on
+          # import under Julia 1.10.12, and the channel floats to the newest patch.
+          channel: '1.10.11'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies

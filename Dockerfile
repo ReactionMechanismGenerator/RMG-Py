@@ -25,10 +25,11 @@ RUN apt-get update && \
     apt-get clean -y
 
 
-# Install Julia 1.10 using juliaup
-RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1.10 && \
-    /root/.juliaup/bin/juliaup add 1.10 && \
-    /root/.juliaup/bin/juliaup default 1.10 && \
+# Install Julia using juliaup. Pinned to a patch version, not the 1.10 channel:
+# juliacall segfaults on import under 1.10.12, and the channel floats to the newest patch.
+RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1.10.11 && \
+    /root/.juliaup/bin/juliaup add 1.10.11 && \
+    /root/.juliaup/bin/juliaup default 1.10.11 && \
     /root/.juliaup/bin/juliaup list && \
     rm -rf /root/.juliaup/downloads /root/.juliaup/tmp
 ENV PATH="/root/.juliaup/bin:$PATH"

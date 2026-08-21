@@ -114,7 +114,12 @@ export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
 export PYTHON_JULIAPKG_PROJECT="$CONDA_PREFIX/julia_env"
 
-conda install -y 'conda-forge::pyjuliacall<0.9.35'
+# Pinned exactly rather than capped, so that pyjuliacall and the Julia-side PythonCall it
+# selects stay on the last combination CI was green with. A ceiling is not enough: the solver
+# takes the highest version below it as soon as conda-forge publishes one, which is how this
+# silently moved from 0.9.28 to 0.9.34. Safe to relax once someone confirms a newer version
+# works against the Julia version pinned in CI.
+conda install -y 'conda-forge::pyjuliacall==0.9.28'
 
 echo "Environment variables referencing JULIA:"
 env | grep JULIA

@@ -40,7 +40,8 @@ requirements:
     - conda-forge::cantera >=3.0
     - conda-forge::mopac
     - conda-forge::cclib >=1.6.3,<1.9
-    - conda-forge::openbabel >=3
+    # 3.2.1 hangs pytest collection under Python 3.10/3.11, where test/conftest.py imports pybel
+    - conda-forge::openbabel >=3,<3.2
     - conda-forge::rdkit >=2024
     # python intentionally left loose so the CI matrix (via CONDA_PY)
     # can pin it without a contradictory-deps error. The real variant pin
