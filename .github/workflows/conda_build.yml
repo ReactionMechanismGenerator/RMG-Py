@@ -61,7 +61,7 @@ jobs:
           activate-environment: ""
 
       - name: Install Build Tools
-        run: conda install -y python anaconda-client conda-build
+        run: conda install -y python anaconda-client conda-build boa
 
       - name: Show solver and runner info
         # Small diagnostic snapshot.
@@ -86,11 +86,11 @@ jobs:
              [[ "${GITHUB_EVENT_NAME}" == "push" || "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             CONDA_NPY=${{ matrix.numpy-version }} \
             CONDA_PY=${{ matrix.python-version }} \
-            conda build --token "$CONDA_TOKEN" --user rmg .
+            conda mambabuild --token "$CONDA_TOKEN" --user rmg .
           else
             CONDA_NPY=${{ matrix.numpy-version }} \
             CONDA_PY=${{ matrix.python-version }} \
-            conda build --no-anaconda-upload .
+            conda mambabuild --no-anaconda-upload .
           fi
   
   result:
