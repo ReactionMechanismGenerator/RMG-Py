@@ -83,7 +83,6 @@ jobs:
             -c conda-forge
             -c rmg
             --override-channels
-            --solver=libmamba
           )
 
           if [[ "${GITHUB_REF}" == "refs/heads/stable" ]] && \
