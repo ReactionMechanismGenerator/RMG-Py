@@ -61,7 +61,7 @@ jobs:
           activate-environment: ""
 
       - name: Install Build Tools
-        run: conda install -y python anaconda-client conda-build boa
+        run: conda install -y python anaconda-client boa
 
       - name: Show solver and runner info
         # Small diagnostic snapshot.
