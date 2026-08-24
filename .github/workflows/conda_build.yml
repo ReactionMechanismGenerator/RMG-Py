@@ -76,22 +76,25 @@ jobs:
         env:
           CONDA_VERBOSITY: "1"
           CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-          CONDA_SOLVER: "libmamba"
         run: |
-          conda config --add channels rmg
-          conda config --add channels conda-forge
-          # --add prepends, so the final channel order is [conda-forge, rmg, ...].
-          conda config --set channel_priority strict
+          conda config --set channel_priority flexible
+
+          COMMON_BUILD_ARGS=(
+            -c conda-forge
+            -c rmg
+            --override-channels
+            --solver=libmamba
+          )
 
           if [[ "${GITHUB_REF}" == "refs/heads/stable" ]] && \
              [[ "${GITHUB_EVENT_NAME}" == "push" || "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             CONDA_NPY=${{ matrix.numpy-version }} \
             CONDA_PY=${{ matrix.python-version }} \
-            conda build --token "$CONDA_TOKEN" --user rmg .
+            conda build "${COMMON_BUILD_ARGS[@]}" --token "$CONDA_TOKEN" --user rmg .
           else
             CONDA_NPY=${{ matrix.numpy-version }} \
             CONDA_PY=${{ matrix.python-version }} \
-            conda build --no-anaconda-upload .
+            conda build "${COMMON_BUILD_ARGS[@]}" --no-anaconda-upload .
           fi
   
   result:
