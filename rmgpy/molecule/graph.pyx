@@ -914,6 +914,36 @@ cdef class Graph(object):
         # mapping is valid
         return True
 
+    cpdef bint has_same_labels(self, Graph other, list ignore_labels=None) except -2:
+        """
+        Returns ``True`` if `self` and `other` have the same labels on
+        their vertices, with the same number of vertices bearing each
+        label (i.e. the multisets of vertex labels are equal). Vertices
+        without a label (an empty or unset `label` attribute) are ignored.
+        Returns ``False`` otherwise.
+
+        If `ignore_labels` is given, vertices bearing any of those labels
+        are excluded from the comparison entirely.
+        """
+        cdef dict labels1, labels2
+        cdef set skip
+
+        skip = set(ignore_labels) if ignore_labels else set()
+
+        labels1 = {}
+        for vertex in self.vertices:
+            label = vertex.label
+            if label and label not in skip:
+                labels1[label] = labels1.get(label, 0) + 1
+
+        labels2 = {}
+        for vertex in other.vertices:
+            label = vertex.label
+            if label and label not in skip:
+                labels2[label] = labels2.get(label, 0) + 1
+
+        return labels1 == labels2
+
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=False):
         """
         For a given list of atoms comprising a ring, return the set of bonds

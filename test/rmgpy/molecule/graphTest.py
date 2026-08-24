@@ -528,6 +528,52 @@ class TestGraph:
             assert graph1.is_mapping_valid(graph2, mapping)
             assert graph1.is_mapping_valid(graph2, mapping)
 
+    def test_has_same_labels(self):
+        """
+        Check the has_same_labels() function.
+        """
+        from rmgpy.molecule.molecule import Atom
+
+        graph1 = Graph([Atom(label="*1"), Atom(label="*2"), Atom()])
+
+        # Same labels, same multiplicity of each label
+        graph2 = Graph([Atom(label="*2"), Atom(label="*1"), Atom()])
+        assert graph1.has_same_labels(graph2)
+        assert graph2.has_same_labels(graph1)
+
+        # A graph always has the same labels as itself
+        assert graph1.has_same_labels(graph1)
+
+        # Missing a label entirely
+        graph3 = Graph([Atom(label="*1"), Atom(), Atom()])
+        assert not graph1.has_same_labels(graph3)
+        assert not graph3.has_same_labels(graph1)
+
+        # Same labels present, but with a different multiplicity
+        # (two vertices labeled "*1" instead of one "*1" and one "*2")
+        graph4 = Graph([Atom(label="*1"), Atom(label="*1"), Atom()])
+        assert not graph1.has_same_labels(graph4)
+        assert not graph4.has_same_labels(graph1)
+
+        # Extra labeled vertex on one side
+        graph5 = Graph([Atom(label="*1"), Atom(label="*2"), Atom(label="*3")])
+        assert not graph1.has_same_labels(graph5)
+        assert not graph5.has_same_labels(graph1)
+
+        # ignore_labels excludes the given labels from the comparison entirely,
+        # so a mismatch on an ignored label no longer counts against a match...
+        assert graph1.has_same_labels(graph3, ignore_labels=["*2"])
+        assert graph3.has_same_labels(graph1, ignore_labels=["*2"])
+        assert graph1.has_same_labels(graph5, ignore_labels=["*3"])
+        assert graph5.has_same_labels(graph1, ignore_labels=["*3"])
+
+        # ...but a mismatch on a label that wasn't ignored still counts
+        assert not graph1.has_same_labels(graph3, ignore_labels=["*1"])
+        assert not graph1.has_same_labels(graph5, ignore_labels=["*1"])
+
+        # ignoring every labeled vertex trivially matches any graph
+        assert graph1.has_same_labels(graph4, ignore_labels=["*1", "*2"])
+
     def test_intersection_isomorphism(self):
         """
         Check the intersection isomorphism functions.

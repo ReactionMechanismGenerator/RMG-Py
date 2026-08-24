@@ -146,4 +146,6 @@ cdef class Graph(object):
     
     cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?, bint check_labels=?) except -2
 
+    cpdef bint has_same_labels(self, Graph other, list ignore_labels=?) except -2
+
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=?)
