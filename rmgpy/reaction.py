@@ -61,9 +61,31 @@ from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.species import Species
+from rmgpy.statmech.rotation import Rotation
+from rmgpy.statmech.translation import Translation
 from rmgpy.thermo import ThermoData
 
 ################################################################################
+
+# Reactions whose degrees-of-freedom mismatch has already been reported. The check runs per
+# calculate_tst_rate_coefficient() call, and that is called once per temperature, so without this
+# a single inconsistent reaction would emit one identical warning per point in Tlist.
+_DOF_MISMATCH_WARNED = set()
+
+
+def _has_external_modes(conformer):
+    """
+    Return ``True`` if `conformer` enumerates any external (translational or rotational) mode.
+
+    Deliberately a yes/no answer rather than a set of mode classes: a monatomic species
+    legitimately carries translation and no rotation, and a linear species carries a different
+    rotor from a nonlinear one, so comparing mode classes between a transition state and its
+    reactants reports differences that are entirely correct. What is never correct is one side
+    of the TST expression describing the external degrees of freedom and the other omitting them
+    altogether -- that is the mismatch which leaves Q_TS/Q_reactant uncancelled.
+    """
+    return any(isinstance(mode, (Translation, Rotation)) for mode in conformer.modes)
+
 
 # helper function for sorting
 def get_sorting_key(spc):
@@ -1411,6 +1433,8 @@ class Reaction:
         is the Planck constant. :math:`\\kappa(T)` is an optional tunneling
         correction.
         """
+        self._warn_if_dof_inconsistent()
+
         # Determine TST rate constant at each temperature
         Qreac = 1.0
         E0 = 0.0
@@ -1427,6 +1451,44 @@ class Reaction:
         k *= self.transition_state.calculate_tunneling_factor(T)
 
         return k
+
+    def _warn_if_dof_inconsistent(self):
+        """
+        Warn if the transition state and the reactants carry different classes of
+        external degrees of freedom.
+
+        The TST expression is only meaningful when :math:`Q^\\ddagger` and
+        :math:`Q^\\mathrm{A} Q^\\mathrm{B}` count the same modes, so that the
+        translational and rotational contributions cancel. A transition state
+        described by a full conformer (translation + rotation + vibration) sitting
+        above wells described as vibration-only -- the usual result of splicing a
+        quantum-chemistry saddle point into an otherwise estimated network -- leaves
+        those contributions uncancelled and can inflate the rate coefficient by many
+        orders of magnitude. Nothing downstream can recover the intent, so warn here.
+
+        This only warns: a mixed description can be deliberate, and raising would
+        break working code.
+        """
+        if self.transition_state is None or self.transition_state.conformer is None:
+            return
+        ts_has_external = _has_external_modes(self.transition_state.conformer)
+        for spec in self.reactants:
+            if spec.conformer is None:
+                continue
+            if _has_external_modes(spec.conformer) == ts_has_external:
+                continue
+            key = (str(self), self.transition_state.label, spec.label, ts_has_external)
+            if key in _DOF_MISMATCH_WARNED:
+                continue
+            _DOF_MISMATCH_WARNED.add(key)
+            with_external, without_external = (
+                (self.transition_state.label, spec.label) if ts_has_external
+                else (spec.label, self.transition_state.label))
+            logging.warning(
+                '%r enumerates translational/rotational modes but %r does not. The TST expression '
+                'assumes these cancel between Q_TS and Q_reactant, so where one side omits them '
+                'k(T) can be wrong by many orders of magnitude. Describe every well and transition '
+                'state in this network the same way.', with_external, without_external)
 
     def can_tst(self):
         """
