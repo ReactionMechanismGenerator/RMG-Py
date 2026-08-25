@@ -77,10 +77,10 @@ jobs:
           CONDA_VERBOSITY: "1"
           CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
+          conda config --remove-key channels || true
           conda config --add channels rmg
           conda config --add channels conda-forge
-          # --add prepends, so the final channel order is [conda-forge, rmg, ...].
-          conda config --set channel_priority strict
+          conda config --set channel_priority flexible
 
           if [[ "${GITHUB_REF}" == "refs/heads/stable" ]] && \
              [[ "${GITHUB_EVENT_NAME}" == "push" || "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
