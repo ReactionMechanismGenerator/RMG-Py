@@ -56,6 +56,7 @@ Currently supported resonance types:
 """
 
 import logging
+from functools import partial
 from operator import attrgetter
 
 import cython
@@ -251,11 +252,13 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                                            keep_isomorphic=keep_isomorphic,
                                            save_order=save_order)
         if features['isPolycyclicAromatic'] and clar_structures:
-            _generate_resonance_structures(mol_list, [generate_clar_structures],
+            _generate_resonance_structures(mol_list,
+                                           [partial(generate_clar_structures, save_order=save_order)],
                                            keep_isomorphic=keep_isomorphic,
                                            save_order=save_order)
         else:
-            _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
+            _generate_resonance_structures(mol_list,
+                                           [partial(generate_aromatic_resonance_structure, save_order=save_order)],
                                            keep_isomorphic=keep_isomorphic,
                                            save_order=save_order)
 
@@ -282,6 +285,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
                             if True, only remove structures that give is_identical=True
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
+        save_order          if True, preserve the atom order of the input molecules
     """
     cython.declare(index=cython.int, molecule=Graph, new_mol_list=list, new_mol=Graph, mol=Graph,
                    input_charge=cython.int, x=Vertex)
