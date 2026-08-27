@@ -144,6 +144,17 @@ If <code class="docutils literal notranslate"><span class="pre">save_order</span
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.get_atom_indices">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">get_atom_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_atom_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a mapping of <code class="docutils literal notranslate"><span class="pre">id(atom)</span></code> to the atom’s position in <code class="docutils literal notranslate"><span class="pre">mol.vertices</span></code>.</p>
+<p>Replaces <code class="docutils literal notranslate"><span class="pre">Vertex.sorting_label</span></code>, which the isomorphism machinery leaves either unset or
+holding a stale permutation. Position identifies an atom across the structures of one species
+only while they share an atom order, which <code class="docutils literal notranslate"><span class="pre">save_order</span></code> guarantees and <code class="docutils literal notranslate"><span class="pre">sort_atoms</span></code> does
+not; that limitation is inherited, since the sorting labels equalled the position in exactly
+the case where the structures had been sorted.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.filtration.get_charge_span_list">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">get_charge_span_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.get_charge_span_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the a list of charge spans for a respective list of :class:Molecule objects
@@ -244,6 +255,7 @@ Opposite charges will be as close as possible to one another, and vice versa.</p
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.check_reactive"><code class="docutils literal notranslate"><span class="pre">check_reactive()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.filter_structures"><code class="docutils literal notranslate"><span class="pre">filter_structures()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.find_unique_sites_in_charged_list"><code class="docutils literal notranslate"><span class="pre">find_unique_sites_in_charged_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.filtration.get_atom_indices"><code class="docutils literal notranslate"><span class="pre">get_atom_indices()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_charge_span_list"><code class="docutils literal notranslate"><span class="pre">get_charge_span_list()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_octet_deviation"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_octet_deviation_list"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation_list()</span></code></a></li>
