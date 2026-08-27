@@ -615,7 +615,12 @@ class Reaction:
                                                     save_order=save_order)
 
         # Compare specific_collider to specific_collider
-        collider_match = (self.specific_collider == other.specific_collider)
+        if self.specific_collider is None:
+            collider_match = other.specific_collider is None
+        elif other.specific_collider is None:
+            collider_match = False
+        else:
+            collider_match = self.specific_collider.is_isomorphic(other.specific_collider)
 
         # Return now, if we can
         if forward_reactants_match and forward_products_match and collider_match:

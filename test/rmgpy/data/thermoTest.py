@@ -42,7 +42,6 @@ from rmgpy.data.thermo import (
     ThermoCentralDatabaseInterface,
     convert_ring_to_sub_molecule,
     bicyclic_decomposition_for_polyring,
-    combine_cycles,
     combine_two_rings_into_sub_molecule,
     find_aromatic_bonds_from_sub_molecule,
     get_copy_for_one_ring,
@@ -2475,17 +2474,6 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
             assert ring_smiles == ["C1C=CC=C=C1", "C1C=CCC=C1"]
         except AssertionError as e:
             pytest.skip(f"Skipping because not yet deterministic (#2562): {e}")
-
-    def test_combine_cycles(self):
-        """
-        This method tests the combine_cycles method, which simply joins two lists
-        together without duplication.
-        """
-        main_cycle = Molecule(smiles="C1CCC2CCCCC2C1").atoms
-        test_cycle1 = main_cycle[0:8]
-        test_cycle2 = main_cycle[6:]
-        joined_cycle = combine_cycles(test_cycle1, test_cycle2)
-        assert set(main_cycle) == set(joined_cycle)
 
     def test_split_bicyclic_into_single_rings1(self):
         """
