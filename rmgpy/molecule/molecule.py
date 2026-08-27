@@ -229,6 +229,10 @@ class Atom(Vertex):
         the element is compared and electrons are ignored.
         """
         cython.declare(atom=Atom, ap=gr.GroupAtom)
+        
+        if self.label != other.label:
+            return False
+        
         if isinstance(other, Atom):
             atom = other
             if strict:
@@ -290,6 +294,8 @@ class Atom(Vertex):
         :class:`GroupAtom` object, then the atom must match or be more
         specific than any of the combinations in the atom pattern.
         """
+        if self.label != other.label:
+            return False
         if isinstance(other, Atom):
             return self.equivalent(other)
         elif isinstance(other, gr.GroupAtom):
