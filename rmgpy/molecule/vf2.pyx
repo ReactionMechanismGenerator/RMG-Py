@@ -63,53 +63,77 @@ cdef class VF2:
         self.graph2.sort_vertices()
 
     cpdef bint is_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
-                             bint strict=True) except -2:
+                             bint strict=True, bint check_labels=False) except -2:
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
         the optional initial mapping `initial_mapping`, or ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initial_mapping, False, False, save_order=save_order, strict=strict)
+        self.isomorphism(graph1, graph2, initial_mapping, False, False, False, save_order=save_order, strict=strict,
+                          check_labels=check_labels)
         return self.is_match
 
     cpdef list find_isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
-                                bint strict=True):
+                                bint strict=True, bint check_labels=False):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
-        `graph1` to graph `graph2` with the optional initial mapping 
+        `graph1` to graph `graph2` with the optional initial mapping
         `initial_mapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
-        self.isomorphism(graph1, graph2, initial_mapping, False, True, save_order=save_order, strict=strict)
+        self.isomorphism(graph1, graph2, initial_mapping, False, True, False, save_order=save_order, strict=strict,
+                          check_labels=check_labels)
         return self.mapping_list
 
     cpdef bint is_subgraph_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping,
-                                      bint save_order=False) except -2:
+                                      bint save_order=False, bint check_labels=False) except -2:
         """
         Return ``True`` if graph `graph1` is subgraph isomorphic to subgraph
         `graph2` with the optional initial mapping `initial_mapping`, or
         ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initial_mapping, True, False, save_order)
+        self.isomorphism(graph1, graph2, initial_mapping, True, False, False, save_order, strict=True, check_labels=check_labels)
         return self.is_match
 
-    cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False):
+    cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False,
+                                          bint check_labels=False):
         """
         Return a list of dicts of all valid subgraph isomorphism mappings from
-        graph `graph1` to subgraph `graph2` with the optional initial mapping 
+        graph `graph1` to subgraph `graph2` with the optional initial mapping
         `initial_mapping`. If no valid subgraph isomorphisms are found, an empty
         list is returned.
         """
-        self.isomorphism(graph1, graph2, initial_mapping, True, True, save_order)
+        self.isomorphism(graph1, graph2, initial_mapping, True, True, False, save_order, strict=True, check_labels=check_labels)
         return self.mapping_list
 
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all,
-                     bint save_order=False, bint strict=True):
+    cpdef bint is_intersection_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping,
+                                      bint save_order=False, bint check_labels=False) except -2:
+        """
+        Return ``True`` if subgraph `graph1` is intersection isomorphic to subgraph
+        `graph2` with the optional initial mapping `initial_mapping`, or
+        ``False`` otherwise.
+        """
+        self.isomorphism(graph1, graph2, initial_mapping, False, False, True, save_order=save_order, strict=True, check_labels=check_labels)
+        return self.is_match
+
+    cpdef list find_intersection_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False, bint check_labels=False):
+        """
+        Return a list of dicts of all valid intersection isomorphism mappings from
+        subgraph `graph1` to subgraph `graph2` with the optional initial mapping
+        `initial_mapping`. If no valid intersection isomorphisms are found, an empty
+        list is returned.
+        """
+        self.isomorphism(graph1, graph2, initial_mapping, False, True, True, save_order=save_order, strict=True, check_labels=check_labels)
+        return self.mapping_list
+
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint intersection,
+                     bint save_order=False, bint strict=True, bint check_labels=False):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
         `graph2` with optional initial mapping `initial_mapping`. If `subgraph`
         is ``True``, `graph2` is treated as a possible subgraph of `graph1`.
         If `find_all` is ``True``, all isomorphisms are found; otherwise only
-        the first is found.
+        the first is found. If `check_labels` is ``True``, vertices only match
+        if their `label` attributes also match.
         """
         cdef int call_depth, index1, index2
 
@@ -124,14 +148,16 @@ cdef class VF2:
         self.initial_mapping = initial_mapping
         self.subgraph = subgraph
         self.find_all = find_all
+        self.intersection = intersection
         self.strict = strict
+        self.check_labels = check_labels
 
         # Clear previous result
         self.is_match = False
         self.mapping_list = []
 
         # Some quick isomorphism checks based on graph sizes
-        if not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
+        if not self.intersection and not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
             # The two graphs don't have the same number of vertices, so they
             # cannot be isomorphic
             return
@@ -279,7 +305,7 @@ cdef class VF2:
         cdef Edge edge1, edge2
         cdef int term1_count, term2_count, neither1_count, neither2_count
 
-        if not self.subgraph:
+        if not self.subgraph and not self.intersection:
             # To be feasible the connectivity values must be an exact match
             if vertex1.connectivity1 != vertex2.connectivity1: return False
             if vertex1.connectivity2 != vertex2.connectivity2: return False
@@ -287,9 +313,11 @@ cdef class VF2:
 
         # Semantic check #1: vertex1 and vertex2 must be equivalent
         if self.subgraph:
-            if not vertex1.is_specific_case_of(vertex2): return False
+            if not vertex1.is_specific_case_of(vertex2, check_labels=self.check_labels): return False
+        elif self.intersection:
+            if not vertex1.has_intersection_with(vertex2, check_labels=self.check_labels): return False
         else:
-            if not vertex1.equivalent(vertex2, strict=self.strict): return False
+            if not vertex1.equivalent(vertex2, strict=self.strict, check_labels=self.check_labels): return False
 
         # Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
         # already mapped should be connected by equivalent edges
@@ -306,12 +334,14 @@ cdef class VF2:
                     edge2 = vertex2.edges[vert2]
                     if self.subgraph:
                         if not edge1.is_specific_case_of(edge2): return False
+                    elif self.intersection:
+                        if not edge1.has_intersection_with(edge2): return False
                     else:
                         if not edge1.equivalent(edge2): return False
 
         # There could still be edges in graph1 that aren't in graph2; this is okay
         # for subgraph matching, but not for exact matching
-        if not self.subgraph:
+        if not self.subgraph and not self.intersection:
             for vert1 in vertex1.edges:
                 if vert1.mapping is not None:
                     if vert1.mapping not in vertex2.edges:
@@ -335,24 +365,25 @@ cdef class VF2:
         # vertex2 that are non-terminals must be equal
         if self.subgraph:
             if neither1_count < neither2_count: return False
-        else:
+        elif not self.intersection:
             if neither1_count != neither2_count: return False
 
         # Level 1 look-ahead: the number of adjacent vertices of vertex1 and
         # vertex2 that are terminals must be equal
         if self.subgraph:
             if term1_count < term2_count: return False
-        else:
+        elif not self.intersection:
             if term1_count != term2_count: return False
 
         # Level 0 look-ahead: all adjacent vertices of vertex2 already in the
         # mapping must map to adjacent vertices of vertex1
-        for vert2 in vertex2.edges:
-            if vert2.mapping is not None:
-                if vert2.mapping not in vertex1.edges: return False
+        if not self.intersection:
+            for vert2 in vertex2.edges:
+                if vert2.mapping is not None:
+                    if vert2.mapping not in vertex1.edges: return False
         # Also, all adjacent vertices of vertex1 already in the mapping must map to
         # adjacent vertices of vertex2, unless we are subgraph matching
-        if not self.subgraph:
+        if not self.subgraph and not self.intersection:
             for vert1 in vertex1.edges:
                 if vert1.mapping is not None:
                     if vert1.mapping not in vertex2.edges: return False

@@ -528,6 +528,122 @@ class TestGraph:
             assert graph1.is_mapping_valid(graph2, mapping)
             assert graph1.is_mapping_valid(graph2, mapping)
 
+    def test_has_same_labels(self):
+        """
+        Check the has_same_labels() function.
+        """
+        from rmgpy.molecule.molecule import Atom
+
+        graph1 = Graph([Atom(label="*1"), Atom(label="*2"), Atom()])
+
+        # Same labels, same multiplicity of each label
+        graph2 = Graph([Atom(label="*2"), Atom(label="*1"), Atom()])
+        assert graph1.has_same_labels(graph2)
+        assert graph2.has_same_labels(graph1)
+
+        # A graph always has the same labels as itself
+        assert graph1.has_same_labels(graph1)
+
+        # Missing a label entirely
+        graph3 = Graph([Atom(label="*1"), Atom(), Atom()])
+        assert not graph1.has_same_labels(graph3)
+        assert not graph3.has_same_labels(graph1)
+
+        # Same labels present, but with a different multiplicity
+        # (two vertices labeled "*1" instead of one "*1" and one "*2")
+        graph4 = Graph([Atom(label="*1"), Atom(label="*1"), Atom()])
+        assert not graph1.has_same_labels(graph4)
+        assert not graph4.has_same_labels(graph1)
+
+        # Extra labeled vertex on one side
+        graph5 = Graph([Atom(label="*1"), Atom(label="*2"), Atom(label="*3")])
+        assert not graph1.has_same_labels(graph5)
+        assert not graph5.has_same_labels(graph1)
+
+        # ignore_labels excludes the given labels from the comparison entirely,
+        # so a mismatch on an ignored label no longer counts against a match...
+        assert graph1.has_same_labels(graph3, ignore_labels=["*2"])
+        assert graph3.has_same_labels(graph1, ignore_labels=["*2"])
+        assert graph1.has_same_labels(graph5, ignore_labels=["*3"])
+        assert graph5.has_same_labels(graph1, ignore_labels=["*3"])
+
+        # ...but a mismatch on a label that wasn't ignored still counts
+        assert not graph1.has_same_labels(graph3, ignore_labels=["*1"])
+        assert not graph1.has_same_labels(graph5, ignore_labels=["*1"])
+
+        # ignoring every labeled vertex trivially matches any graph
+        assert graph1.has_same_labels(graph4, ignore_labels=["*1", "*2"])
+
+    def test_intersection_isomorphism(self):
+        """
+        Check the intersection isomorphism functions.
+
+        Intersection isomorphism only makes sense for vertices/edges that carry
+        semantic information (it is not implemented on the base Vertex/Edge
+        classes), so this uses small subclasses that represent a wildcard set
+        of possible integer values, analogous to how GroupAtom stores a list
+        of possible atom types.
+        """
+
+        class ValueVertex(Vertex):
+            def __init__(self, values):
+                Vertex.__init__(self)
+                self.values = values
+
+            def equivalent(self, other, strict=True, check_labels=False):
+                return set(self.values) == set(other.values)
+
+            def is_specific_case_of(self, other, check_labels=False):
+                return set(self.values).issubset(other.values)
+
+            def has_intersection_with(self, other, check_labels=False):
+                return not set(self.values).isdisjoint(other.values)
+
+        class ValueEdge(Edge):
+            def equivalent(self, other):
+                return True
+
+            def is_specific_case_of(self, other):
+                return True
+
+            def has_intersection_with(self, other):
+                return True
+
+        a1, b1 = ValueVertex([1, 2]), ValueVertex([5])
+        graph1 = Graph()
+        graph1.add_vertex(a1)
+        graph1.add_vertex(b1)
+        graph1.add_edge(ValueEdge(a1, b1))
+
+        a2, b2 = ValueVertex([2, 3]), ValueVertex([5])
+        graph2 = Graph()
+        graph2.add_vertex(a2)
+        graph2.add_vertex(b2)
+        graph2.add_edge(ValueEdge(a2, b2))
+
+        # Neither graph is a subgraph of the other (1 not subset of {2,3} and vice versa)...
+        assert not graph1.is_subgraph_isomorphic(graph2)
+        assert not graph2.is_subgraph_isomorphic(graph1)
+        # ...but they intersect at value 2
+        assert graph1.is_intersection_isomorphic(graph2)
+        assert graph2.is_intersection_isomorphic(graph1)
+
+        map_list = graph1.find_intersection_isomorphisms(graph2)
+        assert len(map_list) == 1
+        for mapping in map_list:
+            for vertex1, vertex2 in mapping.items():
+                assert vertex1.has_intersection_with(vertex2)
+
+        # A graph with no overlapping vertex values has no intersection isomorphism
+        a3, b3 = ValueVertex([3, 4]), ValueVertex([5])
+        graph3 = Graph()
+        graph3.add_vertex(a3)
+        graph3.add_vertex(b3)
+        graph3.add_edge(ValueEdge(a3, b3))
+
+        assert not graph1.is_intersection_isomorphic(graph3)
+        assert graph1.find_intersection_isomorphisms(graph3) == []
+
     def test_pickle(self):
         """
         Test that a Graph object can be successfully pickled and unpickled

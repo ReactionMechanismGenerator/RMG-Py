@@ -1274,6 +1274,42 @@ multiplicity 2
         assert molecule1.is_isomorphic(molecule2, generate_initial_map=True)
         assert molecule2.is_isomorphic(molecule1, generate_initial_map=True)
 
+    def test_isomorphism_check_labels(self):
+        """
+        Check that the check_labels option to the isomorphism functions
+        requires atom `label` attributes to match, in addition to the
+        usual structural comparison.
+        """
+        # Ethanol (CH3-CH2-OH) has no nontrivial graph automorphism, since the
+        # two carbons and the oxygen are all structurally distinguishable.
+        # This lets us control exactly which atom gets the label.
+        adjlist_template = """
+1 {label1} C u0 p0 c0 {{2,S}} {{3,S}} {{4,S}} {{5,S}}
+2 {label2} C u0 p0 c0 {{1,S}} {{6,S}} {{7,S}} {{8,S}}
+3    H u0 p0 c0 {{1,S}}
+4    H u0 p0 c0 {{1,S}}
+5    H u0 p0 c0 {{1,S}}
+6    H u0 p0 c0 {{2,S}}
+7    H u0 p0 c0 {{2,S}}
+8    O u0 p2 c0 {{2,S}} {{9,S}}
+9    H u0 p0 c0 {{8,S}}
+"""
+        # molecule1 and molecule3 label the CH3 carbon; molecule2 labels the CH2 carbon instead.
+        molecule1 = Molecule().from_adjacency_list(adjlist_template.format(label1="*1", label2=""))
+        molecule2 = Molecule().from_adjacency_list(adjlist_template.format(label1="", label2="*1"))
+        molecule3 = Molecule().from_adjacency_list(adjlist_template.format(label1="*1", label2=""))
+
+        # Structurally, all three molecules are isomorphic regardless of where the label is.
+        assert molecule1.is_isomorphic(molecule2)
+        assert molecule1.is_isomorphic(molecule3)
+
+        # With check_labels=True, only the mapping that also matches labels should succeed.
+        assert not molecule1.is_isomorphic(molecule2, check_labels=True)
+        assert molecule1.is_isomorphic(molecule3, check_labels=True)
+
+        assert molecule1.find_isomorphism(molecule2, check_labels=True) == []
+        assert len(molecule1.find_isomorphism(molecule3, check_labels=True)) > 0
+
     def test_subgraph_isomorphism(self):
         """
         Check the graph isomorphism functions.
@@ -1281,8 +1317,8 @@ multiplicity 2
         molecule = Molecule().from_smiles("C=CC=C[CH]C")
         group = Group().from_adjacency_list(
             """
-        1 Cd u0 p0 c0 {2,D}
-        2 Cd u0 p0 c0 {1,D}
+        1 Cdb u0 p0 c0 {2,D}
+        2 Cdb u0 p0 c0 {1,D}
         """
         )
 
@@ -1295,6 +1331,44 @@ multiplicity 2
             for key, value in mapping.items():
                 assert key in molecule.atoms
                 assert value in group.atoms
+
+    def test_subgraph_isomorphism_check_labels(self):
+        """
+        Check that the check_labels option restricts subgraph isomorphism
+        matches to atoms whose `label` attributes also agree.
+        """
+        molecule = Molecule().from_smiles("C=CC=C[CH]C")
+        # Capture a reference to one of the molecule's Cdb atoms (the first
+        # atom of the first C=C) before running any isomorphism checks,
+        # since those checks may reorder molecule.atoms in place.
+        target_atom = molecule.atoms[0]
+        group = Group().from_adjacency_list(
+            """
+        1 *1 Cdb u0 p0 c0 {2,D}
+        2    Cdb u0 p0 c0 {1,D}
+        """
+        )
+
+        # Without a matching labeled atom in the molecule, the group's
+        # labeled atom can never find a matching counterpart.
+        assert molecule.is_subgraph_isomorphic(group, save_order=True)
+        assert not molecule.is_subgraph_isomorphic(group, check_labels=True, save_order=True)
+        assert molecule.find_subgraph_isomorphisms(group, check_labels=True, save_order=True) == []
+
+        # Label the captured Cdb atom to match the group's labeled atom.
+        target_atom.label = "*1"
+
+        assert molecule.is_subgraph_isomorphic(group, check_labels=True, save_order=True)
+        mappings_unlabeled = molecule.find_subgraph_isomorphisms(group, save_order=True)
+        mappings_labeled = molecule.find_subgraph_isomorphisms(group, check_labels=True, save_order=True)
+        assert len(mappings_unlabeled) == 4
+        # Only the mapping that pairs the labeled molecule atom with the
+        # labeled group atom should survive.
+        assert len(mappings_labeled) == 1
+        for mapping in mappings_labeled:
+            for molecule_atom, group_atom in mapping.items():
+                if group_atom.label == "*1":
+                    assert molecule_atom is target_atom
 
     def test_subgraph_isomorphism_again(self):
         molecule = Molecule()

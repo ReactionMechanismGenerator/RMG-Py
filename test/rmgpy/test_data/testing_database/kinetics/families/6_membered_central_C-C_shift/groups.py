@@ -61,8 +61,8 @@ entry(
     index=2,
     label="1_2_4_5_hexatetraene",
     group="""
-1 *3 Cd u0 {2,S} {3,D}
-2 *4 Cd u0 {1,S} {4,D}
+1 *3 Cdb u0 {2,S} {3,D}
+2 *4 Cdb u0 {1,S} {4,D}
 3 *2 Cdd u0 {1,D} {5,D}
 4 *5 Cdd u0 {2,D} {6,D}
 5 *1 C u0 {3,D}
@@ -77,8 +77,8 @@ entry(
     group="""
 1 *3 C u0 {2,S} {3,S}
 2 *4 C u0 {1,S} {4,S}
-3 *2 Cd u0 {1,S} {5,D}
-4 *5 Cd u0 {2,S} {6,D}
+3 *2 Cdb u0 {1,S} {5,D}
+4 *5 Cdb u0 {2,S} {6,D}
 5 *1 C u0 {3,D}
 6 *6 C u0 {4,D}
 """,
