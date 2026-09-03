@@ -583,8 +583,12 @@ class Uncertainty(object):
                 # Load covariance data and species
                 df = pd.read_csv(covariance_file)
                 cov_labels = df.columns.values
-                if any(cov_labels != library_entry_labels):
-                    raise ValueError(f'Covariance library {cov_lib} contains labels {cov_labels} that are not in the associated thermo library {library_name}, which has labels {library_entry_labels}. The covariance data and thermo library data must be consistent with each other.')
+                if len(cov_labels) != len(library_entry_labels):
+                    # warn the user that the covariance matrix is not fully up-to-date with the thermo library.
+                    # we can still proceed with UQ because it uses the molecule data for lookup. The covariance associations are not broken by adding or removing species from the library,
+                    # but the covariance data may be incomplete
+                    warnings.warn(f'Covariance library {cov_lib} contains {len(cov_labels)} labels, but the associated thermo library {library_name} contains {len(library_entry_labels)} labels, which probably means new species have been added to the library, but their covariances have not yet been saved in the database. You can add new covariances to the database with RMG-database/scripts/compile_BEEF_cov.ipynb')
+
                 cov_data = np.array(df) / 4.184 / 4.184  # convert from (kJ/mol)^2 to (kcal/mol)^2
                 cov_species_dict = load_species_dictionary(covariance_species)
                 cov_specs = [item for _, item in cov_species_dict.items()]
