@@ -37,8 +37,12 @@ import pytest
 
 from rmgpy import get_path, settings
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.kinetics import Arrhenius
+from rmgpy.molecule import Molecule
+from rmgpy.reaction import Reaction
 from rmgpy.rmg.main import RMG, RMG_Memory, initialize_log, make_profile_graph
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.species import Species
 
 originalPath = get_path()
 
@@ -593,3 +597,58 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             # clean up
             os.chdir(originalPath)
             shutil.rmtree(self.dir_name)
+
+
+class TestCheckModelCollisionLimits:
+    """
+    Unit tests for the collision limit portion of RMG.check_model().
+    """
+
+    @staticmethod
+    def make_reaction(cls):
+        """Build a reaction of the given Reaction subclass with real species and kinetics."""
+        a = Species(label="A", molecule=[Molecule().from_smiles("C")])
+        b = Species(label="B", molecule=[Molecule().from_smiles("[CH3]")])
+        return cls(
+            reactants=[a, a],
+            products=[b, b],
+            kinetics=Arrhenius(A=(1e10, "m^3/(mol*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K")),
+        )
+
+    def make_rmg(self, tmp_path, core_reactions):
+        rmg = RMG()
+        rmg.reaction_model = CoreEdgeReactionModel()
+        rmg.reaction_model.core.species = []
+        rmg.reaction_model.edge.species = []
+        rmg.reaction_model.core.reactions = core_reactions
+        rmg.Tmin, rmg.Tmax = 300.0, 1500.0
+        rmg.Pmin, rmg.Pmax = 1.0e5, 1.0e6
+        rmg.output_directory = str(tmp_path)
+        return rmg
+
+    def test_failing_reaction_does_not_abort_the_check(self, tmp_path, caplog):
+        """
+        A reaction whose collision limit cannot be evaluated must be skipped with a warning,
+        and violators from the other core reactions must still be reported.
+        """
+
+        class ExplodingReaction(Reaction):
+            def check_collision_limit_violation(self, t_min, t_max, p_min, p_max):
+                raise ValueError("simulated collision limit failure")
+
+        class ViolatingReaction(Reaction):
+            def check_collision_limit_violation(self, t_min, t_max, p_min, p_max):
+                return [[self, "forward", 12.5, "1500.0 K, 1.0 bar"]], 0
+
+        exploding = self.make_reaction(ExplodingReaction)
+        violating = self.make_reaction(ViolatingReaction)
+        rmg = self.make_rmg(tmp_path, [exploding, violating])
+
+        with caplog.at_level(logging.WARNING):
+            rmg.check_model()
+
+        assert "Skipping collision limit check" in caplog.text
+        # The surviving reaction's violation must still make it into the report.
+        report = tmp_path / "collision_rate_violators.log"
+        assert report.is_file()
+        assert "Violation factor: 12.50" in report.read_text()
