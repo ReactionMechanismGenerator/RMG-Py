@@ -94,6 +94,55 @@ class TestFragment:
     def test_fragment_isomorphism(self):
         assert self.fragment1.is_isomorphic(self.fragment2)
 
+    def test_fragment_isomorphism_check_labels(self):
+        """
+        Check that the check_labels option works for isomorphism between
+        Fragments containing CuttingLabel vertices.
+        """
+        atom_C1 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
+        cutting_label_R1 = rmgpy.molecule.fragment.CuttingLabel("R", label="*1")
+        cutting_label_L1 = rmgpy.molecule.fragment.CuttingLabel("L", label="*2")
+        vertices = [atom_C1, cutting_label_R1, cutting_label_L1]
+        bonds = [Bond(atom_C1, cutting_label_R1), Bond(atom_C1, cutting_label_L1)]
+        fragment1 = rmgpy.molecule.fragment.Fragment()
+        for vertex in vertices:
+            fragment1.add_vertex(vertex)
+        for bond in bonds:
+            fragment1.add_edge(bond)
+
+        # fragment2 has the same structure and the same labels in the same positions
+        atom_C2 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
+        cutting_label_R2 = rmgpy.molecule.fragment.CuttingLabel("R", label="*1")
+        cutting_label_L2 = rmgpy.molecule.fragment.CuttingLabel("L", label="*2")
+        vertices = [atom_C2, cutting_label_R2, cutting_label_L2]
+        bonds = [Bond(atom_C2, cutting_label_R2), Bond(atom_C2, cutting_label_L2)]
+        fragment2 = rmgpy.molecule.fragment.Fragment()
+        for vertex in vertices:
+            fragment2.add_vertex(vertex)
+        for bond in bonds:
+            fragment2.add_edge(bond)
+
+        # fragment3 has the same structure, but the labels on the R and L
+        # cutting labels are swapped relative to fragment1
+        atom_C3 = Atom(element=get_element("C"), radical_electrons=0, charge=0, lone_pairs=0)
+        cutting_label_R3 = rmgpy.molecule.fragment.CuttingLabel("R", label="*2")
+        cutting_label_L3 = rmgpy.molecule.fragment.CuttingLabel("L", label="*1")
+        vertices = [atom_C3, cutting_label_R3, cutting_label_L3]
+        bonds = [Bond(atom_C3, cutting_label_R3), Bond(atom_C3, cutting_label_L3)]
+        fragment3 = rmgpy.molecule.fragment.Fragment()
+        for vertex in vertices:
+            fragment3.add_vertex(vertex)
+        for bond in bonds:
+            fragment3.add_edge(bond)
+
+        # Structurally, all three fragments are isomorphic regardless of labels
+        assert fragment1.is_isomorphic(fragment2)
+        assert fragment1.is_isomorphic(fragment3)
+
+        # With check_labels=True, only the fragment with matching label placement should match
+        assert fragment1.is_isomorphic(fragment2, check_labels=True)
+        assert not fragment1.is_isomorphic(fragment3, check_labels=True)
+
     def test_from_smiles_like_string1(self):
         # generate fragment from SMILES like string
         # the atom type is also calculated

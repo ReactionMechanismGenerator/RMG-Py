@@ -80,20 +80,23 @@ class CuttingLabel(Atom):
     def symbol(self):
         return self.name
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. At this moment, this is the same as the :math:`equivalent()`.
         """
-        return self.equivalent(other)
+        return self.equivalent(other, check_labels=check_labels)
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Return ``True`` if `other` is indistinguishable from this CuttingLabel, or
         ``False`` otherwise. If `other` is an :class:`CuttingLabel` object, then all
-        attributes must match exactly.
+        attributes must match exactly. If ``check_labels`` is ``True``, the
+        `label` attributes must also match.
         """
         if isinstance(other, CuttingLabel):
+            if check_labels and self.label != other.label:
+                return False
             return self.name == other.name
         else:
             return False
@@ -247,7 +250,7 @@ class Fragment(Molecule):
         return radicals
 
     def is_subgraph_isomorphic(
-        self, other, initial_map=None, generate_initial_map=False, save_order=False
+        self, other, initial_map=None, generate_initial_map=False, save_order=False, check_labels=False
     ):
         """
         Fragment's subgraph isomorphism check is done by first creating
@@ -303,15 +306,15 @@ class Fragment(Molecule):
                     for i, key in enumerate(keys):
                         initial_map[key] = atmlist[i]
                     if self.is_mapping_valid(
-                        other, initial_map, equivalent=False
+                        other, initial_map, equivalent=False, strict=True, check_labels=check_labels
                     ) and Graph.is_subgraph_isomorphic(
-                        self, other, initial_map, save_order=save_order
+                        self, other, initial_map, save_order=save_order, check_labels=check_labels
                     ):
                         return True
                 else:
                     return False
             else:
-                if not self.is_mapping_valid(other, initial_map, equivalent=False):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
                     return False
 
         # Do the isomorphism comparison
@@ -322,7 +325,7 @@ class Fragment(Molecule):
                 repr_mol_vertex = mapping[fragment_vertex]
                 new_initial_map[repr_mol_vertex] = initial_map[fragment_vertex]
 
-        result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map)
+        result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map, check_labels=check_labels)
         return result
 
     def calculate_cp0(self):
