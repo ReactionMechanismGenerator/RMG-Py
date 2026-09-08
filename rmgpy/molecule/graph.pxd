@@ -37,7 +37,8 @@ cdef class Vertex(object):
     cdef public bint terminal
     cdef public Vertex mapping
     cdef public bint ignore
-    
+    cdef public bint excluded
+
     cpdef Vertex copy(self)
 
     cpdef bint equivalent(self, Vertex other, bint strict=?, bint check_labels=?) except -2
@@ -121,6 +122,8 @@ cdef class Graph(object):
     cpdef bint is_intersection_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?) except -2
 
     cpdef list find_intersection_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
+
+    cpdef list find_largest_incomplete_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?, bint find_all=?)
 
     cpdef bint is_cyclic(self) except -2
 
