@@ -3553,3 +3553,31 @@ multiplicity 2
         assert mol.get_ring_count_in_largest_fused_ring_system() == 2
         mol = Molecule(smiles="C[C]1C2C(=O)C3CC4C(=O)C=C2CC143")
         assert mol.get_ring_count_in_largest_fused_ring_system() == 4
+
+    def test_find_largest_incomplete_isomorphisms(self):
+        """
+        Test Molecule.find_largest_incomplete_isomorphisms(): unlike find_subgraph_isomorphisms
+        (which requires `other` to be a Group), this compares two ordinary Molecules and tolerates
+        a partial match.
+        """
+        butane = Molecule(smiles="CCCC")
+        propane = Molecule(smiles="CCC")
+
+        # propane's carbon-carbon backbone (2 bonds) is a subgraph of butane's, but not every atom:
+        # whichever 3 consecutive backbone carbons of butane host propane's chain, one of propane's
+        # terminal -CH3 carbons lands on a butane backbone carbon that only has 2 (not 3) H's to
+        # offer, so exactly one H atom can't be placed.
+        map_list = butane.find_largest_incomplete_isomorphisms(propane)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == len(propane.atoms) - 1
+        assert butane.is_mapping_valid(propane, mapping, equivalent=False, strict=True)
+
+        # a molecule fully covers itself
+        butane_copy = butane.copy(deep=True)
+        full_map_list = butane.find_largest_incomplete_isomorphisms(butane_copy)
+        assert len(full_map_list[0]) == len(butane.atoms)
+
+        # other must be a Molecule, not e.g. a Group
+        with pytest.raises(TypeError):
+            butane.find_largest_incomplete_isomorphisms(Group())
