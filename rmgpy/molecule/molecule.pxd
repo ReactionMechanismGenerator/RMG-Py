@@ -261,6 +261,8 @@ cdef class Molecule(Graph):
 
     cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
 
+    cpdef list find_largest_incomplete_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?, bint find_all=?)
+
     cpdef bint is_atom_in_cycle(self, Atom atom) except -2
 
     cpdef bint is_bond_in_cycle(self, Bond bond) except -2

@@ -1776,6 +1776,38 @@ class Molecule(Graph):
         result = Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
         return result
 
+    def find_largest_incomplete_isomorphisms(self, other, initial_map=None, save_order=False, check_labels=False, find_all=False):
+        """
+        Find the largest common (non-induced) subgraph between `self` and `other`: the largest
+        partial mapping from a subset of `other`'s atoms into `self` such that every bond of
+        `other` between two mapped atoms has a corresponding bond in `self`. Unlike
+        :meth:`find_subgraph_isomorphisms`, `self` and `other` are each ordinary :class:`Molecule`
+        objects (not a `Molecule`/`Group` pair), and neither one need be fully covered -- `self`
+        may have extra atoms/bonds beyond what `other` requires, and `other` atoms that can't be
+        placed are simply left out of the mapping rather than failing the whole match.
+
+        Returned mappings use the atoms of `self` for the keys and the atoms of `other` for the
+        values, containing only the matched subset -- an unmatched `other` atom is simply absent
+        from every mapping's values. By default (`find_all=False`) only one mapping achieving the
+        largest size is returned; pass `find_all=True` to get every mapping of that size (this can
+        be large for highly symmetric structures, e.g. a periodic crystal lattice).
+
+        Args:
+            initial_map (dict, optional): initial atom mapping to use
+            save_order (bool, optional):   if ``True``, reset atom order after performing the search
+            check_labels (bool, optional): if ``True``, atoms only match if their `label` attributes match
+            find_all (bool, optional):     if ``True``, return every mapping achieving the largest size
+        """
+        # It only makes sense to compare a Molecule to a Molecule here, so raise an exception if
+        # this is not what was requested
+        if not isinstance(other, Molecule):
+            raise TypeError(
+                'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+        # Unlike is_isomorphic/find_isomorphism, this is a deliberately partial match, so the usual
+        # fingerprint/multiplicity/metal/facet fast-rejects (which only hold for exact full
+        # matches) don't apply here.
+        return Graph.find_largest_incomplete_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels, find_all=find_all)
+
     def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, check_labels=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`

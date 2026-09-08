@@ -61,6 +61,7 @@ cdef class Vertex(object):
         self.edges = {}
         self.reset_connectivity_values()
         self.ignore = False
+        self.excluded = False
 
     def __reduce__(self):
         """
@@ -575,6 +576,18 @@ cdef class Graph(object):
         Uses the VF2 algorithm of Vento and Foggia.
         """
         return vf2.find_intersection_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
+
+    cpdef list find_largest_incomplete_isomorphisms(self, Graph other, dict initial_map=None, bint save_order=False, bint check_labels=False, bint find_all=False):
+        """
+        Find the largest common (non-induced) subgraph between `self` and `other`: the largest
+        partial mapping from a subset of `other`'s vertices into `self` such that every edge of
+        `other` between two mapped vertices has a corresponding edge in `self`. `self` may have
+        extra vertices and extra edges beyond what `other` requires; `other` need not be fully
+        covered. See :meth:`VF2.find_largest_incomplete_isomorphisms` for details.
+
+        Uses the VF2 algorithm of Vento and Foggia.
+        """
+        return vf2.find_largest_incomplete_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels, find_all=find_all)
 
     cpdef bint is_cyclic(self) except -2:
         """
