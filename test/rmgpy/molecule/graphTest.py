@@ -28,6 +28,8 @@
 ###############################################################################
 
 
+import itertools
+
 from rmgpy.molecule.graph import Edge, Graph, Vertex
 import pytest
 
@@ -643,6 +645,150 @@ class TestGraph:
 
         assert not graph1.is_intersection_isomorphic(graph3)
         assert graph1.find_intersection_isomorphisms(graph3) == []
+
+    @staticmethod
+    def _brute_force_largest_common_subgraph_size(graph1, graph2):
+        """
+        A slow, obviously-correct reference implementation used to check
+        find_largest_incomplete_isomorphisms(): try every subset of graph2's vertices, largest
+        first, and every injective assignment of that subset into graph1, returning the size of
+        the first one found valid by the same rule the real search uses (`is_mapping_valid` with
+        `equivalent=False`, i.e. every graph2 edge among the subset must be realized in graph1,
+        while graph1 may have extra edges). Only usable on very small graphs.
+        """
+        for size in range(len(graph2.vertices), -1, -1):
+            for subset in itertools.combinations(graph2.vertices, size):
+                for image in itertools.permutations(graph1.vertices, size):
+                    mapping = dict(zip(image, subset))
+                    if graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True):
+                        return size
+        return 0
+
+    def test_find_largest_incomplete_isomorphisms_full_coverage(self):
+        """
+        When graph2 truly is fully subgraph isomorphic into graph1, find_largest_incomplete_isomorphisms
+        should find full coverage, matching what find_subgraph_isomorphisms already finds.
+        """
+        vertices1 = [Vertex() for _ in range(6)]
+        edges1 = [Edge(vertices1[i], vertices1[i + 1]) for i in range(5)]
+        vertices2 = [Vertex() for _ in range(2)]
+        edges2 = [Edge(vertices2[0], vertices2[1])]
+
+        graph1 = Graph()
+        for vertex in vertices1:
+            graph1.add_vertex(vertex)
+        for edge in edges1:
+            graph1.add_edge(edge)
+
+        graph2 = Graph()
+        for vertex in vertices2:
+            graph2.add_vertex(vertex)
+        for edge in edges2:
+            graph2.add_edge(edge)
+
+        assert graph1.is_subgraph_isomorphic(graph2)
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == 2
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_partial_coverage(self):
+        """
+        When graph2 does *not* fully embed into graph1, find_largest_incomplete_isomorphisms should
+        find the largest partial embedding, cross-checked against a brute-force reference.
+
+        graph1 is a 5-vertex path (max degree 2); graph2 is a 5-vertex star (center has degree 4),
+        which cannot fully embed in a path -- but dropping just the center (whose 4 leaves then
+        have no edges left to satisfy at all) still covers all 4 leaves, so the largest common
+        subgraph has size 4, not 5.
+        """
+        path_vertices = [Vertex() for _ in range(5)]
+        graph1 = Graph()
+        for vertex in path_vertices:
+            graph1.add_vertex(vertex)
+        for i in range(4):
+            graph1.add_edge(Edge(path_vertices[i], path_vertices[i + 1]))
+
+        star_vertices = [Vertex() for _ in range(5)]  # star_vertices[0] is the center
+        graph2 = Graph()
+        for vertex in star_vertices:
+            graph2.add_vertex(vertex)
+        for leaf in star_vertices[1:]:
+            graph2.add_edge(Edge(star_vertices[0], leaf))
+
+        assert not graph1.is_subgraph_isomorphic(graph2)
+
+        expected_size = self._brute_force_largest_common_subgraph_size(graph1, graph2)
+        assert expected_size == 4
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == expected_size
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_find_all(self):
+        """
+        find_all=False (the default) returns only one mapping of the largest size; find_all=True
+        returns every mapping tied for that size.
+        """
+        # graph1 is two disjoint edges; graph2 is a single edge, which can map onto either
+        # component in either direction -- 4 equally-largest (size 2) mappings in total.
+        p = [Vertex() for _ in range(4)]
+        graph1 = Graph()
+        for vertex in p:
+            graph1.add_vertex(vertex)
+        graph1.add_edge(Edge(p[0], p[1]))
+        graph1.add_edge(Edge(p[2], p[3]))
+
+        x, y = Vertex(), Vertex()
+        graph2 = Graph()
+        graph2.add_vertex(x)
+        graph2.add_vertex(y)
+        graph2.add_edge(Edge(x, y))
+
+        default_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(default_list) == 1
+
+        all_list = graph1.find_largest_incomplete_isomorphisms(graph2, find_all=True)
+        assert len(all_list) == 4
+        for mapping in all_list:
+            assert len(mapping) == 2
+            assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_performance(self):
+        """
+        A ~30-vertex search (roughly the size of a pynta slab graph, the motivating use case)
+        should complete quickly, exercising the branch-and-bound pruning and early exit.
+
+        graph1 is a 30-vertex ring. graph2 is the same ring plus one extra chord, which forces two
+        vertices to have degree 3 -- impossible to fully embed in a (degree <= 2) ring. Dropping
+        either chord endpoint from the match reduces the ring back to an ordinary (fully coverable)
+        29-vertex path, so the largest common subgraph has size 29.
+        """
+        n = 30
+        ring1 = [Vertex() for _ in range(n)]
+        graph1 = Graph()
+        for vertex in ring1:
+            graph1.add_vertex(vertex)
+        for i in range(n):
+            graph1.add_edge(Edge(ring1[i], ring1[(i + 1) % n]))
+
+        ring2 = [Vertex() for _ in range(n)]
+        graph2 = Graph()
+        for vertex in ring2:
+            graph2.add_vertex(vertex)
+        for i in range(n):
+            graph2.add_edge(Edge(ring2[i], ring2[(i + 1) % n]))
+        graph2.add_edge(Edge(ring2[0], ring2[15]))  # the extra chord
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == n - 1
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
 
     def test_pickle(self):
         """
