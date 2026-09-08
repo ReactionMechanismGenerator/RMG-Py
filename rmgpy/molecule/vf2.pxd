@@ -37,11 +37,14 @@ cdef class VF2:
     cdef bint subgraph
     cdef bint find_all
     cdef bint intersection
+    cdef bint incomplete
     cdef bint strict
     cdef bint check_labels
 
     cdef bint is_match
     cdef list mapping_list
+    cdef int best_size
+    cdef int max_possible_size
 
     cpdef bint is_isomorphic(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint strict=?, bint check_labels=?) except -2
 
@@ -55,12 +58,18 @@ cdef class VF2:
 
     cpdef list find_intersection_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint check_labels=?)
 
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint intersection, bint save_order=?, bint strict=?, bint check_labels=?)
+    cpdef list find_largest_incomplete_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=?, bint check_labels=?, bint find_all=?)
+
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initial_mapping, bint subgraph, bint find_all, bint intersection, bint incomplete, bint save_order=?, bint strict=?, bint check_labels=?)
 
     cdef bint match(self, int call_depth) except -2
-        
+
     cpdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2
-    
+
     cdef add_to_mapping(self, Vertex vertex1, Vertex vertex2)
-        
+
     cdef remove_from_mapping(self, Vertex vertex1, Vertex vertex2)
+
+    cdef int count_mapped(self, Graph graph2) except -1
+
+    cdef record_incomplete_leaf(self, Graph graph2)
