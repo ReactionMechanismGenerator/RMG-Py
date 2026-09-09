@@ -29,6 +29,7 @@
 
 
 import itertools
+import time
 
 from rmgpy.molecule.graph import Edge, Graph, Vertex
 import pytest
@@ -916,6 +917,86 @@ class TestGraph:
         cycle_list = self.graph.get_all_simple_cycles_of_size(6)
         assert len(cycle_list) == 0
 
+    def test_relevant_cycles_k4(self):
+        """
+        Test the relevant-cycles primitive directly on K4 (complete graph on 4 vertices): its
+        3-cycles (triangles) are all cheaper than any 4-cycle, so by symmetry every one of the 4
+        possible triangles belongs to some minimum-weight cycle basis and should be found.
+        """
+        vertices = [Vertex() for _ in range(4)]
+        graph = Graph(vertices)
+        for i in range(4):
+            for j in range(i + 1, 4):
+                graph.add_edge(Edge(vertices[i], vertices[j]))
+
+        cycles = graph.get_all_cycles_of_size(3)
+        assert len(cycles) == 4
+        for cycle in cycles:
+            assert len(cycle) == 3
+        # every vertex should be in a cycle; no vertex is ever missed
+        assert len(graph.get_all_cyclic_vertices()) == 4
+
+    def test_relevant_cycles_disconnected_biconnected_components(self):
+        """
+        A bridge connecting two separate triangles: cycles never span a biconnected component, so
+        this should find exactly the 2 triangles (not, say, some combined 6-vertex cycle through
+        the bridge), and the bridge itself (and its endpoints, from the *other* triangle's
+        perspective) should not register as being in a cycle.
+        """
+        left = [Vertex() for _ in range(3)]
+        right = [Vertex() for _ in range(3)]
+        graph = Graph(left + right)
+        for tri in (left, right):
+            graph.add_edge(Edge(tri[0], tri[1]))
+            graph.add_edge(Edge(tri[1], tri[2]))
+            graph.add_edge(Edge(tri[2], tri[0]))
+        bridge = Edge(left[0], right[0])
+        graph.add_edge(bridge)
+
+        cycles = graph.get_all_cycles_of_size(3)
+        assert len(cycles) == 2
+        assert not graph.is_edge_in_cycle(bridge)
+        assert graph.is_vertex_in_cycle(left[0])  # in a triangle, despite also touching the bridge
+        assert graph.is_vertex_in_cycle(right[0])
+
+    def test_relevant_cycles_dense_lattice_performance(self):
+        """
+        Regression test for handling highly-connected graphs such as those for
+        metal surfaces
+
+        Build a triangular close-packed lattice (the connectivity pattern of an fcc(111)/hcp(0001)
+        metal surface site lattice) large enough to be representative, and confirm every
+        cycle/ring-membership method completes quickly.
+        """
+        n = 10  # 100 vertices, each with up to 6 neighbors -- comparable to a real slab site lattice
+        grid = [[Vertex() for _ in range(n)] for _ in range(n)]
+        vertices = [v for row in grid for v in row]
+        graph = Graph(vertices)
+        added = set()
+
+        def add(v1, v2):
+            key = frozenset((id(v1), id(v2)))
+            if key not in added:
+                added.add(key)
+                graph.add_edge(Edge(v1, v2))
+
+        for i in range(n):
+            for j in range(n):
+                if i + 1 < n:
+                    add(grid[i][j], grid[i + 1][j])
+                if j + 1 < n:
+                    add(grid[i][j], grid[i][j + 1])
+                if i + 1 < n and j > 0:
+                    add(grid[i][j], grid[i + 1][j - 1])
+
+        start = time.time()
+        assert graph.is_cyclic()
+        for vertex in graph.vertices:
+            graph.is_vertex_in_cycle(vertex)
+            graph.get_largest_ring(vertex)
+        graph.get_all_cycles_of_size(3)
+        elapsed = time.time() - start
+        assert elapsed < 1, "Dense-lattice cycle detection took {0:.1f}s -- should be well under a second".format(elapsed)
 
     def test_sort_cyclic_vertices(self):
         """Test that sort_cyclic_vertices works properly for a valid input."""
