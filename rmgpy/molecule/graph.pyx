@@ -982,3 +982,199 @@ cdef class Graph(object):
                                  'such that consecutive vertices are connected.')
 
         return edges
+
+def get_relevant_cycles(graph):
+    """
+    Compute the relevant cycles of `graph`. A cycle never spans more than one biconnected
+    component, so each component's cycles are found independently and concatenated.
+
+    Returns a list of cycles, each a list of Vertex objects in ring-traversal order (consecutive
+    entries, including the wraparound from the last entry back to the first, are bonded).
+    """
+    vertex_index = {vertex: i for i, vertex in enumerate(graph.vertices)}
+    all_cycles = []
+    for component_vertices, component_edges in _find_biconnected_components(graph, vertex_index):
+        if len(component_edges) < len(component_vertices):
+            # A tree (or a single bridge edge): contains no cycles at all.
+            continue
+        all_cycles.extend(_find_relevant_cycles_in_component(component_vertices, component_edges, vertex_index))
+    return all_cycles
+
+def _find_biconnected_components(graph, vertex_index):
+    """
+    Partition `graph`'s edges into biconnected components (maximal subgraphs where removing any
+    single vertex leaves the rest connected) using Tarjan's algorithm, in its standard recursive
+    form -- recursion depth here is bounded by the graph's DFS depth, i.e. O(V), a fundamentally
+    different (and harmless) risk profile from the exponential branching this module's cycle
+    detection used to do.
+
+    The algorithm is a single depth-first traversal that tracks, for every vertex `v`:
+      - `discovery_time[v]`: the order `v` was first reached in, 0, 1, 2, ...
+      - `low_link[v]`: the *earliest* discovery_time reachable from anywhere in `v`'s DFS subtree
+        by following at most one edge that jumps back to an already-visited ancestor (a "back
+        edge"). This starts out equal to `discovery_time[v]` and only ever decreases, as `v`
+        inherits the lowest low_link found among its children and among its own back edges.
+
+    Every edge is pushed onto `edge_stack` as DFS descends: tree edges when moving to an unvisited
+    neighbor, back edges when a neighbor turns out to already be an ancestor (the mirror case --
+    a neighbor already visited as a *descendant* -- is skipped, since that's this same edge seen
+    from its other endpoint). A back edge by itself only says the vertices between it and its
+    ancestor lie on *some* cycle; it says nothing about where that component ends, since several
+    back edges from different (possibly overlapping) subtrees can resolve into the same component
+    or into separate ones, depending on how far back each one reaches.
+
+    That's what `low_link` resolves. When DFS finishes exploring a child `w` of `v`, compare
+    `low_link[w]` against `discovery_time[v]`:
+      - If `low_link[w] >= discovery_time[v]`, nothing in `w`'s whole subtree ever found a back
+        edge reaching further up than `v` -- so `v` is a cut vertex separating that subtree from
+        the rest of the graph discovered so far, and everything on `edge_stack` back down to (and
+        including) the edge `(v, w)` is popped off as one finished biconnected component right
+        then (this also correctly closes out the last component when `v` is the root of its DFS
+        tree, since `discovery_time[root] == 0` and `low_link` is never negative).
+      - Otherwise, `w`'s subtree reached back past `v`, so this branch is still part of a larger,
+        still-open component: `v` inherits `w`'s low_link, nothing is closed, and DFS moves on to
+        `v`'s next child.
+
+    `vertex_index` maps each vertex to its position in `graph.vertices`; it exists only to make
+    neighbor traversal order -- and so the whole computation's output -- deterministic.
+
+    Returns a list of (vertices, edges) tuples: `vertices` is a list of the component's Vertex
+    objects (canonically ordered), `edges` is a set of frozenset({v1, v2}) pairs identifying its
+    edges.
+    """
+    discovery_time = {}
+    low_link = {}
+    edge_stack = []
+    components = []
+    next_discovery_time = [0]
+
+    def neighbors(v):
+        return sorted(v.edges.keys(), key=lambda w: vertex_index[w])
+
+    def close_component(boundary_edge):
+        # Pop the edge stack down to (and including) `boundary_edge`: that's exactly the set of
+        # edges discovered since this component was entered, so it's exactly one finished
+        # biconnected component.
+        comp_edges = set()
+        comp_vertices = set()
+        while edge_stack:
+            popped = edge_stack.pop()
+            comp_edges.add(popped)
+            comp_vertices.update(popped)
+            if popped == boundary_edge:
+                break
+        components.append((sorted(comp_vertices, key=lambda w: vertex_index[w]), comp_edges))
+
+    def dfs(v, parent_edge):
+        discovery_time[v] = low_link[v] = next_discovery_time[0]
+        next_discovery_time[0] += 1
+        for w in neighbors(v):
+            edge = frozenset((v, w))
+            if edge == parent_edge:
+                continue
+            if w not in discovery_time:
+                edge_stack.append(edge)
+                dfs(w, edge)
+                if low_link[w] < low_link[v]:
+                    low_link[v] = low_link[w]
+                if low_link[w] >= discovery_time[v]:
+                    # Nothing in w's subtree reaches back past v, so v is a cut vertex here: close
+                    # off everything accumulated since entering this edge as one finished
+                    # biconnected component (this also correctly closes out the component when v
+                    # is the root, since discovery_time[root] == 0 and low_link[w] is always >= 0).
+                    close_component(edge)
+            elif discovery_time[w] < discovery_time[v]:
+                # A back edge to an ancestor -- note the mirror case (w already visited, but as a
+                # *descendant*, discovery_time[w] > discovery_time[v]) is deliberately not handled
+                # here: that's this same edge encountered from its other endpoint, already pushed
+                # once above.
+                edge_stack.append(edge)
+                if discovery_time[w] < low_link[v]:
+                    low_link[v] = discovery_time[w]
+
+    for start in graph.vertices:
+        if start not in discovery_time:
+            dfs(start, None)
+
+    return components
+
+def _find_relevant_cycles_in_component(component_vertices, component_edges, vertex_index):
+    """
+    Find the relevant cycles within a single biconnected component via Vismara's algorithm: root a
+    BFS tree at every vertex of the component in turn. For each edge (y,z) whose endpoints are
+    equidistant from the root (an *odd*-length cycle candidate), or each pair of vertices (y,z)
+    sharing a common neighbor x with y,z equidistant from the root and one step closer than x (an
+    *even*-length candidate), check whether the shortest paths from the root to y and to z share
+    only the root -- if so, that pair yields a relevant cycle through the root.
+    """
+    neighbors_in_component = {v: [] for v in component_vertices}
+    for edge in component_edges:
+        v1, v2 = tuple(edge)
+        neighbors_in_component[v1].append(v2)
+        neighbors_in_component[v2].append(v1)
+    for v in neighbors_in_component:
+        neighbors_in_component[v].sort(key=lambda w: vertex_index[w])
+
+    def edge_key(cycle):
+        n = len(cycle)
+        return frozenset(frozenset((cycle[i], cycle[i - 1])) for i in range(n))
+
+    seen_edge_keys = set()
+    cycles = []
+
+    for root in component_vertices:
+        dist = {root: 0}
+        pred = {root: None}
+        order = [root]
+        i = 0
+        while i < len(order):
+            u = order[i]
+            i += 1
+            for w in neighbors_in_component[u]:
+                if w not in dist:
+                    dist[w] = dist[u] + 1
+                    pred[w] = u
+                    order.append(w)
+
+        def path_to_root(v):
+            path = []
+            while v is not None:
+                path.append(v)
+                v = pred[v]
+            return path  # v, ..., root
+
+        def shares_only_root(y, z):
+            return (set(path_to_root(y)) & set(path_to_root(z))) == {root}
+
+        def record_candidate(y, z, middle):
+            # root -> ... -> y [-> middle] -> z -> ... -> (back to root, implicitly, since this is
+            # a ring) -- drop the trailing root from the z-side path since it's already the first
+            # entry (from the reversed y-side path), or this cycle would list root twice
+            cycle = list(reversed(path_to_root(y))) + middle + path_to_root(z)[:-1]
+            key = edge_key(cycle)
+            if key not in seen_edge_keys:
+                seen_edge_keys.add(key)
+                cycles.append(cycle)
+
+        # Odd-length candidates: a direct edge between two vertices equidistant from the root.
+        for edge in component_edges:
+            y, z = tuple(edge)
+            if y not in dist or z not in dist or dist[y] != dist[z] or dist[y] == 0:
+                continue
+            if shares_only_root(y, z):
+                record_candidate(y, z, [])
+
+        # Even-length candidates: two vertices sharing a common neighbor x, both one step closer
+        # to the root than x.
+        for x in component_vertices:
+            if x not in dist:
+                continue
+            candidates = [w for w in neighbors_in_component[x] if w in dist and dist[w] == dist[x] - 1]
+            for a in range(len(candidates)):
+                for b in range(a + 1, len(candidates)):
+                    y, z = candidates[a], candidates[b]
+                    if shares_only_root(y, z):
+                        record_candidate(y, z, [x])
+
+    cycles.sort(key=lambda cycle: (len(cycle), tuple(sorted(vertex_index[v] for v in cycle))))
+    return cycles
