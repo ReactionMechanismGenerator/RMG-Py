@@ -74,8 +74,10 @@ cdef Vertex _get_edge_vertex2(Edge edge)
 cdef class Graph(object):
 
     cdef public list vertices
-    
+
     cdef public list ordered_vertices
+
+    cdef list _relevant_cycles
 
     cpdef Vertex add_vertex(self, Vertex vertex)
 
@@ -131,7 +133,7 @@ cdef class Graph(object):
 
     cpdef bint is_edge_in_cycle(self, Edge edge) except -2
 
-    cpdef bint _is_chain_in_cycle(self, list chain) except -2
+    cdef list _get_relevant_cycles(self)
 
     cpdef list get_all_cyclic_vertices(self)
 
@@ -140,8 +142,6 @@ cdef class Graph(object):
     cpdef list get_all_cycles_of_size(self, int size)
 
     cpdef list get_all_simple_cycles_of_size(self, int size)
-
-    cpdef list _explore_cycles_recursively(self, list chain, list cycles)
 
     cpdef list sort_cyclic_vertices(self, list vertices)
     
