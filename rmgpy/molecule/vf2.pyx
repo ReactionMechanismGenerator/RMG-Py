@@ -201,9 +201,16 @@ cdef class VF2:
                 self.is_match = True
                 self.mapping_list = [{}]
                 return
-        elif not self.intersection and not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
-            # The two graphs don't have the same number of vertices, so they
-            # cannot be isomorphic
+        elif not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
+            # The two graphs don't have the same number of vertices. For exact isomorphism this
+            # trivially rules out a match. For intersection isomorphism, an intersection relation
+            # must be symmetric (A intersects B iff B intersects A), but this VF2 search always maps
+            # every vertex of graph2 into graph1 -- with unequal sizes that's directional (a smaller
+            # pattern can always embed into a larger one, but not vice versa), so without this
+            # restriction "is_intersection_isomorphic" would give a different answer depending on
+            # which graph was passed as `self`. Restricting to equal vertex counts keeps it
+            # symmetric; a true common-realization search for differently-sized patterns would be
+            # a separate, considerably more involved algorithm.
             return
         elif not self.subgraph and len(graph2.vertices) == len(graph1.vertices) == 0:
             # The two graphs don't have any vertices; this means they are
