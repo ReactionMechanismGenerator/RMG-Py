@@ -2400,13 +2400,13 @@ class Group(Graph):
                         continue
                     for i, key in enumerate(keys):
                         initial_map[key] = atmlist[i]
-                    if (self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels) and
-                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)):
+                    if (self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels, intersection=True) and
+                            Graph.is_intersection_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)):
                         return True
                 else:
                     return False
             else:
-                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels, intersection=True):
                     return False
 
         if self.multiplicity and group.multiplicity and set(self.multiplicity).isdisjoint(group.multiplicity):
