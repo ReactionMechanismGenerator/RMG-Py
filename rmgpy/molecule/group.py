@@ -2408,26 +2408,14 @@ class Group(Graph):
                 if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
                     return False
 
-        if self.multiplicity and group.multiplicity:
-            for mult1 in self.multiplicity:
-                for mult2 in group.multiplicity:
-                    if mult1 == mult2: break
-                else:
-                    return False
+        if self.multiplicity and group.multiplicity and set(self.multiplicity).isdisjoint(group.multiplicity):
+            return False
 
-        if self.metal and group.metal:
-            for m1 in self.metal:
-                for m2 in group.metal:
-                    if m1 == m2: break
-                else:
-                    return False
+        if self.metal and group.metal and set(self.metal).isdisjoint(group.metal):
+            return False
 
-        if self.facet and group.facet:
-            for m1 in self.facet:
-                for m2 in group.facet:
-                    if m1 == m2: break
-                else:
-                    return False
+        if self.facet and group.facet and set(self.facet).isdisjoint(group.facet):
+            return False
 
         # Do the isomorphism comparison
         return Graph.is_intersection_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)
