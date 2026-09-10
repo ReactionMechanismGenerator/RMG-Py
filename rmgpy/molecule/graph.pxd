@@ -139,6 +139,8 @@ cdef class Graph(object):
 
     cpdef list get_all_cycles(self, Vertex starting_vertex)
 
+    cpdef list _explore_cycles_recursively(self, list chain, list cycles)
+
     cpdef list get_all_cycles_of_size(self, int size)
 
     cpdef list get_all_simple_cycles_of_size(self, int size)

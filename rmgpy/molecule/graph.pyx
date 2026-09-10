@@ -666,24 +666,162 @@ cdef class Graph(object):
         Given a starting vertex, returns a list of all the cycles containing
         that vertex.
 
-        This function returns a duplicate of each cycle to preserve prior behavior
-        where [0,1,2,3]
+        This function returns a duplicate of each cycle because [0,1,2,3]
+        is counted as separate from [0,3,2,1]
+
+        Unlike is_vertex_in_cycle/is_edge_in_cycle/is_cyclic/get_all_cyclic_vertices, this method's
+        contract is exhaustive enumeration of every simple cycle through `starting_vertex`, not just
+        membership -- the cached relevant-cycle set (the union of minimum-weight cycle bases) can
+        omit whole cycles that are linearly dependent on smaller ones (e.g. a 6-ring that is the
+        symmetric difference of two fused 4-rings), which get_largest_ring below relies on finding.
+        So this stays an exhaustive recursive search rather than reading from that cache.
+        """
+        return self._explore_cycles_recursively([starting_vertex], [])
+
+    cpdef list _explore_cycles_recursively(self, list chain, list cycles):
+        """
+        Search the graph for cycles by recursive spidering. Given a `chain`
+        (list) of connected atoms and a list of `cycles` found so far, find any
+        cycles involving the chain of atoms and append them to the list of
+        cycles. This function recursively calls itself.
+
+        This function returns a duplicate of each cycle because [0,1,2,3]
         is counted as separate from [0,3,2,1]
         """
-        cdef list result, cycle
-        result = []
-        for cycle in self._get_relevant_cycles():
-            if starting_vertex in cycle:
-                result.append(cycle[:])
-                result.append(list(reversed(cycle)))
-        return result
+        cdef Vertex vertex1, vertex2
+
+        vertex1 = chain[-1]
+        # Loop over each of the atoms neighboring the last atom in the chain
+        for vertex2 in vertex1.edges:
+            if vertex2 is chain[0] and len(chain) > 2:
+                # It is the first atom in the chain, so the chain is a cycle!
+                cycles.append(chain[:])
+            elif vertex2 not in chain:
+                # Make the chain a little longer and explore again
+                chain.append(vertex2)
+                cycles = self._explore_cycles_recursively(chain, cycles)
+                # Any cycles down this path have now been found, so remove vertex2 from the chain
+                chain.pop(-1)
+        # At this point we should have discovered all of the cycles involving the current chain
+        return cycles
 
     cpdef list get_all_cycles_of_size(self, int size):
         """
-        Return a list of the all non-duplicate relevant rings with length 'size'.
+        Return a list of the all non-duplicate rings with length 'size'. The
+        algorithm implements was adapted from a description by Fan, Panaye,
+        Doucet, and Barbu (doi: 10.1021/ci00015a002)
+
+        B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. "Ring Perception: A
+        New Algorithm for Directly Finding the Smallest Set of Smallest Rings
+        from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
+        p. 657-662 (1993).
+
+        Like get_all_cycles, this enumerates actual rings of the requested size rather than
+        filtering the cached relevant-cycle set, since that cache can omit genuine size-`size`
+        rings that are linearly dependent on smaller ones already in the basis (the same reason
+        get_all_cycles stays exhaustive). Callers (kekulize.pyx, group.py) rely on finding every
+        6-membered ring for aromaticity perception, not just a minimum-basis subset of them.
         """
-        cdef list cycle
-        return [cycle[:] for cycle in self._get_relevant_cycles() if len(cycle) == size]
+        cdef Graph graph
+        cdef bint done, found, lone_carbon
+        cdef list cycle_list, cycles, cycle, graphs, neighbors, vertices_to_remove, vertices, cycle_set_list
+        cdef Vertex vertex, root_vertex
+        cdef set set1, set2
+
+        # Make a copy of the graph so we don't modify the original
+        graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
+
+        # Step 1: Remove all terminal vertices
+        done = False
+        while not done:
+            vertices_to_remove = []
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: vertices_to_remove.append(vertex)
+            done = len(vertices_to_remove) == 0
+            # Remove identified vertices from graph
+            for vertex in vertices_to_remove:
+                graph.remove_vertex(vertex)
+
+        # Step 2: Remove all other vertices that are not part of cycles
+        vertices_to_remove = []
+        for vertex in graph.vertices:
+            found = graph.is_vertex_in_cycle(vertex)
+            if not found:
+                vertices_to_remove.append(vertex)
+        # Remove identified vertices from graph
+        for vertex in vertices_to_remove:
+            graph.remove_vertex(vertex)
+
+        # Step 3: Split graph into remaining subgraphs
+        graphs = graph.split()
+
+        # Step 4: Find ring sets in each subgraph
+        cycle_list = []
+
+        for graph in graphs:
+
+            while len(graph.vertices) > 0:
+
+                # Choose root vertex as vertex with smallest number of edges
+                root_vertex = None
+                graph.update_connectivity_values()
+                for vertex in graph.vertices:
+                    if root_vertex is None:
+                        root_vertex = vertex
+                    elif get_vertex_connectivity_value(vertex) > get_vertex_connectivity_value(root_vertex):
+                        root_vertex = vertex
+
+                # Get all cycles involving the root vertex
+                cycles = graph.get_all_cycles(root_vertex)
+                if len(cycles) == 0:
+                    # This vertex is no longer in a ring, so remove it
+                    graph.remove_vertex(root_vertex)
+                    continue
+
+                # Keep the smallest of the cycles found above
+                cycle = cycles[0]
+                for c in cycles:
+                    if len(c) == size: cycle_list.append(c)
+
+                # Remove the root vertex to create single edges, note this will not
+                # function properly if there is no vertex with 2 edges (i.e. cubane)
+                graph.remove_vertex(root_vertex)
+
+                # Remove from the graph all vertices in the cycle that have only one edge
+                lone_carbon = True
+                while lone_carbon:
+                    lone_carbon = False
+                    vertices_to_remove = []
+
+                    for vertex in cycle:
+                        if len(vertex.edges) == 1:
+                            lone_carbon = True
+                            vertices_to_remove.append(vertex)
+                    else:
+                        for vertex in vertices_to_remove:
+                            graph.remove_vertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycle_list)):
+            cycle_list[i] = [self.vertices[vertices.index(v)] for v in cycle_list[i]]
+
+        #remove duplicates if there are more than 2 cycles:
+        if len(cycle_list) < 2: return cycle_list
+        cycle_set_list = [set(cycle_list[0])]
+        for cycle1 in cycle_list[1:]:
+            set1 = set(cycle1)
+            for set2 in cycle_set_list:
+                if set1 == set2:
+                    break
+            #not a duplicate so add it to cycle_set_list
+            else:
+                cycle_set_list.append(set1)
+
+        #transform back to list of lists:
+        cycle_set_list = [list(set1) for set1 in cycle_set_list]
+
+        return cycle_set_list
 
     cpdef list get_all_simple_cycles_of_size(self, int size):
         """
