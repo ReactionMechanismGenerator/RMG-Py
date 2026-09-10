@@ -739,6 +739,10 @@ class GroupAtom(Vertex):
             if set(self.morphology).isdisjoint(group.morphology):
                 return False
 
+        if 'Ncoord' in self.props and 'Ncoord' in group.props:
+            if set(self.props['Ncoord']).isdisjoint(group.props['Ncoord']):
+                return False
+
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
             if isinstance(self.props['inRing'], bool) and isinstance(group.props['inRing'], bool):
