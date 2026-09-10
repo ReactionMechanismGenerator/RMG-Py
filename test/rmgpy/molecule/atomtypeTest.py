@@ -230,6 +230,50 @@ class TestAtomType:
                 failed.append(name)
         assert not failed, f"Couldn't make correct sample molecules for types {', '.join(failed)}"
 
+    def test_surface_element_atom_types_registered(self):
+        """
+        Test that every element without a dedicated atom type (mostly metals, used e.g. for
+        heterogeneous catalyst surfaces/dopants) gets a generic Rx-derived atom type registered
+        under its own element symbol, and that doing so doesn't silently clobber an existing
+        organic-chemistry atom type of the same name -- a real risk since some element symbols
+        (e.g. Ca, Cs, Cd for calcium, cesium, cadmium) collide textually with legacy RMG atom type
+        labels for carbon (though the current, renamed organic labels are Css/Cdb/etc., not the
+        bare two-letter forms, so there is no live collision today).
+        """
+        from rmgpy.molecule.atomtype import surface_elements
+
+        assert surface_elements, "Expected at least one element without a dedicated atom type"
+        surface_element_symbols = {el.symbol for el in surface_elements}
+        organic_atomtype_names = {
+            name for name, atomtype in rmgpy.molecule.atomtype.ATOMTYPES.items()
+            if 'Rx' not in [g.label for g in atomtype.generic] and name not in surface_element_symbols
+        }
+        for element in surface_elements:
+            assert element.symbol in rmgpy.molecule.atomtype.ATOMTYPES, (
+                f"No atom type registered for surface element {element.symbol}")
+            atomtype = rmgpy.molecule.atomtype.ATOMTYPES[element.symbol]
+            # A collision would silently replace an organic atom type's entry with this generic
+            # one; catch that by requiring the registered type to actually be the generic kind.
+            assert element.symbol not in organic_atomtype_names, (
+                f"Surface element symbol {element.symbol} collides with an existing "
+                "organic-chemistry atom type")
+            assert 'Rx' in [g.label for g in atomtype.generic]
+            assert atomtype.specific == []
+
+    def test_get_atomtype_for_surface_element(self):
+        """
+        Test that get_atomtype() resolves a dynamically-registered surface-element atom (one with
+        no dedicated atom type, e.g. a metal used as a dopant/catalyst surface atom) to its generic
+        Rx-derived atom type.
+        """
+        from rmgpy.molecule.atomtype import surface_elements
+        from rmgpy.molecule.molecule import Atom
+
+        element = surface_elements[0]
+        atom = Atom(element=element)
+        atomtype = get_atomtype(atom, {})
+        assert atomtype is rmgpy.molecule.atomtype.ATOMTYPES[element.symbol]
+
 
 class TestGetAtomType:
     """
