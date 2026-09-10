@@ -84,7 +84,7 @@ entry(
     label="O_rad/NonDe",
     group="""
 1 *2 O      u1 {2,S}
-2    [Cs,O,S2s] u0 px c0 {1,S}
+2    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -94,7 +94,7 @@ entry(
     label="O_rad/OneDe",
     group="""
 1 *2 O             u1 {2,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 """,
     kinetics=None,
 )
@@ -212,7 +212,7 @@ entry(
     group="""
 1 *2 C        u1 {2,D} {3,S}
 2    C        u0 {1,D}
-3    [Cs,O,S2s] u0 px c0 {1,S}
+3    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -223,7 +223,7 @@ entry(
     group="""
 1 *2 C                u1 {2,D} {3,S}
 2    C                u0 {1,D}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 """,
     kinetics=None,
 )
@@ -282,7 +282,7 @@ entry(
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
 3    H  u0 {1,S}
-4    Cs u0 {1,S}
+4    Css u0 {1,S}
 """,
     kinetics=None,
 )
@@ -294,7 +294,7 @@ entry(
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
 3    H  u0 {1,S}
-4    Cs u0 {1,S} {5,S} {6,S} {7,S}
+4    Css u0 {1,S} {5,S} {6,S} {7,S}
 5    H  u0 {4,S}
 6    H  u0 {4,S}
 7    H  u0 {4,S}
@@ -309,7 +309,7 @@ entry(
 1  *2 C  u1 {2,S} {3,S} {4,S}
 2     H  u0 {1,S}
 3     H  u0 {1,S}
-4     Cs u0 {1,S} {5,S} {6,S} {7,S}
+4     Css u0 {1,S} {5,S} {6,S} {7,S}
 5     H  u0 {4,S}
 6     H  u0 {4,S}
 7     C  u0 {4,S} {8,S} {9,S} {10,S}
@@ -327,7 +327,7 @@ entry(
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
 3    H  u0 {1,S}
-4    Cd u0 {1,S}
+4    Cdb u0 {1,S}
 """,
     kinetics=None,
 )
@@ -422,8 +422,8 @@ entry(
     group="""
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
-3    Cs u0 {1,S}
-4    Cs u0 {1,S}
+3    Css u0 {1,S}
+4    Css u0 {1,S}
 """,
     kinetics=None,
 )
@@ -434,8 +434,8 @@ entry(
     group="""
 1  *2 C  u1 {2,S} {3,S} {4,S}
 2     H  u0 {1,S}
-3     Cs u0 {1,S} {5,S} {6,S} {7,S}
-4     Cs u0 {1,S} {8,S} {9,S} {10,S}
+3     Css u0 {1,S} {5,S} {6,S} {7,S}
+4     Css u0 {1,S} {8,S} {9,S} {10,S}
 5     H  u0 {3,S}
 6     H  u0 {3,S}
 7     H  u0 {3,S}
@@ -453,7 +453,7 @@ entry(
 1 *2 C      u1 {2,S} {3,S} {4,S}
 2    H      u0 {1,S}
 3    O      u0 {1,S}
-4    [Cs,O] u0 {1,S}
+4    [Css,O] u0 {1,S}
 """,
     kinetics=None,
 )
@@ -464,7 +464,7 @@ entry(
     group="""
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
-3    Cs u0 {1,S}
+3    Css u0 {1,S}
 4    O  u0 {1,S}
 """,
     kinetics=None,
@@ -489,7 +489,7 @@ entry(
 1 *2 C          u1 {2,S} {3,S} {4,S}
 2    H          u0 {1,S}
 3    [S,C]      u0 {1,S}
-4    [Cs,O,S2s] u0 px c0 {1,S}
+4    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -500,7 +500,7 @@ entry(
     group="""
 1 *2 C  u1 {2,S} {3,S} {4,S}
 2    H  u0 {1,S}
-3    Cs u0 {1,S}
+3    Css u0 {1,S}
 4    S2s  u0 px c0 {1,S}
 """,
     kinetics=None,
@@ -524,8 +524,8 @@ entry(
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
 2    H                u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    [Cs,O,S2s]       u0 px c0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    [Css,O,S2s]       u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -536,8 +536,8 @@ entry(
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
 2    H                u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    Cs               u0 px c0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    Css               u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -548,7 +548,7 @@ entry(
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
 2    H                u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 4    O                u0 px c0 {1,S}
 """,
     kinetics=None,
@@ -560,7 +560,7 @@ entry(
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
 2    H                u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 4    S2s              u0 px c0 {1,S}
 """,
     kinetics=None,
@@ -572,8 +572,8 @@ entry(
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
 2    H                u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 """,
     kinetics=None,
 )
@@ -595,9 +595,9 @@ entry(
     label="C_rad/NonDeC",
     group="""
 1 *2 C      u1 {2,S} {3,S} {4,S}
-2    [Cs,O,S2s] u0 px c0 {1,S}
-3    [Cs,O,S2s] u0 px c0 {1,S}
-4    [Cs,O,S2s] u0 px c0 {1,S}
+2    [Css,O,S2s] u0 px c0 {1,S}
+3    [Css,O,S2s] u0 px c0 {1,S}
+4    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -607,9 +607,9 @@ entry(
     label="C_rad/Cs3",
     group="""
 1 *2 C  u1 {2,S} {3,S} {4,S}
-2    Cs u0 px c0 {1,S}
-3    Cs u0 px c0 {1,S}
-4    Cs u0 px c0 {1,S}
+2    Css u0 px c0 {1,S}
+3    Css u0 px c0 {1,S}
+4    Css u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -620,8 +620,8 @@ entry(
     group="""
 1 *2 C      u1 {2,S} {3,S} {4,S}
 2    O      u0 px c0 {1,S}
-3    [Cs,O] u0 px c0 {1,S}
-4    [Cs,O] u0 px c0 {1,S}
+3    [Css,O] u0 px c0 {1,S}
+4    [Css,O] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -632,8 +632,8 @@ entry(
     group="""
 1 *2 C          u1 {2,S} {3,S} {4,S}
 2    S2s        u0 px c0 {1,S}
-3    [Cs,O,S2s] u0 px c0 {1,S}
-4    [Cs,O,S2s] u0 px c0 {1,S}
+3    [Css,O,S2s] u0 px c0 {1,S}
+4    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -643,9 +643,9 @@ entry(
     label="C_rad/OneDe",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    [Cs,O,S2s]       u0 px c0 {1,S}
-4    [Cs,O,S2s]       u0 px c0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    [Css,O,S2s]       u0 px c0 {1,S}
+4    [Css,O,S2s]       u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -655,9 +655,9 @@ entry(
     label="C_rad/OD_Cs2",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    Cs               u0 px c0 {1,S}
-4    Cs               u0 px c0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    Css               u0 px c0 {1,S}
+4    Css               u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -667,9 +667,9 @@ entry(
     label="C_rad/ODMustO",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 3    O                u0 px c0 {1,S}
-4    [Cs,O,S2s]       u0 px c0 {1,S}
+4    [Css,O,S2s]       u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -679,9 +679,9 @@ entry(
     label="C_rad/TwoDe",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    [Cs,O,S2s]       u0 px c0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    [Css,O,S2s]       u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -691,9 +691,9 @@ entry(
     label="C_rad/TD_Cs",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    Cs               u0 px c0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    Css               u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -703,8 +703,8 @@ entry(
     label="C_rad/TDMustO",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 4    O                u0 px c0 {1,S}
 """,
     kinetics=None,
@@ -715,9 +715,9 @@ entry(
     label="C_rad/ThreeDe",
     group="""
 1 *2 C                u1 {2,S} {3,S} {4,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-3    [Cd,Ct,Cb,CO,CS] u0 {1,S}
-4    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+3    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
+4    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 """,
     kinetics=None,
 )
@@ -756,7 +756,7 @@ entry(
     label="S_rad/NonDe",
     group="""
 1 *2 S        u1 {2,S}
-2    [Cs,O,S2s] u0 px c0 {1,S}
+2    [Css,O,S2s] u0 px c0 {1,S}
 """,
     kinetics=None,
 )
@@ -766,7 +766,7 @@ entry(
     label="S_rad/OneDe",
     group="""
 1 *2 S                u1 {2,S}
-2    [Cd,Ct,Cb,CO,CS] u0 {1,S}
+2    [Cdb,Ct,Cb,CO,CS] u0 {1,S}
 """,
     kinetics=None,
 )

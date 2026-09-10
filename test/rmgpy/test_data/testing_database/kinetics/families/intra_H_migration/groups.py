@@ -246,7 +246,7 @@ entry(
     index=17,
     label="Cd_rad_out",
     group="""
-1 *1 Cd u1
+1 *1 Cdb u1
 """,
     kinetics=None,
 )
@@ -276,9 +276,9 @@ entry(
     index=20,
     label="Cd_H_out_double",
     group="""
-1 *2 Cd         u0 {2,S} {3,D}
+1 *2 Cdb         u0 {2,S} {3,D}
 2 *3 H          u0 {1,S}
-3    [Cd,Cdd,O] u0 {1,D}
+3    [Cdb,Cdd,O] u0 {1,D}
 """,
     kinetics=None,
 )
@@ -287,7 +287,7 @@ entry(
     index=21,
     label="Cd_H_out_single",
     group="""
-1 *2 Cd u0 {2,S} {3,S}
+1 *2 Cdb u0 {2,S} {3,S}
 2 *3 H  u0 {1,S}
 3    R  u0 {1,S}
 """,
@@ -298,7 +298,7 @@ entry(
     index=22,
     label="Cs_H_out",
     group="""
-1 *2 Cs u0 {2,S} {3,S} {4,S}
+1 *2 Css u0 {2,S} {3,S} {4,S}
 2 *3 H  u0 {1,S}
 3    R  u0 {1,S}
 4    R  u0 {1,S}

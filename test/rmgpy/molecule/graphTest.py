@@ -28,6 +28,9 @@
 ###############################################################################
 
 
+import itertools
+import time
+
 from rmgpy.molecule.graph import Edge, Graph, Vertex
 import pytest
 
@@ -528,6 +531,266 @@ class TestGraph:
             assert graph1.is_mapping_valid(graph2, mapping)
             assert graph1.is_mapping_valid(graph2, mapping)
 
+    def test_has_same_labels(self):
+        """
+        Check the has_same_labels() function.
+        """
+        from rmgpy.molecule.molecule import Atom
+
+        graph1 = Graph([Atom(label="*1"), Atom(label="*2"), Atom()])
+
+        # Same labels, same multiplicity of each label
+        graph2 = Graph([Atom(label="*2"), Atom(label="*1"), Atom()])
+        assert graph1.has_same_labels(graph2)
+        assert graph2.has_same_labels(graph1)
+
+        # A graph always has the same labels as itself
+        assert graph1.has_same_labels(graph1)
+
+        # Missing a label entirely
+        graph3 = Graph([Atom(label="*1"), Atom(), Atom()])
+        assert not graph1.has_same_labels(graph3)
+        assert not graph3.has_same_labels(graph1)
+
+        # Same labels present, but with a different multiplicity
+        # (two vertices labeled "*1" instead of one "*1" and one "*2")
+        graph4 = Graph([Atom(label="*1"), Atom(label="*1"), Atom()])
+        assert not graph1.has_same_labels(graph4)
+        assert not graph4.has_same_labels(graph1)
+
+        # Extra labeled vertex on one side
+        graph5 = Graph([Atom(label="*1"), Atom(label="*2"), Atom(label="*3")])
+        assert not graph1.has_same_labels(graph5)
+        assert not graph5.has_same_labels(graph1)
+
+        # ignore_labels excludes the given labels from the comparison entirely,
+        # so a mismatch on an ignored label no longer counts against a match...
+        assert graph1.has_same_labels(graph3, ignore_labels=["*2"])
+        assert graph3.has_same_labels(graph1, ignore_labels=["*2"])
+        assert graph1.has_same_labels(graph5, ignore_labels=["*3"])
+        assert graph5.has_same_labels(graph1, ignore_labels=["*3"])
+
+        # ...but a mismatch on a label that wasn't ignored still counts
+        assert not graph1.has_same_labels(graph3, ignore_labels=["*1"])
+        assert not graph1.has_same_labels(graph5, ignore_labels=["*1"])
+
+        # ignoring every labeled vertex trivially matches any graph
+        assert graph1.has_same_labels(graph4, ignore_labels=["*1", "*2"])
+
+    def test_intersection_isomorphism(self):
+        """
+        Check the intersection isomorphism functions.
+
+        Intersection isomorphism only makes sense for vertices/edges that carry
+        semantic information (it is not implemented on the base Vertex/Edge
+        classes), so this uses small subclasses that represent a wildcard set
+        of possible integer values, analogous to how GroupAtom stores a list
+        of possible atom types.
+        """
+
+        class ValueVertex(Vertex):
+            def __init__(self, values):
+                Vertex.__init__(self)
+                self.values = values
+
+            def equivalent(self, other, strict=True, check_labels=False):
+                return set(self.values) == set(other.values)
+
+            def is_specific_case_of(self, other, check_labels=False):
+                return set(self.values).issubset(other.values)
+
+            def has_intersection_with(self, other, check_labels=False):
+                return not set(self.values).isdisjoint(other.values)
+
+        class ValueEdge(Edge):
+            def equivalent(self, other):
+                return True
+
+            def is_specific_case_of(self, other):
+                return True
+
+            def has_intersection_with(self, other):
+                return True
+
+        a1, b1 = ValueVertex([1, 2]), ValueVertex([5])
+        graph1 = Graph()
+        graph1.add_vertex(a1)
+        graph1.add_vertex(b1)
+        graph1.add_edge(ValueEdge(a1, b1))
+
+        a2, b2 = ValueVertex([2, 3]), ValueVertex([5])
+        graph2 = Graph()
+        graph2.add_vertex(a2)
+        graph2.add_vertex(b2)
+        graph2.add_edge(ValueEdge(a2, b2))
+
+        # Neither graph is a subgraph of the other (1 not subset of {2,3} and vice versa)...
+        assert not graph1.is_subgraph_isomorphic(graph2)
+        assert not graph2.is_subgraph_isomorphic(graph1)
+        # ...but they intersect at value 2
+        assert graph1.is_intersection_isomorphic(graph2)
+        assert graph2.is_intersection_isomorphic(graph1)
+
+        map_list = graph1.find_intersection_isomorphisms(graph2)
+        assert len(map_list) == 1
+        for mapping in map_list:
+            for vertex1, vertex2 in mapping.items():
+                assert vertex1.has_intersection_with(vertex2)
+
+        # A graph with no overlapping vertex values has no intersection isomorphism
+        a3, b3 = ValueVertex([3, 4]), ValueVertex([5])
+        graph3 = Graph()
+        graph3.add_vertex(a3)
+        graph3.add_vertex(b3)
+        graph3.add_edge(ValueEdge(a3, b3))
+
+        assert not graph1.is_intersection_isomorphic(graph3)
+        assert graph1.find_intersection_isomorphisms(graph3) == []
+
+    @staticmethod
+    def _brute_force_largest_common_subgraph_size(graph1, graph2):
+        """
+        A slow, obviously-correct reference implementation used to check
+        find_largest_incomplete_isomorphisms(): try every subset of graph2's vertices, largest
+        first, and every injective assignment of that subset into graph1, returning the size of
+        the first one found valid by the same rule the real search uses (`is_mapping_valid` with
+        `equivalent=False`, i.e. every graph2 edge among the subset must be realized in graph1,
+        while graph1 may have extra edges). Only usable on very small graphs.
+        """
+        for size in range(len(graph2.vertices), -1, -1):
+            for subset in itertools.combinations(graph2.vertices, size):
+                for image in itertools.permutations(graph1.vertices, size):
+                    mapping = dict(zip(image, subset))
+                    if graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True):
+                        return size
+        return 0
+
+    def test_find_largest_incomplete_isomorphisms_full_coverage(self):
+        """
+        When graph2 truly is fully subgraph isomorphic into graph1, find_largest_incomplete_isomorphisms
+        should find full coverage, matching what find_subgraph_isomorphisms already finds.
+        """
+        vertices1 = [Vertex() for _ in range(6)]
+        edges1 = [Edge(vertices1[i], vertices1[i + 1]) for i in range(5)]
+        vertices2 = [Vertex() for _ in range(2)]
+        edges2 = [Edge(vertices2[0], vertices2[1])]
+
+        graph1 = Graph()
+        for vertex in vertices1:
+            graph1.add_vertex(vertex)
+        for edge in edges1:
+            graph1.add_edge(edge)
+
+        graph2 = Graph()
+        for vertex in vertices2:
+            graph2.add_vertex(vertex)
+        for edge in edges2:
+            graph2.add_edge(edge)
+
+        assert graph1.is_subgraph_isomorphic(graph2)
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == 2
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_partial_coverage(self):
+        """
+        When graph2 does *not* fully embed into graph1, find_largest_incomplete_isomorphisms should
+        find the largest partial embedding, cross-checked against a brute-force reference.
+
+        graph1 is a 5-vertex path (max degree 2); graph2 is a 5-vertex star (center has degree 4),
+        which cannot fully embed in a path -- but dropping just the center (whose 4 leaves then
+        have no edges left to satisfy at all) still covers all 4 leaves, so the largest common
+        subgraph has size 4, not 5.
+        """
+        path_vertices = [Vertex() for _ in range(5)]
+        graph1 = Graph()
+        for vertex in path_vertices:
+            graph1.add_vertex(vertex)
+        for i in range(4):
+            graph1.add_edge(Edge(path_vertices[i], path_vertices[i + 1]))
+
+        star_vertices = [Vertex() for _ in range(5)]  # star_vertices[0] is the center
+        graph2 = Graph()
+        for vertex in star_vertices:
+            graph2.add_vertex(vertex)
+        for leaf in star_vertices[1:]:
+            graph2.add_edge(Edge(star_vertices[0], leaf))
+
+        assert not graph1.is_subgraph_isomorphic(graph2)
+
+        expected_size = self._brute_force_largest_common_subgraph_size(graph1, graph2)
+        assert expected_size == 4
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == expected_size
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_find_all(self):
+        """
+        find_all=False (the default) returns only one mapping of the largest size; find_all=True
+        returns every mapping tied for that size.
+        """
+        # graph1 is two disjoint edges; graph2 is a single edge, which can map onto either
+        # component in either direction -- 4 equally-largest (size 2) mappings in total.
+        p = [Vertex() for _ in range(4)]
+        graph1 = Graph()
+        for vertex in p:
+            graph1.add_vertex(vertex)
+        graph1.add_edge(Edge(p[0], p[1]))
+        graph1.add_edge(Edge(p[2], p[3]))
+
+        x, y = Vertex(), Vertex()
+        graph2 = Graph()
+        graph2.add_vertex(x)
+        graph2.add_vertex(y)
+        graph2.add_edge(Edge(x, y))
+
+        default_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(default_list) == 1
+
+        all_list = graph1.find_largest_incomplete_isomorphisms(graph2, find_all=True)
+        assert len(all_list) == 4
+        for mapping in all_list:
+            assert len(mapping) == 2
+            assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
+    def test_find_largest_incomplete_isomorphisms_performance(self):
+        """
+        A ~30-vertex search (roughly the size of a pynta slab graph, the motivating use case)
+        should complete quickly, exercising the branch-and-bound pruning and early exit.
+
+        graph1 is a 30-vertex ring. graph2 is the same ring plus one extra chord, which forces two
+        vertices to have degree 3 -- impossible to fully embed in a (degree <= 2) ring. Dropping
+        either chord endpoint from the match reduces the ring back to an ordinary (fully coverable)
+        29-vertex path, so the largest common subgraph has size 29.
+        """
+        n = 30
+        ring1 = [Vertex() for _ in range(n)]
+        graph1 = Graph()
+        for vertex in ring1:
+            graph1.add_vertex(vertex)
+        for i in range(n):
+            graph1.add_edge(Edge(ring1[i], ring1[(i + 1) % n]))
+
+        ring2 = [Vertex() for _ in range(n)]
+        graph2 = Graph()
+        for vertex in ring2:
+            graph2.add_vertex(vertex)
+        for i in range(n):
+            graph2.add_edge(Edge(ring2[i], ring2[(i + 1) % n]))
+        graph2.add_edge(Edge(ring2[0], ring2[15]))  # the extra chord
+
+        map_list = graph1.find_largest_incomplete_isomorphisms(graph2)
+        assert len(map_list) == 1
+        mapping = map_list[0]
+        assert len(mapping) == n - 1
+        assert graph1.is_mapping_valid(graph2, mapping, equivalent=False, strict=True)
+
     def test_pickle(self):
         """
         Test that a Graph object can be successfully pickled and unpickled
@@ -654,6 +917,102 @@ class TestGraph:
         cycle_list = self.graph.get_all_simple_cycles_of_size(6)
         assert len(cycle_list) == 0
 
+    def test_relevant_cycles_k4(self):
+        """
+        Test the relevant-cycles primitive directly on K4 (complete graph on 4 vertices): its
+        3-cycles (triangles) are all cheaper than any 4-cycle, so by symmetry every one of the 4
+        possible triangles belongs to some minimum-weight cycle basis and should be found.
+        """
+        vertices = [Vertex() for _ in range(4)]
+        graph = Graph(vertices)
+        for i in range(4):
+            for j in range(i + 1, 4):
+                graph.add_edge(Edge(vertices[i], vertices[j]))
+
+        cycles = graph.get_all_cycles_of_size(3)
+        assert len(cycles) == 4
+        for cycle in cycles:
+            assert len(cycle) == 3
+        # every vertex should be in a cycle; no vertex is ever missed
+        assert len(graph.get_all_cyclic_vertices()) == 4
+
+    def test_relevant_cycles_disconnected_biconnected_components(self):
+        """
+        A bridge connecting two separate triangles: cycles never span a biconnected component, so
+        this should find exactly the 2 triangles (not, say, some combined 6-vertex cycle through
+        the bridge), and the bridge itself (and its endpoints, from the *other* triangle's
+        perspective) should not register as being in a cycle.
+        """
+        left = [Vertex() for _ in range(3)]
+        right = [Vertex() for _ in range(3)]
+        graph = Graph(left + right)
+        for tri in (left, right):
+            graph.add_edge(Edge(tri[0], tri[1]))
+            graph.add_edge(Edge(tri[1], tri[2]))
+            graph.add_edge(Edge(tri[2], tri[0]))
+        bridge = Edge(left[0], right[0])
+        graph.add_edge(bridge)
+
+        cycles = graph.get_all_cycles_of_size(3)
+        assert len(cycles) == 2
+        assert not graph.is_edge_in_cycle(bridge)
+        assert graph.is_vertex_in_cycle(left[0])  # in a triangle, despite also touching the bridge
+        assert graph.is_vertex_in_cycle(right[0])
+
+    def test_relevant_cycles_dense_lattice_performance(self):
+        """
+        Regression test for handling highly-connected graphs such as those for
+        metal surfaces
+
+        Build a triangular close-packed lattice (the connectivity pattern of an fcc(111)/hcp(0001)
+        metal surface site lattice) large enough to be representative, and confirm the
+        membership-oriented cycle methods complete quickly.
+
+        Only the membership-oriented methods (is_cyclic, is_vertex_in_cycle,
+        get_all_cyclic_vertices, is_edge_in_cycle) carry a polynomial-time guarantee here: they're
+        built on the cached relevant-cycle set, and "is this vertex/edge in *some* cycle" is exactly
+        the kind of query that set answers correctly and cheaply (every edge that lies on any cycle
+        lies on some relevant cycle). get_all_cycles/get_largest_ring/get_all_cycles_of_size are
+        exhaustive enumeration by contract (every simple cycle, not just a minimum-basis subset --
+        see test_get_all_cycles et al.), so they don't get that guarantee and are intentionally not
+        exercised here; finding the single largest simple cycle in an arbitrary graph is NP-hard in
+        general, so no polynomial algorithm could honor that contract on a graph this dense anyway.
+
+        The timing bound below is intentionally generous (order-of-magnitude, not a tight
+        benchmark): the point is to catch a regression back to the old exponential-time
+        implementation (which would blow this well past minutes, not just run a bit slower under a
+        loaded CI runner), not to enforce a specific latency.
+        """
+        n = 10  # 100 vertices, each with up to 6 neighbors -- comparable to a real slab site lattice
+        grid = [[Vertex() for _ in range(n)] for _ in range(n)]
+        vertices = [v for row in grid for v in row]
+        graph = Graph(vertices)
+        added = set()
+
+        def add(v1, v2):
+            key = frozenset((id(v1), id(v2)))
+            if key not in added:
+                added.add(key)
+                graph.add_edge(Edge(v1, v2))
+
+        for i in range(n):
+            for j in range(n):
+                if i + 1 < n:
+                    add(grid[i][j], grid[i + 1][j])
+                if j + 1 < n:
+                    add(grid[i][j], grid[i][j + 1])
+                if i + 1 < n and j > 0:
+                    add(grid[i][j], grid[i + 1][j - 1])
+
+        start = time.time()
+        assert graph.is_cyclic()
+        for vertex in graph.vertices:
+            graph.is_vertex_in_cycle(vertex)
+        for edge in graph.get_all_edges():
+            graph.is_edge_in_cycle(edge)
+        graph.get_all_cyclic_vertices()
+        elapsed = time.time() - start
+        assert elapsed < 10, "Dense-lattice cycle membership detection took {0:.1f}s -- a regression to exponential-time cycle detection is the likely cause".format(elapsed)
 
     def test_sort_cyclic_vertices(self):
         """Test that sort_cyclic_vertices works properly for a valid input."""

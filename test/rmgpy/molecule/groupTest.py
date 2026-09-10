@@ -46,7 +46,7 @@ class TestGroupAtom:
         A method called before each unit test in this class.
         """
         self.atom = GroupAtom(
-            atomtype=[ATOMTYPES["Cd"]],
+            atomtype=[ATOMTYPES["Cdb"]],
             radical_electrons=[1],
             charge=[0],
             label="*1",
@@ -560,6 +560,36 @@ class TestGroupAtom:
                     assert not atom1.is_specific_case_of(atom2gen), "{0!s} is a specific case of {1!s}".format(atom1, atom2gen)
                     assert not atom1gen.is_specific_case_of(atom2), "{0!s} is a specific case of {1!s}".format(atom1gen, atom2)
 
+    def test_has_intersection_with(self):
+        """
+        Test the GroupAtom.has_intersection_with() method.
+        """
+        Css, Cdb, Ct = ATOMTYPES["Css"], ATOMTYPES["Cdb"], ATOMTYPES["Ct"]
+
+        atom1 = GroupAtom(atomtype=[Css, Cdb], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom2 = GroupAtom(atomtype=[Cdb, Ct], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        # Neither atom1 nor atom2 is a specific case of the other, but their
+        # atom type lists overlap at Cdb, so their realizations intersect
+        assert not atom1.is_specific_case_of(atom2)
+        assert not atom2.is_specific_case_of(atom1)
+        assert atom1.has_intersection_with(atom2)
+        assert atom2.has_intersection_with(atom1)
+
+        # Mutually exclusive atom types never intersect
+        atom3 = GroupAtom(atomtype=[Css], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom4 = GroupAtom(atomtype=[Ct], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        assert not atom3.has_intersection_with(atom4)
+
+        # Same atom types, but disjoint radical electron counts, do not intersect
+        atom5 = GroupAtom(atomtype=[Css, Cdb], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*1")
+        atom6 = GroupAtom(atomtype=[Css, Cdb], radical_electrons=[1], charge=[0], lone_pairs=[0], label="*1")
+        assert not atom5.has_intersection_with(atom6)
+
+        # check_labels=True requires matching labels even when everything else intersects
+        atom7 = GroupAtom(atomtype=[Css, Cdb], radical_electrons=[0], charge=[0], lone_pairs=[0], label="*2")
+        assert atom1.has_intersection_with(atom7, check_labels=False)
+        assert not atom1.has_intersection_with(atom7, check_labels=True)
+
     def test_copy(self):
         """
         Test the GroupAtom.copy() method.
@@ -919,6 +949,21 @@ class TestGroupBond:
                 else:
                     assert not bond1.is_specific_case_of(bond2)
 
+    def test_has_intersection_with(self):
+        """
+        Test the GroupBond.has_intersection_with() method.
+        """
+        for order1 in self.orderList:
+            for order2 in self.orderList:
+                bond1 = GroupBond(None, None, order=order1)
+                bond2 = GroupBond(None, None, order=order2)
+                if set(order1).isdisjoint(order2):
+                    assert not bond1.has_intersection_with(bond2)
+                    assert not bond2.has_intersection_with(bond1)
+                else:
+                    assert bond1.has_intersection_with(bond2)
+                    assert bond2.has_intersection_with(bond1)
+
     def test_copy(self):
         """
         Test the GroupBond.copy() method.
@@ -946,7 +991,7 @@ class TestGroup:
 
     def setup_method(self):
         self.adjlist = """
-1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+1 *2 [Css,Cdb] u0 {2,[S,D]} {3,S}
 2 *1 [O2s,O2d] u0 {1,[S,D]}
 3    R!H       u0 {1,S}
 """
@@ -1054,8 +1099,8 @@ class TestGroup:
         bond13 = atom1.bonds[atom3]
 
         assert atom1.label == "*2"
-        assert atom1.atomtype[0].label in ["Cs", "Cd"]
-        assert atom1.atomtype[1].label in ["Cs", "Cd"]
+        assert atom1.atomtype[0].label in ["Css", "Cdb"]
+        assert atom1.atomtype[1].label in ["Css", "Cdb"]
         assert atom1.radical_electrons == [0]
 
         assert atom2.label == "*1"
@@ -1084,7 +1129,7 @@ class TestGroup:
         adjlist = """
 1  *1 [O2s,O2d] u0 {3,[S,D]}
 2     R!H       u0 {3,S}
-3  *2 [Cs,Cd]   u0 {1,[S,D]} {2,S}
+3  *2 [Css,Cdb]   u0 {1,[S,D]} {2,S}
 """
         group = Group().from_adjacency_list(adjlist)
         assert self.group.is_isomorphic(group)
@@ -1097,7 +1142,7 @@ class TestGroup:
         adjlist = """
 1  *1 [O2s,O2d] u0 {3,[S,D]}
 2     R!H       u0 {3,S}
-3  *2 [Cs,Cd]   u0 {1,[S,D]} {2,S}
+3  *2 [Css,Cdb]   u0 {1,[S,D]} {2,S}
 """
         group = Group().from_adjacency_list(adjlist)
         result = self.group.find_isomorphism(group)
@@ -1119,7 +1164,7 @@ class TestGroup:
         Test the Group.is_subgraph_isomorphic() method.
         """
         adjlist = """
-1  *1 [Cs,Cd] u0
+1  *1 [Css,Cdb] u0
 """
         group = Group().from_adjacency_list(adjlist)
         assert self.group.is_subgraph_isomorphic(group)
@@ -1130,7 +1175,7 @@ class TestGroup:
         Test the Group.find_subgraph_isomorphisms() method.
         """
         adjlist = """
-1  *1 [Cs,Cd] u0
+1  *1 [Css,Cdb] u0
             """
         group = Group().from_adjacency_list(adjlist)
         result = self.group.find_subgraph_isomorphisms(group)
@@ -1139,6 +1184,83 @@ class TestGroup:
             assert atom1 in self.group.atoms
             assert atom2 in group.atoms
             assert atom1.equivalent(atom2)
+
+    def test_is_intersection_isomorphic(self):
+        """
+        Test the Group.is_intersection_isomorphic() method.
+        """
+        group_a = Group().from_adjacency_list(
+            """
+1 *1 [Css,Cdb]   u0 {2,S}
+2 *2 [O2s,O2d] u0 {1,S}
+"""
+        )
+        group_b = Group().from_adjacency_list(
+            """
+1 *1 [Cdb,Ct] u0 {2,S}
+2 *2 O2s     u0 {1,S}
+"""
+        )
+        # Neither group is a subgraph of the other...
+        assert not group_a.is_subgraph_isomorphic(group_b)
+        assert not group_b.is_subgraph_isomorphic(group_a)
+        # ...but they share realizations where atom 1 is Cdb and atom 2 is O2s
+        assert group_a.is_intersection_isomorphic(group_b)
+        assert group_b.is_intersection_isomorphic(group_a)
+
+        # Groups with no overlapping realization at any atom are not intersection isomorphic
+        group_c = Group().from_adjacency_list(
+            """
+1 *1 Css  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        group_d = Group().from_adjacency_list(
+            """
+1 *1 Ct  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        assert not group_c.is_intersection_isomorphic(group_d)
+        assert not group_d.is_intersection_isomorphic(group_c)
+
+    def test_find_intersection_isomorphisms(self):
+        """
+        Test the Group.find_intersection_isomorphisms() method.
+        """
+        group_a = Group().from_adjacency_list(
+            """
+1 *1 [Css,Cdb]   u0 {2,S}
+2 *2 [O2s,O2d] u0 {1,S}
+"""
+        )
+        group_b = Group().from_adjacency_list(
+            """
+1 *1 [Cdb,Ct] u0 {2,S}
+2 *2 O2s     u0 {1,S}
+"""
+        )
+        result = group_a.find_intersection_isomorphisms(group_b)
+        assert len(result) == 1
+        for atom1, atom2 in result[0].items():
+            assert atom1 in group_a.atoms
+            assert atom2 in group_b.atoms
+            assert atom1.has_intersection_with(atom2)
+
+        # No overlapping realization means no intersection mappings are found
+        group_c = Group().from_adjacency_list(
+            """
+1 *1 Css  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        group_d = Group().from_adjacency_list(
+            """
+1 *1 Ct  u0 {2,S}
+2 *2 O2s u0 {1,S}
+"""
+        )
+        assert group_c.find_intersection_isomorphisms(group_d) == []
 
     def test_generate_extensions(self):
         """
@@ -1231,14 +1353,14 @@ class TestGroup:
         answer2 = """
 1  *1 C       u0 {2,S} {3,[S,D]}
 2  *2 C       u0 {1,S}
-3     [Cs,Cd] u0 {1,[S,D]}
+3     [Css,Cdb] u0 {1,[S,D]}
 """
 
         # Test that wildcards work alright
         group2 = Group().from_adjacency_list(adjlist1)
         answer2 = Group().from_adjacency_list(answer2)
         atom1 = group2.get_labeled_atoms("*1")[0]
-        new_atom = group2.create_and_connect_atom(atomtypes=["Cs", "Cd"], connecting_atom=atom1, bond_orders=["S", "D"])
+        new_atom = group2.create_and_connect_atom(atomtypes=["Css", "Cdb"], connecting_atom=atom1, bond_orders=["S", "D"])
         assert group2.is_isomorphic(answer2)
 
     def test_add_implicit_atoms_from_atom_type(self):
@@ -1306,7 +1428,7 @@ class TestGroup:
 
         # test multiple implicit atoms at a time
         adjlist9 = """
-1  *1 Cd u0 {2,S}
+1  *1 Cdb u0 {2,S}
 2     Ct u0 {1,S}
 """
 
@@ -1622,7 +1744,7 @@ class TestGroup:
         adjlist1 = """
     1 *1 R!H       u1 {2,[D,B]}
     2 *2 [Cbf,Cdd] u0 {1,[D,B]} {3,[D,B]}
-    3 *3 [Cb,Cd]   u0 {2,[D,B]} {4,S}
+    3 *3 [Cb,Cdb]   u0 {2,[D,B]} {4,S}
     4 *4 R!H       u0 {3,S} {5,S}
     5 *5 H         u0 {4,S}
 """
@@ -1635,8 +1757,8 @@ class TestGroup:
         adjlist2 = """
     1 *1 R!H       u1 {2,[S,D]} {4,[S,D]}
     2 *2 [CO,Cdd]  u0 {1,[S,D]} {3,[S,D]}
-    3 *3 [O2d,Cd]  u0 {2,[S,D]}
-    4 *4 [Cdd,Cd]  u0 {1,[S,D]}
+    3 *3 [O2d,Cdb]  u0 {2,[S,D]}
+    4 *4 [Cdd,Cdb]  u0 {1,[S,D]}
 """
         group2 = Group().from_adjacency_list(adjlist2)
         group2.pick_wildcards()
@@ -1660,7 +1782,7 @@ class TestGroup:
 
         # tests adding implicit atoms
         adjlist = """
-1  *1 Cd u0
+1  *1 Cdb u0
 """
         answer_smiles = "C=C"
         assert perform_samp_mole_comparison(adjlist, answer_smiles)
@@ -1737,10 +1859,10 @@ class TestGroup:
     def test_repr_png(self):
         """Test that a png representation can be created."""
         adjlist = """
-1 *1 [C,Cd,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
-2 *2 [C,Cd,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
-3 *3 [C,Cd,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
-4 *4 [C,Cd,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
+1 *1 [C,Cdb,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
+2 *2 [C,Cdb,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
+3 *3 [C,Cdb,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
+4 *4 [C,Cdb,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
 """
         group = Group().from_adjacency_list(adjlist)
         result = group._repr_png_()
@@ -1749,10 +1871,10 @@ class TestGroup:
     def test_draw_group(self):
         """Test that the draw method returns the expected pydot graph."""
         adjlist = """
-1 *1 [C,Cd,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
-2 *2 [C,Cd,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
-3 *3 [C,Cd,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
-4 *4 [C,Cd,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
+1 *1 [C,Cdb,Ct,CO,CS,Cb] u1 {2,[S,D,T,B]}
+2 *2 [C,Cdb,Ct,CO,CS,Cb] u0 {1,[S,D,T,B]} {3,[S,D,T,B]}
+3 *3 [C,Cdb,Ct,CO,CS,Cb] u0 {2,[S,D,T,B]} {4,[S,D,T,B]}
+4 *4 [C,Cdb,Ct,CO,CS,Cb] u0 {3,[S,D,T,B]}
 """
         # Use of tabs in the expected string is intentional
         expected = rb"""
@@ -1761,22 +1883,22 @@ graph G {
 	node [label="\N"];
 	1	 [fontname=Helvetica,
 		fontsize=16,
-		label="1 *1 C,Cd,Ct,CO,CS,Cb"];
+		label="1 *1 C,Cdb,Ct,CO,CS,Cb"];
 	2	 [fontname=Helvetica,
 		fontsize=16,
-		label="2 *2 C,Cd,Ct,CO,CS,Cb"];
+		label="2 *2 C,Cdb,Ct,CO,CS,Cb"];
 	1 -- 2	 [fontname=Helvetica,
 		fontsize=16,
 		label="S,D,T,B"];
 	3	 [fontname=Helvetica,
 		fontsize=16,
-		label="3 *3 C,Cd,Ct,CO,CS,Cb"];
+		label="3 *3 C,Cdb,Ct,CO,CS,Cb"];
 	2 -- 3	 [fontname=Helvetica,
 		fontsize=16,
 		label="S,D,T,B"];
 	4	 [fontname=Helvetica,
 		fontsize=16,
-		label="4 *4 C,Cd,Ct,CO,CS,Cb"];
+		label="4 *4 C,Cdb,Ct,CO,CS,Cb"];
 	3 -- 4	 [fontname=Helvetica,
 		fontsize=16,
 		label="S,D,T,B"];
@@ -1804,7 +1926,7 @@ graph G {
 
         end1 = Group().from_adjacency_list(
             """
-1 *2 Cs u0 {2,S} {3,S}
+1 *2 Css u0 {2,S} {3,S}
 2 *3 H  u0 {1,S}
 3    S  u0 {1,S}
 """
@@ -1815,7 +1937,7 @@ graph G {
 2 *4 R!H u0 {1,S} {3,S}
 3 *6 R!H u0 {2,S} {4,S}
 4 *5 R!H u0 {3,S} {5,S}
-5 *2 Cs  u0 {4,S} {6,S} {7,S}
+5 *2 Css  u0 {4,S} {6,S} {7,S}
 6 *3 H   u0 {5,S}
 7    S   u0 {5,S}
 """
@@ -1838,7 +1960,7 @@ graph G {
         end2 = Group().from_adjacency_list(
             """
 1 *2 O2s u0 {2,S}
-2 *3 Cs  u0 {1,S}
+2 *3 Css  u0 {1,S}
 """
         )
         desired_merge2 = Group().from_adjacency_list(
@@ -1846,7 +1968,7 @@ graph G {
 1 *1 R!H u1 {2,S} {4,S}
 2 *4 R!H u0 {1,S} {3,S}
 3 *2 O2s u0 {2,S} {4,S}
-4 *3 Cs  u0 {3,S} {1,S}
+4 *3 Css  u0 {3,S} {1,S}
 """
         )
         merged_group = backbone2.merge_groups(end2)
@@ -1857,8 +1979,8 @@ graph G {
         group = Group().from_adjacency_list(
             """
 1 R!H u0 {2,S}
-2 [Cs,Cd,Ct,Cb] u0 {1,S} {3,S}
-3 [Cs,Cd,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
+2 [Css,Cdb,Ct,Cb] u0 {1,S} {3,S}
+3 [Css,Cdb,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
 4 N3s u0 {3,S} {5,S}
 5 P1s u0 {4,S} 
 """
