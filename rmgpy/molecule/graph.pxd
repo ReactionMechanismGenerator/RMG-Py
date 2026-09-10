@@ -147,7 +147,7 @@ cdef class Graph(object):
     
     cpdef list get_largest_ring(self, Vertex vertex)
     
-    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?, bint check_labels=?) except -2
+    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?, bint check_labels=?, bint intersection=?) except -2
 
     cpdef bint has_same_labels(self, Graph other, list ignore_labels=?) except -2
 
