@@ -1084,8 +1084,7 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
             adjlist += ' m{0}'.format(atom_morphology[atom])
         # Coordination numbers
         if group and atom_ncoord[atom] is not None and (isinstance(atom_ncoord[atom], int) or len(atom_ncoord[atom]) > 0):
-            if atom_ncoord[atom]:
-                adjlist += ' n{0}'.format(atom_ncoord[atom])
+            adjlist += ' n{0}'.format(atom_ncoord[atom])
         # Isotopes
         if atom_isotope[atom] != -1:
             adjlist += ' i{0}'.format(atom_isotope[atom])
