@@ -752,7 +752,7 @@ cdef class Graph(object):
                 longest_cycle = cycle
         return longest_cycle
 
-    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True, bint check_labels=False) except -2:
+    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True, bint check_labels=False, bint intersection=False) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
@@ -761,7 +761,14 @@ cdef class Graph(object):
         are specific cases of each other. If strict is ``True``, electrons
         and bond orders are considered, and ignored if ``False``. If
         check_labels is ``True``, atoms only match if their `label`
-        attributes also match.
+        attributes also match. If `intersection` is ``True``, vertices and edges
+        are instead checked for mutual compatibility via `has_intersection_with`
+        (this takes precedence over `equivalent`) -- use this to validate a
+        caller-supplied initial mapping before handing it to
+        :meth:`is_intersection_isomorphic`/:meth:`find_intersection_isomorphisms`,
+        since neither `equivalent` mode (exact equality) nor `equivalent=False`
+        (one-directional specific-case/subgraph check) is the right relation for
+        intersection compatibility.
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
@@ -770,7 +777,10 @@ cdef class Graph(object):
 
         # Check that the mapped pairs of vertices compare True
         for vertex1, vertex2 in mapping.items():
-            if equivalent:
+            if intersection:
+                if not vertex1.has_intersection_with(vertex2, check_labels=check_labels):
+                    return False
+            elif equivalent:
                 if not vertex1.equivalent(vertex2, strict=strict, check_labels=check_labels):
                     return False
             else:
@@ -789,12 +799,20 @@ cdef class Graph(object):
                     if strict:
                         edge1 = self.get_edge(vertices1[i], vertices1[j])
                         edge2 = other.get_edge(vertices2[i], vertices2[j])
-                        if equivalent:
+                        if intersection:
+                            if not edge1.has_intersection_with(edge2):
+                                return False
+                        elif equivalent:
                             if not edge1.equivalent(edge2):
                                 return False
                         else:
                             if not edge1.is_specific_case_of(edge2):
                                 return False
+                elif intersection:
+                    # Neither pattern's edges are authoritative over the other's absence of that
+                    # edge -- an edge only present in one of the two patterns doesn't rule out a
+                    # structure satisfying both, matching VF2's own feasible() for intersection mode.
+                    continue
                 elif not equivalent and self_has_edge and not other_has_edge:
                     #in the subgraph case self can have edges other doesn't have
                     continue
