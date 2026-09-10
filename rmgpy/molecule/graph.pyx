@@ -824,13 +824,13 @@ cdef class Graph(object):
 
         labels1 = {}
         for vertex in self.vertices:
-            label = vertex.label
+            label = getattr(vertex, 'label', '')
             if label and label not in skip:
                 labels1[label] = labels1.get(label, 0) + 1
 
         labels2 = {}
         for vertex in other.vertices:
-            label = vertex.label
+            label = getattr(vertex, 'label', '')
             if label and label not in skip:
                 labels2[label] = labels2.get(label, 0) + 1
 
