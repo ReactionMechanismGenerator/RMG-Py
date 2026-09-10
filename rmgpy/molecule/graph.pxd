@@ -135,6 +135,8 @@ cdef class Graph(object):
 
     cdef list _get_relevant_cycles(self)
 
+    cpdef invalidate_cycle_cache(self)
+
     cpdef list get_all_cyclic_vertices(self)
 
     cpdef list get_all_cycles(self, Vertex starting_vertex)

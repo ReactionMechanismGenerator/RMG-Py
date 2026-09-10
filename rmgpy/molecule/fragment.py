@@ -675,6 +675,7 @@ class Fragment(Molecule):
                 final_vertices.append(atom)
 
         smiles_before.vertices = final_vertices
+        smiles_before.invalidate_cycle_cache()
         mol_repr = Molecule()
         mol_repr.atoms = smiles_before.vertices
         mol_repr.update()
@@ -789,6 +790,7 @@ class Fragment(Molecule):
         from rdkit import Chem
 
         self.vertices = []
+        self.invalidate_cycle_cache()
 
         # Add hydrogen atoms to complete molecule if needed
         rdkitmol.UpdatePropertyCache(strict=False)

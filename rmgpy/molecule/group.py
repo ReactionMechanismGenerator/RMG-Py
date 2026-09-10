@@ -1459,6 +1459,7 @@ class Group(Graph):
     @atoms.setter
     def atoms(self, atoms):
         self.vertices = atoms
+        self.invalidate_cycle_cache()
 
     def add_atom(self, atom):
         """

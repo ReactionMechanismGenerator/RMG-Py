@@ -1160,6 +1160,7 @@ class Molecule(Graph):
     @atoms.setter
     def atoms(self, atoms):
         self.vertices = atoms
+        self.invalidate_cycle_cache()
 
     @property
     def fingerprint(self):

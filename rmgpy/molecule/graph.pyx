@@ -646,6 +646,18 @@ cdef class Graph(object):
             self._relevant_cycles = get_relevant_cycles(self)
         return self._relevant_cycles
 
+    cpdef invalidate_cycle_cache(self):
+        """
+        Clear the cached relevant-cycle set.
+
+        add_vertex/add_edge/remove_vertex/remove_edge already do this automatically, but code
+        outside this class that replaces `vertices` wholesale (bypassing those methods, e.g. to
+        rebuild a Molecule/Group/Fragment from a parsed structure) must call this explicitly:
+        otherwise a graph object being reused for a new topology can return cycles computed from
+        its previous, stale structure.
+        """
+        self._relevant_cycles = None
+
     cpdef list get_all_cyclic_vertices(self):
         """
         Returns all vertices belonging to one or more cycles.
