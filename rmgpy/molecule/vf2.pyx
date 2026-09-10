@@ -195,6 +195,11 @@ cdef class VF2:
                 sum([1 for vertex2 in graph2.vertices if not vertex2.ignore]),
             )
             if self.max_possible_size == 0:
+                # No vertex on either side could ever be matched, so the largest achievable
+                # mapping is the empty one -- record it rather than leaving mapping_list empty,
+                # matching find_largest_incomplete_isomorphisms's documented contract.
+                self.is_match = True
+                self.mapping_list = [{}]
                 return
         elif not self.intersection and not self.subgraph and len(graph2.vertices) != len(graph1.vertices):
             # The two graphs don't have the same number of vertices, so they
