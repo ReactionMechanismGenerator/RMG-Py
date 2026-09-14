@@ -158,6 +158,8 @@ cdef class Arrhenius(KineticsModel):
         import scipy.stats
         if not all(np.isfinite(klist)):
             raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist==0):
+            raise ValueError("Rates must all be nonzero; a zero rate coefficient cannot be fit in log space.")
         if any(klist<0):
             if not all(klist<0):
                 raise ValueError("Rates must all be positive or all be negative.")
@@ -1377,6 +1379,8 @@ cdef class ArrheniusChargeTransfer(KineticsModel):
         import scipy.stats
         if not all(np.isfinite(klist)):
             raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist==0):
+            raise ValueError("Rates must all be nonzero; a zero rate coefficient cannot be fit in log space.")
         if any(klist<0):
             if not all(klist<0):
                 raise ValueError("Rates must all be positive or all be negative.")

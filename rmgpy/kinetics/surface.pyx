@@ -169,6 +169,9 @@ cdef class StickingCoefficient(KineticsModel):
         """
         import scipy.stats
 
+        if any(klist==0):
+            raise ValueError("Rates must all be nonzero; a zero rate coefficient cannot be fit in log space.")
+
         assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
         if len(Tlist) < 3 + three_params:
             raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
@@ -973,6 +976,8 @@ cdef class SurfaceChargeTransfer(KineticsModel):
         import scipy.stats
         if not all(np.isfinite(klist)):
             raise  ValueError("Rates must all be finite, not inf or NaN")
+        if any(klist==0):
+            raise ValueError("Rates must all be nonzero; a zero rate coefficient cannot be fit in log space.")
         if any(klist<0):
             if not all(klist<0):
                 raise ValueError("Rates must all be positive or all be negative.")
