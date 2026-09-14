@@ -52,6 +52,9 @@ from rmgpy.data.auto_database import (
     load_recommended_yml,
     merge_with_user_libraries,
     resolve_auto_kinetics_families,
+    warn_about_coverage,
+    COVERED_ELEMENTS,
+    CH_PYROLYSIS_T_THRESHOLD,
 )
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
@@ -679,6 +682,57 @@ class TestEndToEnd(unittest.TestCase):
         self.assertIn(ChemistrySet.CH_PYROLYSIS_CORE, sets)
         self.assertNotIn(ChemistrySet.PAH_FORMATION, sets)
         self.assertNotIn(ChemistrySet.NITROGEN, sets)
+
+
+class TestWarnAboutCoverage(unittest.TestCase):
+    """The selector must say so when the detected chemistry falls outside the presets."""
+
+    def _warnings(self, profile, reaction_systems=None, pah=False):
+        with self.assertLogs('root', level='INFO') as captured:
+            warn_about_coverage(profile, reaction_systems or [], pah)
+        return '\n'.join(captured.output)
+
+    def test_always_warns_that_selection_is_heuristic(self):
+        messages = self._warnings(ChemistryProfile(elements_present={'C', 'H'}))
+        self.assertIn('heuristic starting point', messages)
+
+    def test_uncovered_element(self):
+        profile = ChemistryProfile(elements_present={'C', 'H', 'O', 'Si'},
+                                   has_carbon=True, has_oxygen=True)
+        messages = self._warnings(profile)
+        self.assertIn('no chemistry set for the element(s) Si', messages)
+
+    def test_all_covered_elements_are_silent(self):
+        profile = ChemistryProfile(elements_present=set(COVERED_ELEMENTS) - {'X'})
+        self.assertNotIn('no chemistry set for the element', self._warnings(profile))
+
+    def test_pah_withheld_note(self):
+        profile = ChemistryProfile(elements_present={'C', 'H', 'O'}, has_carbon=True,
+                                   has_oxygen=True,
+                                   max_temperature=CH_PYROLYSIS_T_THRESHOLD + 100)
+        messages = self._warnings(profile)
+        self.assertIn('PAH formation libraries were not selected', messages)
+        self.assertIn('<PAH_libs>', messages)
+
+    def test_pah_note_suppressed_when_requested(self):
+        profile = ChemistryProfile(elements_present={'C', 'H', 'O'}, has_carbon=True,
+                                   has_oxygen=True,
+                                   max_temperature=CH_PYROLYSIS_T_THRESHOLD + 100)
+        messages = self._warnings(profile, pah=True)
+        self.assertNotIn('PAH formation libraries were not selected', messages)
+
+    def test_pah_note_suppressed_below_threshold(self):
+        profile = ChemistryProfile(elements_present={'C', 'H', 'O'}, has_carbon=True,
+                                   has_oxygen=True,
+                                   max_temperature=CH_PYROLYSIS_T_THRESHOLD - 100)
+        messages = self._warnings(profile)
+        self.assertNotIn('PAH formation libraries were not selected', messages)
+
+    def test_isothermal_reactor_does_not_warn_about_adiabatic_temperature(self):
+        profile = ChemistryProfile(elements_present={'C', 'H'}, has_carbon=True,
+                                   max_temperature=1000.0)
+        messages = self._warnings(profile, [_simple_reactor(1000.0)])
+        self.assertNotIn('adiabatic reactor', messages)
 
 
 if __name__ == '__main__':

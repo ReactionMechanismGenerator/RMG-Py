@@ -48,10 +48,12 @@ try:
     from rmgpy.rmg.reactionmechanismsimulator_reactors import (
         ConstantTLiquidSurfaceReactor as RMSLiqSurf,
         ConstantTVLiquidReactor as RMSLiq,
+        ConstantVIdealGasReactor as RMSConstV,
     )
 except ImportError:
     RMSLiqSurf = None
     RMSLiq = None
+    RMSConstV = None
 
 # Values used in input files to request auto-selection
 AUTO = 'auto'
@@ -64,6 +66,10 @@ CH_PYROLYSIS_T_THRESHOLD = 800.0
 HALOGEN_ELEMENTS = {'F', 'Cl', 'Br', 'I'}
 # Elements that trigger the metal/electrochem chemistry set (currently only Li)
 ELECTROCHEM_ELEMENTS = {'Li'}
+
+# Elements for which at least one chemistry set exists. Derived from the sets above so it
+# cannot drift out of step with determine_chemistry_sets().
+COVERED_ELEMENTS = {'C', 'H', 'O', 'N', 'S', 'X'} | HALOGEN_ELEMENTS | ELECTROCHEM_ELEMENTS
 
 
 class ChemistrySet(str, Enum):
@@ -259,6 +265,55 @@ def determine_chemistry_sets(profile: ChemistryProfile,
         sets.append(ChemistrySet.ELECTROCHEM)
 
     return sets
+
+
+def warn_about_coverage(profile: ChemistryProfile,
+                       reaction_systems: list,
+                       pah_libs_requested: bool = False,
+                       ) -> None:
+    """
+    Warn the user where the detected chemistry falls outside the preset regimes, so that
+    a silently incomplete selection is visible in the log.
+
+    The selection is a heuristic keyed on a handful of coarse features, so there are
+    systems it cannot recognise. Each warning below names one such case and says what the
+    user should do about it.
+
+    Args:
+        profile: ChemistryProfile instance.
+        reaction_systems: list of reactor system objects.
+        pah_libs_requested: bool, True if user included the <PAH_libs> keyword.
+    """
+    uncovered = sorted(profile.elements_present - COVERED_ELEMENTS)
+    if uncovered:
+        logging.warning(
+            f'  Auto-selection found no chemistry set for the element(s) '
+            f'{", ".join(uncovered)}. No libraries specific to this chemistry were '
+            f'selected; add any relevant libraries to the database() block manually.'
+        )
+
+    if RMSConstV is not None and any(isinstance(r, RMSConstV) for r in reaction_systems):
+        logging.warning(
+            f'  An adiabatic reactor is present, so the detected maximum temperature '
+            f'({profile.max_temperature:.0f} K) is the initial temperature and the true '
+            f'peak temperature will be higher. Temperature-gated library sets were '
+            f'evaluated at the initial temperature; if the peak is expected to exceed '
+            f'{CH_PYROLYSIS_T_THRESHOLD:.0f} K, consider requesting the high-temperature '
+            f'libraries explicitly.'
+        )
+
+    if (profile.has_carbon and profile.max_temperature >= CH_PYROLYSIS_T_THRESHOLD
+            and profile.has_oxygen and not pah_libs_requested):
+        logging.info(
+            "  PAH formation libraries were not selected because oxygen is present. Add "
+            "the '<PAH_libs>' keyword to request them, which is worth doing for systems "
+            'expected to form aromatics, such as fuel-rich partial oxidation.'
+        )
+
+    logging.warning(
+        '  Auto-selection is a heuristic starting point, not a substitute for reviewing '
+        'the database. Inspect the selection above and refine it for your system.'
+    )
 
 
 def determine_kinetics_families(profile: ChemistryProfile) -> List[FamilySet]:
@@ -552,6 +607,8 @@ def auto_select_libraries(rmg):
     # Determine chemistry sets
     set_names = determine_chemistry_sets(profile, pah_libs_requested)
     logging.info(f'  Chemistry sets triggered: {", ".join(s.value for s in set_names)}')
+
+    warn_about_coverage(profile, rmg.reaction_systems, pah_libs_requested)
 
     # Load and expand recommended_libraries.yml
     recommended_data = load_recommended_yml(rmg.database_directory)

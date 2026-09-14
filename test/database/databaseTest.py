@@ -45,7 +45,7 @@ import rmgpy.constants
 from rmgpy import settings
 from rmgpy.data.base import LogicOr
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
+from rmgpy.exceptions import DatabaseError, ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule import Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
@@ -454,9 +454,14 @@ class TestDatabase:
         return True
 
     def kinetics_check_training_reactions_have_surface_attributes(self, family_name):
-        """Test that each surface training reaction has surface attributes"""
+        """Test that each surface training reaction has surface attributes.
+
+        Both a ``metal`` and a ``facet`` are required, and they must exist
+        in the metal library so that binding energies can be looked up without ambiguity.
+        """
         family = self.database.kinetics.families[family_name]
         training = family.get_training_depository().entries.values()
+        metal_db = self.database.thermo.surface["metal"]
         failed = False
         for entry in training:
             if not entry.metal:
@@ -466,9 +471,27 @@ class TestDatabase:
                 with check:
                     assert isinstance(entry.metal, str)
 
-            if entry.facet:
+            if not entry.facet:
+                logging.error(f"Expected a facet attribute for {entry} in {family} family but found {entry.facet!r}")
+                failed = True
+            else:
                 with check:
                     assert isinstance(entry.facet, str)
+
+            # A metal+facet must resolve to a real metal library entry so that
+            # binding energies can be looked up without ambiguity.
+            if entry.metal and entry.facet:
+                try:
+                    metal_db.get_binding_energies(entry.metal + entry.facet)
+                except DatabaseError:
+                    logging.error(
+                        f"Metal/facet {entry.metal + entry.facet!r} for {entry} in {family} family "
+                        f"is not a valid entry in the metal library. Either correct the facet or add "
+                        f"{entry.metal + entry.facet!r} (binding energies + surface site density) to "
+                        f"input/surface/libraries/metal.py."
+                    )
+                    failed = True
+
             if entry.site:
                 with check:
                     assert isinstance(entry.site, str)
