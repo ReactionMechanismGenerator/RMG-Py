@@ -486,7 +486,9 @@ class TestDatabase:
                 except DatabaseError:
                     logging.error(
                         f"Metal/facet {entry.metal + entry.facet!r} for {entry} in {family} family "
-                        f"is not a valid entry in the metal library."
+                        f"is not a valid entry in the metal library. Either correct the facet or add "
+                        f"{entry.metal + entry.facet!r} (binding energies + surface site density) to "
+                        f"input/surface/libraries/metal.py."
                     )
                     failed = True
 
