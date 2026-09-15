@@ -1058,18 +1058,14 @@ class Database(object):
             if self.match_node_to_structure(child, structure, atoms, strict):
                 next_node.append(child)
 
-        if len(next_node) == 1:
+        if len(next_node) != 0:
+            # at least one child matches - pick the first in tree order.
             return self.descend_tree(structure, atoms, next_node[0], strict)
-        elif len(next_node) == 0:
+        else:
             if len(root.children) > 0 and root.children[-1].label.startswith('Others-'):
                 return root.children[-1]
             else:
                 return root
-        else:
-            # logging.warning('For {0}, a node {1} with overlapping children {2} was encountered '
-            #                 'in tree with top level nodes {3}. Assuming the first match is the '
-            #                 'better one.'.format(structure, root, next, self.top))
-            return self.descend_tree(structure, atoms, next_node[0], strict)
 
     def are_siblings(self, node, node_other):
         """
