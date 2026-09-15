@@ -95,19 +95,23 @@ cdef class Vertex(object):
         new = Vertex()
         return new
 
-    cpdef bint equivalent(self, Vertex other, bint strict=True) except -2:
+    cpdef bint equivalent(self, Vertex other, bint strict=True, bint check_labels=False) except -2:
         """
         Return :data:`True` if two vertices `self` and `other` are semantically
         equivalent, or :data:`False` if not. You should reimplement this
         function in a derived class if your vertices have semantic information.
+        If `check_labels` is ``True``, subclasses with a `label` attribute
+        should also require that the labels match.
         """
         return True
 
-    cpdef bint is_specific_case_of(self, Vertex other) except -2:
+    cpdef bint is_specific_case_of(self, Vertex other, bint check_labels=False) except -2:
         """
         Return ``True`` if `self` is semantically more specific than `other`,
         or ``False`` if not. You should reimplement this function in a derived
-        class if your edges have semantic information.
+        class if your edges have semantic information. If `check_labels` is
+        ``True``, subclasses with a `label` attribute should also require that
+        the labels match.
         """
         return True
 
@@ -499,7 +503,7 @@ cdef class Graph(object):
         else:
             self.vertices = self.ordered_vertices
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint generate_initial_map=False, bint save_order=False, bint strict=True) except -2:
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=None, bint generate_initial_map=False, bint save_order=False, bint strict=True, bint check_labels=False) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
@@ -509,6 +513,7 @@ cdef class Graph(object):
             generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
             save_order (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
+            check_labels (bool, optional): if ``True``, atoms only match if their `label` attributes match
         """
         if generate_initial_map:
             initial_map = dict()
@@ -520,12 +525,12 @@ cdef class Graph(object):
                             break
                     else:
                         return False
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
+            if not self.is_mapping_valid(other, initial_map, equivalent=True, strict=True, check_labels=check_labels):
                 return False
 
-        return vf2.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict)
+        return vf2.is_isomorphic(self, other, initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
 
-    cpdef list find_isomorphism(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True):
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=None, bint save_order=False, bint strict=True, bint check_labels=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
@@ -535,24 +540,25 @@ cdef class Graph(object):
             initial_map (dict, optional): initial atom mapping to use
             save_order (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
+            check_labels (bool, optional): if ``True``, atoms only match if their `label` attributes match
         """
-        return vf2.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict)
+        return vf2.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
 
-    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=None, bint save_order=False) except -2:
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=None, bint save_order=False, bint check_labels=False) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
+        return vf2.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)
 
-    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=None, bint save_order=False):
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=None, bint save_order=False, bint check_labels=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings.
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
+        return vf2.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
 
     cpdef bint is_cyclic(self) except -2:
         """
@@ -838,14 +844,16 @@ cdef class Graph(object):
                 longest_cycle = cycle
         return longest_cycle
 
-    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True) except -2:
+    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True, bint check_labels=False) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
         mapping are mutually equivalent.  If equivalent is ``True`` it checks
         if atoms and edges are equivalent, if ``False`` it checks if they
         are specific cases of each other. If strict is ``True``, electrons
-        and bond orders are considered, and ignored if ``False``.
+        and bond orders are considered, and ignored if ``False``. If
+        check_labels is ``True``, atoms only match if their `label`
+        attributes also match.
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
@@ -855,10 +863,10 @@ cdef class Graph(object):
         # Check that the mapped pairs of vertices compare True
         for vertex1, vertex2 in mapping.items():
             if equivalent:
-                if not vertex1.equivalent(vertex2, strict=strict):
+                if not vertex1.equivalent(vertex2, strict=strict, check_labels=check_labels):
                     return False
             else:
-                if not vertex1.is_specific_case_of(vertex2):
+                if not vertex1.is_specific_case_of(vertex2, check_labels=check_labels):
                     return False
 
         # Check that any edges connected mapped vertices are equivalent
