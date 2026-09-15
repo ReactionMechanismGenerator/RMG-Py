@@ -37,12 +37,13 @@ cdef class Vertex(object):
     cdef public bint terminal
     cdef public Vertex mapping
     cdef public bint ignore
-    
+    cdef public bint excluded
+
     cpdef Vertex copy(self)
 
-    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?, bint check_labels=?) except -2
 
-    cpdef bint is_specific_case_of(self, Vertex other) except -2
+    cpdef bint is_specific_case_of(self, Vertex other, bint check_labels=?) except -2
 
     cpdef reset_connectivity_values(self)
 
@@ -73,8 +74,10 @@ cdef Vertex _get_edge_vertex2(Edge edge)
 cdef class Graph(object):
 
     cdef public list vertices
-    
+
     cdef public list ordered_vertices
+
+    cdef list _relevant_cycles
 
     cpdef Vertex add_vertex(self, Vertex vertex)
 
@@ -110,13 +113,19 @@ cdef class Graph(object):
     
     cpdef restore_vertex_order(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?) except -2
 
-    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?)
 
-    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?) except -2
 
-    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
+
+    cpdef bint is_intersection_isomorphic(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?) except -2
+
+    cpdef list find_intersection_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
+
+    cpdef list find_largest_incomplete_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?, bint find_all=?)
 
     cpdef bint is_cyclic(self) except -2
 
@@ -124,22 +133,26 @@ cdef class Graph(object):
 
     cpdef bint is_edge_in_cycle(self, Edge edge) except -2
 
-    cpdef bint _is_chain_in_cycle(self, list chain) except -2
+    cdef list _get_relevant_cycles(self)
+
+    cpdef invalidate_cycle_cache(self)
 
     cpdef list get_all_cyclic_vertices(self)
 
     cpdef list get_all_cycles(self, Vertex starting_vertex)
 
+    cpdef list _explore_cycles_recursively(self, list chain, list cycles)
+
     cpdef list get_all_cycles_of_size(self, int size)
 
     cpdef list get_all_simple_cycles_of_size(self, int size)
-
-    cpdef list _explore_cycles_recursively(self, list chain, list cycles)
 
     cpdef list sort_cyclic_vertices(self, list vertices)
     
     cpdef list get_largest_ring(self, Vertex vertex)
     
-    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?) except -2
+    cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?, bint check_labels=?, bint intersection=?) except -2
+
+    cpdef bint has_same_labels(self, Graph other, list ignore_labels=?) except -2
 
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=?)

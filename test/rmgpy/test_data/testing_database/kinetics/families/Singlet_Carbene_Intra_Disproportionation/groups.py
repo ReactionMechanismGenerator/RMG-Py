@@ -134,7 +134,7 @@ entry(
     index=8,
     label="CdJ2",
     group="""
-1 *1 Cd u0 p1 c0
+1 *1 Cdb u0 p1 c0
 """,
     kinetics=None,
     shortDesc="",
@@ -147,7 +147,7 @@ entry(
     index=9,
     label="CsJ2H",
     group="""
-1 *1 Cs u0 p1 c0 {2,S}
+1 *1 Css u0 p1 c0 {2,S}
 2 H u0 {1,S}
 """,
     kinetics=None,
@@ -161,7 +161,7 @@ entry(
     index=10,
     label="CsJ2C",
     group="""
-1 *1 Cs u0 p1 c0 {2,S}
+1 *1 Css u0 p1 c0 {2,S}
 2 C u0 {1,S}
 """,
     kinetics=None,
@@ -175,8 +175,8 @@ entry(
     index=11,
     label="CsJ2(CsC)",
     group="""
-1 *1 Cs u0 p1 c0 {2,S}
-2 Cs u0 {1,S} {3,S}
+1 *1 Css u0 p1 c0 {2,S}
+2 Css u0 {1,S} {3,S}
 3 C u0 {2,S}
 """,
     kinetics=None,
@@ -190,8 +190,8 @@ entry(
     index=12,
     label="CsJ2(C=C)",
     group="""
-1 *1 Cs u0 p1 c0 {2,S}
-2 Cd u0 {1,S} {3,D}
+1 *1 Css u0 p1 c0 {2,S}
+2 Cdb u0 {1,S} {3,D}
 3 C u0 {2,D}
 """,
     kinetics=None,
@@ -205,7 +205,7 @@ entry(
     index=13,
     label="CdH2",
     group="""
-1 *2 Cd u0 {2,S} {3,S}
+1 *2 Cdb u0 {2,S} {3,S}
 2 *3 H u0 {1,S}
 3 H u0 {1,S}
 """,
@@ -220,7 +220,7 @@ entry(
     index=14,
     label="CdHC",
     group="""
-1 *2 Cd u0 {2,S} {3,S}
+1 *2 Cdb u0 {2,S} {3,S}
 2 *3 H u0 {1,S}
 3 C u0 {1,S}
 """,
@@ -235,7 +235,7 @@ entry(
     index=15,
     label="CH3",
     group="""
-1 *2 Cs u0 {2,S} {3,S} {4,S}
+1 *2 Css u0 {2,S} {3,S} {4,S}
 2 *3 H u0 {1,S}
 3 H u0 {1,S}
 4 H u0 {1,S}
@@ -251,7 +251,7 @@ entry(
     index=16,
     label="CH2(C)",
     group="""
-1 *2 Cs u0 {2,S} {3,S} {4,S}
+1 *2 Css u0 {2,S} {3,S} {4,S}
 2 *3 H u0 {1,S}
 3 H u0 {1,S}
 4 C u0 {1,S}
@@ -267,10 +267,10 @@ entry(
     index=17,
     label="CH2(C=C)",
     group="""
-1 *2 Cs u0 {2,S} {3,S} {4,S}
+1 *2 Css u0 {2,S} {3,S} {4,S}
 2 *3 H u0 {1,S}
 3 H u0 {1,S}
-4 Cd u0 {1,S} {5,D}
+4 Cdb u0 {1,S} {5,D}
 5 C u0 {4,D}
 """,
     kinetics=None,
@@ -284,7 +284,7 @@ entry(
     index=18,
     label="CH(C)C",
     group="""
-1 *2 Cs u0 {2,S} {3,S} {4,S}
+1 *2 Css u0 {2,S} {3,S} {4,S}
 2 *3 H u0 {1,S}
 3 C u0 {1,S}
 4 C u0 {1,S}
@@ -300,7 +300,7 @@ entry(
     index=19,
     label="CH=C",
     group="""
-1 *2 Cd u0 {2,S} {3,D}
+1 *2 Cdb u0 {2,S} {3,D}
 2 *3 H u0 {1,S}
 3 C u0 {1,D}
 """,

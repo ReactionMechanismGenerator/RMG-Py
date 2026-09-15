@@ -105,7 +105,7 @@ class TestDatabase:
                 )
 
             with check:
-                assert self.kinetics_check_cd_atom_type(family_name), "Kinetics family {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(
+                assert self.kinetics_check_cd_atom_type(family_name), "Kinetics family {0}: Cdb, CS, CO, and Cdd atomtype used correctly?".format(
                     family_name
                 )
 
@@ -223,7 +223,7 @@ class TestDatabase:
                 )
 
             with check:
-                assert self.general_check_cd_atom_type(group_name, group), "Thermo groups {0}: Cd atomtype used correctly?".format(group_name)
+                assert self.general_check_cd_atom_type(group_name, group), "Thermo groups {0}: Cdb atomtype used correctly?".format(group_name)
 
             with check:
                 assert self.general_check_sample_descends_to_group(group_name, group), "Thermo groups {0}: Entry is accessible?".format(group_name)
@@ -283,7 +283,7 @@ class TestDatabase:
                 )
 
             with check:
-                assert self.general_check_cd_atom_type(group_name, group), "Solvation groups {0}: Cd atomtype used correctly?".format(group_name)
+                assert self.general_check_cd_atom_type(group_name, group), "Solvation groups {0}: Cdb atomtype used correctly?".format(group_name)
 
             with check:
                 assert self.general_check_sample_descends_to_group(group_name, group), "Solvation groups {0}: Entry is accessible?".format(group_name)
@@ -309,7 +309,7 @@ class TestDatabase:
                 )
 
             with check:
-                assert self.general_check_cd_atom_type(group_name, group), "Statmech groups {0}: Cd atomtype used correctly?".format(group_name)
+                assert self.general_check_cd_atom_type(group_name, group), "Statmech groups {0}: Cdb atomtype used correctly?".format(group_name)
 
             with check:
                 assert self.general_check_sample_descends_to_group(group_name, group), "Statmech groups {0}: Entry is accessible?".format(group_name)
@@ -337,7 +337,7 @@ class TestDatabase:
             with check:
                 assert self.general_check_cd_atom_type(
                     group_name, group
-                ), "Transport groups {0}: Cd, CS, CO, and Cdd atomtype used correctly?".format(group_name)
+                ), "Transport groups {0}: Cdb, CS, CO, and Cdd atomtype used correctly?".format(group_name)
 
             with check:
                 assert self.general_check_sample_descends_to_group(group_name, group), "Transport groups {0}: Entry is accessible?".format(group_name)
@@ -1079,11 +1079,11 @@ class TestDatabase:
 
     def kinetics_check_cd_atom_type(self, family_name):
         """
-        This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
+        This test checks that groups containing Cdb, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
         """
         family = self.database.kinetics.families[family_name]
-        target_label = ["Cd", "CO", "CS", "Cdd"]
+        target_label = ["Cdb", "CO", "CS", "Cdd"]
         target_atom_types = [ATOMTYPES[x] for x in target_label]
 
         # ignore product entries that get created from training reactions
@@ -1105,10 +1105,10 @@ class TestDatabase:
                     for atomtype1 in atom.atomtype:
                         if atomtype1 in target_atom_types:
                             break
-                    # If Cd not found in atomTypes, go to next atom
+                    # If Cdb not found in atomTypes, go to next atom
                     else:
                         continue
-                    # Create list of all the atomTypes that should be present in addition or instead of Cd
+                    # Create list of all the atomTypes that should be present in addition or instead of Cdb
                     correct_atom_list = []
                     num_of_d_bonds = sum([1 if x.order[0] == "D" and len(x.order) == 1 else 0 for x in atom.bonds.values()])
                     if num_of_d_bonds == 2:
@@ -1130,7 +1130,7 @@ class TestDatabase:
                             (
                                 ATOMTYPES[correctAtom] in atom.atomtype,
                                 """
-In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
+In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cdb, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}""".format(
                                     family_name,
@@ -1953,10 +1953,10 @@ Origin Group AdjList:
 
     def general_check_cd_atom_type(self, group_name, group):
         """
-        This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
+        This test checks that groups containing Cdb, CO, CS and Cdd atomtypes are used
         correctly according to their strict definitions
         """
-        target_label = ["Cd", "CO", "CS", "Cdd"]
+        target_label = ["Cdb", "CO", "CS", "Cdd"]
         target_atom_types = [ATOMTYPES[x] for x in target_label]
         tst = []
         for entry_name, entry in group.entries.items():
@@ -1966,7 +1966,7 @@ Origin Group AdjList:
                         if atomtype1 in target_atom_types:
                             break
                     else:
-                        # If Cd not found in atomTypes, go to next atom
+                        # If Cdb not found in atomTypes, go to next atom
                         continue
                     # figure out what the correct atomtype is
                     correct_atom_list = []
@@ -1990,7 +1990,7 @@ Origin Group AdjList:
                             (
                                 ATOMTYPES[correctAtom] in atom.atomtype,
                                 """
-In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
+In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cdb, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}""".format(
                                     group_name,
