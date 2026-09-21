@@ -1476,7 +1476,12 @@ class ThermoDatabase(object):
                 # first and perform an HBI correction on them
                 thermo = []
                 for molecule in species.molecule:
-                    if molecule.reactive:
+                    # A species can be an overall radical (original_molecule.get_radical_count() > 0,
+                    # checked above) while still having one of its OTHER resonance structures be a
+                    # non-radical valence tautomer (e.g. a singlet carbene form) -- estimate_radical_thermo_via_hbi
+                    # requires molecule.is_radical() and raises ValueError otherwise, so skip those here
+                    # the same way non-`reactive` structures are already skipped.
+                    if molecule.reactive and molecule.get_radical_count() > 0:
                         molecule.clear_labeled_atoms()
                         # First see if the saturated molecule is in the libaries
                         tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
