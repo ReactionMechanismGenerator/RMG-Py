@@ -51,7 +51,7 @@ class TestGroupAdjLists:
         adjlist: Test the Group.from_adjacency_list() method on an old style adjacency list.
         """
         adjlist = """
-1 *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
+1 *2 {Css,Cdb} 0 {2,{S,D}} {3,S}
 2 *1 {O2s,O2d}  0   {1,{S,D}}
 3    R!H     {0,1} {1,S}
             """
@@ -65,8 +65,8 @@ class TestGroupAdjLists:
         bond13 = atom1.bonds[atom3]
 
         assert atom1.label == "*2"
-        assert atom1.atomtype[0].label in ["Cs", "Cd"]
-        assert atom1.atomtype[1].label in ["Cs", "Cd"]
+        assert atom1.atomtype[0].label in ["Css", "Cdb"]
+        assert atom1.atomtype[1].label in ["Css", "Cdb"]
         assert atom1.radical_electrons == [0]
 
         assert atom2.label == "*1"
@@ -86,7 +86,7 @@ class TestGroupAdjLists:
         adjlist: Test the Group.from_adjacency_list() method.
         """
         adjlist = """
-1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+1 *2 [Css,Cdb]   u0 {2,[S,D]} {3,S}
 2 *1 [O2s,O2d] u0 {1,[S,D]}
 3    R!H       u0 {1,S}
             """
@@ -100,8 +100,8 @@ class TestGroupAdjLists:
         bond13 = atom1.bonds[atom3]
 
         assert atom1.label == "*2"
-        assert atom1.atomtype[0].label in ["Cs", "Cd"]
-        assert atom1.atomtype[1].label in ["Cs", "Cd"]
+        assert atom1.atomtype[0].label in ["Css", "Cdb"]
+        assert atom1.atomtype[1].label in ["Css", "Cdb"]
         assert atom1.radical_electrons == [0]
 
         assert atom2.label == "*1"
@@ -143,7 +143,7 @@ class TestGroupAdjLists:
         adjlist: Test the Group.to_adjacency_list() method.
         """
         adjlist = """
-1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+1 *2 [Css,Cdb] u0 {2,[S,D]} {3,S}
 2 *1 [O2s,O2d] u0 {1,[S,D]}
 3    R!H       u0 {1,S}
             """

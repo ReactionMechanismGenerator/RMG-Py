@@ -161,6 +161,7 @@ def from_rdkit_mol(mol, rdkitmol, raise_atomtype_exception=True):
                    bond=mm.Bond)
 
     mol.vertices = []
+    mol.invalidate_cycle_cache()
 
     # Add hydrogen atoms to complete molecule if needed
     rdkitmol.UpdatePropertyCache(strict=False)
@@ -314,6 +315,7 @@ def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     mol.vertices = []
+    mol.invalidate_cycle_cache()
 
     # Add hydrogen atoms to complete molecule if needed
     obmol.AddHydrogens()
