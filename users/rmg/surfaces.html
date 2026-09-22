@@ -369,20 +369,25 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 <p>An Arrhenius-like expression can be used to describe the effect of the coverage (<span class="math notranslate nohighlight">\(\theta_{k}\)</span>) of species k on the forward rate constant for a given surface reaction. RMG has the capability to account for such coverage dependent kinetics, as specified in the following equation:</p>
 <div class="math notranslate nohighlight" id="equation-covdepeqn">
 <span class="eqno">(3)<a class="headerlink" href="#equation-covdepeqn" title="Permalink to this equation">¶</a></span>\[k_f = A T^b \exp \left( - \frac{E_a}{RT} \right)\prod_k 10^{a_k \theta_k} \theta_k^{m_k}\exp \left( \frac{- E_k \theta_k}{RT} \right)\]</div>
-<p>where the parameters <span class="math notranslate nohighlight">\(a_k\)</span>, <span class="math notranslate nohighlight">\(m_k\)</span>, and <span class="math notranslate nohighlight">\(E_k\)</span> are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k.</p>
+<p>where the parameters <span class="math notranslate nohighlight">\(a_k\)</span>, <span class="math notranslate nohighlight">\(m_k\)</span>, and <span class="math notranslate nohighlight">\(E_k\)</span> are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k. The effect of coverage on enthalpy and entropy can also be accounted for using a polynomial correction which is up to
+cubic in order. The correction: <span class="math notranslate nohighlight">\(f(\theta)\)</span> is added to to the entropy and enthalpy computed from the NASA7 polynomial, and takes the same form for both enthalpy and entropy:</p>
+<div class="math notranslate nohighlight" id="equation-thermocovdepeqn">
+<span class="eqno">(4)<a class="headerlink" href="#equation-thermocovdepeqn" title="Permalink to this equation">¶</a></span>\[f(\theta) = a_1 \theta + a_2 \theta^2 + a_3 \theta^3\]</div>
 <section id="input-file-specifications">
 <h3><span class="section-number">16.5.1. </span>input file specifications<a class="headerlink" href="#input-file-specifications" title="Permalink to this heading">¶</a></h3>
-<p>Coverage dependent parameters are applied if the “coverage_dependence” attribute is set to “True” in the catalyst properties block:</p>
+<p>Coverage dependent kinetic parameters are applied if the “coverageDependence” attribute is set to “True” in the catalyst properties block, and
+coverage dependent thermodynamics are applied if the “thermoCoverageDependence” is set to “True”:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catalystProperties</span><span class="p">(</span>
     <span class="n">metal</span> <span class="o">=</span> <span class="s2">"Pt111"</span>
     <span class="n">coverageDependence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">thermoCoverageDependence</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>By default, this field is false.</p>
 </section>
-<section id="coverage-block-in-families-and-libraries">
-<h3><span class="section-number">16.5.2. </span>Coverage block in families and libraries<a class="headerlink" href="#coverage-block-in-families-and-libraries" title="Permalink to this heading">¶</a></h3>
+<section id="coverage-block-in-families-and-kinetics-libraries">
+<h3><span class="section-number">16.5.2. </span>Coverage block in families and kinetics libraries<a class="headerlink" href="#coverage-block-in-families-and-kinetics-libraries" title="Permalink to this heading">¶</a></h3>
 <p>Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the “coverage_dependence” field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -412,6 +417,55 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </pre></div>
 </div>
 <p>The species “N_X” and “H_X” are the coverage dependent species in this example, and they also happen to be species partaking in this reaction. However, any species that are listed in the species dictionary can also be used.</p>
+</section>
+<section id="coverage-block-in-thermodynamics-libraries">
+<h3><span class="section-number">16.5.3. </span>Coverage block in thermodynamics libraries<a class="headerlink" href="#coverage-block-in-thermodynamics-libraries" title="Permalink to this heading">¶</a></h3>
+<p>Coverage dependent parameters can be added to a thermodynamics library by specifying a dictionary in the “Thermo_coverage_dependence” field, with the adjacency list of the species for which the thermodynamics depends on as the keys. Nested within those dictionaries
+are a dictionary containing which model to use (only “polynomial” is supported), and the enthalpy and entropy coefficients:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">"XCO"</span><span class="p">,</span>
+    <span class="n">molecule</span> <span class="o">=</span>
+<span class="sd">"""</span>
+<span class="sd">1 X  u0  p0 c0 {2,D}</span>
+<span class="sd">2 C  u0  p0 c0 {1,D} {3,D}</span>
+<span class="sd">3 O  u0  p2 c0 {2,D}</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">thermo</span> <span class="o">=</span> <span class="n">NASA</span><span class="p">(</span>
+        <span class="n">polynomials</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.428</span><span class="p">,</span> <span class="mf">0.014</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.211e-05</span><span class="p">,</span> <span class="mf">1.786e-08</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.714e-12</span><span class="p">,</span> <span class="o">-</span><span class="mi">29337</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.782</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">298.0</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span><span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span> <span class="s1">'K'</span><span class="p">)),</span>
+            <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">5.486</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">3.090e-06</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.711e-09</span><span class="p">,</span> <span class="mf">3.158e-13</span><span class="p">,</span> <span class="o">-</span><span class="mi">30250</span><span class="p">,</span> <span class="o">-</span><span class="mf">27.67</span><span class="p">],</span> <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span> <span class="s1">'K'</span><span class="p">)),</span>
+        <span class="p">],</span>
+        <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mf">298.0</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span><span class="s1">'K'</span><span class="p">),</span>
+        <span class="n">thermo_coverage_dependence</span> <span class="o">=</span> <span class="p">{</span>
+<span class="w">            </span><span class="sd">"""</span>
+<span class="sd">            1 X  u0  p0 c0 {2,D}</span>
+<span class="sd">            2 C  u0  p0 c0 {1,D} {3,D}</span>
+<span class="sd">            3 O  u0  p2 c0 {2,D}</span>
+<span class="sd">            """</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">'model'</span><span class="p">:</span> <span class="s1">'polynomial'</span><span class="p">,</span>
+                <span class="s1">'enthalpy-coefficients'</span><span class="p">:</span> <span class="p">[(</span><span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.8575</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'eV/molecule'</span><span class="p">)],</span>
+                <span class="s1">'entropy-coefficients'</span><span class="p">:</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'eV/(molecule*K)'</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'eV/(molecule*K)'</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s1">'eV/(molecule*K)'</span><span class="p">)],</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">),</span>
+    <span class="n">longDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"""</span>
+<span class="s2">    Calculated by Kirk Badger at Brown University using statistical mechanics methods implemented in</span>
+<span class="s2">    Franklin Goldsmith's thermo_kinetics_scripts repository in the new_workflow folder:</span>
+
+<span class="s2">    https://github.com/franklingoldsmith/thermo_kinetics_scripts/tree/acee9b28228abc4491bd15d264f21897d9adf0ff/new_workflow</span>
+
+<span class="s2">    DFT calculations were performed with Quantum Espresso using PAW pseudopotentals and the BEEF-vdW</span>
+<span class="s2">    functional for an optimized 3x3x4 supercell with the bottom 2 layers fixed. The following settings</span>
+<span class="s2">    were applied: kpoints=5x5x1, ecutwfc=50 Ry (60 Ry single point evaluation after),</span>
+<span class="s2">    smearing='marzari-vanderbilt', degauss=0.02, mixing_mode='local-TF', conv_thr=1e-12, fmax=1e-3.</span>
+<span class="s2">    """</span><span class="p">,</span>
+    <span class="n">metal</span> <span class="o">=</span> <span class="s2">"Pt"</span><span class="p">,</span>
+    <span class="n">facet</span> <span class="o">=</span> <span class="s2">"111"</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="examples">
@@ -795,7 +849,8 @@ for accurate coupled gas-phase/surface mechanism generation.</p>
 </li>
 <li><a class="reference internal" href="#coverage-dependence">16.5. Coverage Dependence</a><ul>
 <li><a class="reference internal" href="#input-file-specifications">16.5.1. input file specifications</a></li>
-<li><a class="reference internal" href="#coverage-block-in-families-and-libraries">16.5.2. Coverage block in families and libraries</a></li>
+<li><a class="reference internal" href="#coverage-block-in-families-and-kinetics-libraries">16.5.2. Coverage block in families and kinetics libraries</a></li>
+<li><a class="reference internal" href="#coverage-block-in-thermodynamics-libraries">16.5.3. Coverage block in thermodynamics libraries</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#examples">16.6. Examples</a><ul>
