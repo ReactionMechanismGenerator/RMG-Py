@@ -1142,8 +1142,9 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
         kr = Arrhenius()
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        kr.fit_to_data(Tfit, kfit, reverse_units, kf.T0.value_si)
         kr.solute = kf.solute
         return kr
 
@@ -1166,8 +1167,9 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i]) / self.get_equilibrium_constant(Tlist[i])
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
         kr = SurfaceArrhenius()
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        kr.fit_to_data(Tfit, kfit, reverse_units, kf.T0.value_si)
         kr.solute = kf.solute
         return kr
 
@@ -1193,8 +1195,9 @@ class Reaction:
             klist[i] = \
                 self.get_surface_rate_coefficient(Tlist[i], surface_site_density=surface_site_density) / \
                 self.get_equilibrium_constant(Tlist[i], surface_site_density=surface_site_density)
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
         kr = SurfaceArrhenius()
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        kr.fit_to_data(Tfit, kfit, reverse_units, kf.T0.value_si)
         kr.solute = kf.solute
         return kr
 
@@ -1219,8 +1222,9 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
         kr = SurfaceChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        kr.fit_to_data(Tfit, kfit, reverse_units, kf.T0.value_si)
         kr.solute = kf.solute
         return kr
 
@@ -1243,8 +1247,9 @@ class Reaction:
         klist = np.zeros_like(Tlist)
         for i in range(len(Tlist)):
             klist[i] = kf.get_rate_coefficient(Tlist[i],V0) / self.get_equilibrium_constant(Tlist[i],V0)
+        Tfit, kfit = _drop_zero_rate_samples(Tlist, klist)
         kr = ArrheniusChargeTransfer(alpha=kf.alpha.value, electrons=-1*self.electrons, V0=(V0,'V'))
-        kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
+        kr.fit_to_data(Tfit, kfit, reverse_units, kf.T0.value_si)
         kr.solute = kf.solute
         return kr
 
@@ -1737,7 +1742,9 @@ class Reaction:
         """
         Warn if a core reaction violates the collision limit rate in either the forward or reverse direction
         at the relevant extreme T/P conditions. Assuming a monotonic behaviour of the kinetics.
-        Returns a list with the reaction object and the direction in which the violation was detected.
+        Returns ``(violator_list, skipped)``, where `violator_list` holds the reaction object and the
+        direction in which each violation was detected, and `skipped` counts the direction/condition
+        pairs that could not be evaluated.
         """
         conditions = [[t_min, p_min]]
         if t_min != t_max:
@@ -1748,38 +1755,63 @@ class Reaction:
                 conditions.append([t_max, p_max])
         logging.debug("Checking whether reaction {0} violates the collision rate limit...".format(self))
         violator_list = []
-        kf_list = []
-        kr_list = []
-        collision_limit_f = []
-        collision_limit_r = []
+        forward_checks = []
+        reverse_checks = []
+        skipped = 0
+        reverse_kinetics = None
+        if len(self.products) >= 2:
+            try:
+                reverse_kinetics = self.generate_reverse_rate_coefficient()
+            except (ReactionError, KineticsError, ZeroDivisionError, OverflowError) as err:
+                logging.warning(
+                    "Skipping reverse collision limit check for reaction %s because the reverse rate "
+                    "coefficient could not be generated: %s",
+                    self, err,
+                )
+                skipped += len(conditions)
         for condition in conditions:
+            temp, pressure = condition
             if len(self.reactants) >= 2:
                 try:
-                    collision_limit_f.append(self.calculate_coll_limit(temp=condition[0], reverse=False))
+                    limit_f = self.calculate_coll_limit(temp=temp, reverse=False)
                 except ValueError:
-                    continue
+                    skipped += 1
                 else:
-                    kf_list.append(self.get_rate_coefficient(condition[0], condition[1]))
-            if len(self.products) >= 2:
+                    try:
+                        kf = self.get_rate_coefficient(temp, pressure)
+                    except (ReactionError, KineticsError, ZeroDivisionError, OverflowError) as err:
+                        logging.warning(
+                            "Skipping forward collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                        skipped += 1
+                    else:
+                        forward_checks.append((kf, limit_f, condition))
+            if len(self.products) >= 2 and reverse_kinetics is not None:
                 try:
-                    collision_limit_r.append(self.calculate_coll_limit(temp=condition[0], reverse=True))
+                    limit_r = self.calculate_coll_limit(temp=temp, reverse=True)
                 except ValueError:
-                    continue
+                    skipped += 1
                 else:
-                    kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(condition[0], condition[1]))
-        if len(self.reactants) >= 2:
-            for i, k in enumerate(kf_list):
-                if k > collision_limit_f[i]:
-                    ratio = k / collision_limit_f[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'forward', ratio, condition])
-        if len(self.products) >= 2:
-            for i, k in enumerate(kr_list):
-                if k > collision_limit_r[i]:
-                    ratio = k / collision_limit_r[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
-                    violator_list.append([self, 'reverse', ratio, condition])
-        return violator_list
+                    try:
+                        kr = reverse_kinetics.get_rate_coefficient(temp, pressure)
+                    except (ReactionError, KineticsError, ZeroDivisionError, OverflowError) as err:
+                        logging.warning(
+                            "Skipping reverse collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because reverse rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                        skipped += 1
+                    else:
+                        reverse_checks.append((kr, limit_r, condition))
+        for direction, checks in (('forward', forward_checks), ('reverse', reverse_checks)):
+            for k, collision_limit, (temp, pressure) in checks:
+                if k > collision_limit:
+                    ratio = k / collision_limit
+                    condition = '{0} K, {1:.1f} bar'.format(temp, pressure / 1e5)
+                    violator_list.append([self, direction, ratio, condition])
+        return violator_list, skipped
 
     def calculate_coll_limit(self, temp, reverse=False):
         """
@@ -1840,6 +1872,21 @@ class Reaction:
         Only implemented for LibraryReaction
         """
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
+
+def _drop_zero_rate_samples(Tlist, klist):
+    """
+    Return the subset of `Tlist` and `klist` for which the rate coefficient is nonzero.
+
+    Reverse rate coefficients underflow to exactly zero at the cold end of the fitting range for
+    strongly endothermic reactions. Such a sample carries no information for a fit performed in
+    log space, and log(0) would make every fitted parameter NaN, so it is dropped instead.
+    """
+    nonzero = klist != 0
+    if not nonzero.all():
+        logging.debug("Dropping %d of %d rate coefficient samples that underflowed to zero "
+                      "before fitting.", (~nonzero).sum(), len(klist))
+    return Tlist[nonzero], klist[nonzero]
+
 
 def _same_object(object1, object2, _check_identical=False, _only_check_label=False,
              _generate_initial_map=False, _strict=True, _save_order=False):

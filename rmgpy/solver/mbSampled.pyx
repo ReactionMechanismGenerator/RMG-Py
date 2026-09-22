@@ -237,6 +237,9 @@ cdef class MBSampledReactor(ReactionSystem):
             if rxn.reversible:
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                self.kb[j] = 0.0
+                self.Keq[j] = np.inf
 
     def set_colliders(self, core_reactions, edge_reactions, core_species):
         """

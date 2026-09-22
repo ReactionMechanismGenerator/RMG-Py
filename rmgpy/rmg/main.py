@@ -1643,11 +1643,24 @@ class RMG(util.Subject):
 
         # Check all core reactions (in both directions) for collision limit violation
         violators = []
+        skipped_checks = 0
+        skipped_reactions = 0
         for rxn in self.reaction_model.core.reactions:
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
-            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+            try:
+                violator_list, skipped = rxn.check_collision_limit_violation(
+                    t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax
+                )
+            except Exception:
+                logging.warning(
+                    "Skipping collision limit check for reaction %s because evaluation failed.",
+                    rxn, exc_info=True,
+                )
+                skipped_reactions += 1
+                continue
+            skipped_checks += skipped
             if violator_list:
                 violators.extend(violator_list)
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
@@ -1682,6 +1695,13 @@ class RMG(util.Subject):
                     violators_f.write(
                         f"{rxn_string}\n" f"Direction: {direction}\n" f"Violation factor: {ratio:.2f}\n" f"Violation condition: {condition}\n\n\n"
                     )
+        elif skipped_checks or skipped_reactions:
+            logging.info(
+                "No collision rate violators found among the checks that could be evaluated. "
+                "%d individual checks and %d whole reactions were skipped because their rate "
+                "coefficients could not be evaluated; see the warnings above.",
+                skipped_checks, skipped_reactions,
+            )
         else:
             logging.info("No collision rate violators found in the model's core.")
 
