@@ -2960,6 +2960,30 @@ class ThermoDatabase(object):
             elif token.startswith('-'):
                 weight = -1
                 token = token[1:]
+            if token.startswith('missing(') and token.endswith(')'):
+                # RMG's own placeholder for "no matching group node found" during
+                # group-additivity estimation (e.g. exotic valences like N5dc).
+                # There's no real Entry to look up in self.groups for a fake
+                # groupType named "missing", so stand in with a bare-label Entry.
+                # Safe for uncertainty analysis: the uncorrelated
+                # ThermoParameterUncertainty.get_uncertainty_value() path (the
+                # only one this project's run_uncertainty_job.py exercises)
+                # only reads each group tuple's weight, never the entry itself.
+                # Without this, species whose GAV estimate is entirely
+                # "missing(...)" groups have zero recognized source and
+                # extract_source_from_comments raises "thermo appears to not be
+                # estimated using any methods" -- confirmed against this
+                # project's round 1 edge species H2N2(81) / [N-]=[NH2+](81).
+                group_label = token[len('missing('):-1]
+                group_entry = Entry(label=group_label)
+                if 'missing' not in groups:
+                    groups['missing'] = {group_entry: weight}
+                else:
+                    if group_entry in groups['missing']:
+                        groups['missing'][group_entry] += weight
+                    else:
+                        groups['missing'][group_entry] = weight
+                continue
             for groupType in group_types:
                 if token.startswith(groupType + '(') and token.endswith(')'):
                     split_tokens = re.split(regex, token)
