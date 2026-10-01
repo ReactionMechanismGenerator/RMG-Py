@@ -1,0 +1,1742 @@
+#!/usr/bin/env python3
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
+
+import copy
+import itertools
+import logging
+import math
+import numpy as np
+from typing import Dict, List, Optional, Union
+
+import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
+from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
+from rmgpy.solver.termination import TerminationPolymerConversion
+from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
+                                  validate_k_depropagation, validate_k_homolysis,
+                                  validate_radical_qssa_unzip,
+                                  validate_side_group_homolysis)
+from rmgpy.polymer import strip_rmg_index_suffix
+from rmgpy.species import Species
+
+
+def _base_label(label):
+    """Polymer base label: the label with ONLY a trailing RMG index suffix
+    '(<int>)' stripped (e.g. 'PS(2)' -> 'PS', 'C[CH]CC(C)C(6)' ->
+    'C[CH]CC(C)C'). Thin delegate of the ONE canonical convention,
+    rmgpy.polymer.strip_rmg_index_suffix -- the former first-'(' truncation
+    aliased SMILES-labelled species with structural parentheses onto a
+    shared base (the PP run-5 PROSPECTIVE-MASK TRIPWIRE crash)."""
+    return strip_rmg_index_suffix(label)
+
+
+class HybridPolymerReactor(ReactionSystem):
+    """
+    A biphasic reactor input specification for polymer pyrolysis and degradation simulations.
+
+    This reactor models two distinct phases: a gas phase and a polymer melt phase.
+    It couples discrete chemical species (gas and explicit oligomers) with a statistical
+    method-of-moments representation for long polymer chains.
+
+    Args:
+        temperature (Quantity): The initial temperature of the reactor (e.g. '300 K').
+        pressure (Quantity): The initial pressure of the reactor (e.g. '1 bar').
+        initialMoles (dict): A dictionary {Species: float} representing the initial composition
+                             of the GAS phase. Values are interpreted as MOLES, not mole fractions.
+        polymerPhase (PolymerPhase): Configuration object containing all properties of the polymer
+                                     melt phase (density, initial moments, pools, mass transfer).
+        terminationConversion (dict, optional): A dictionary {Species: float} or {str: float}
+                                                specifying the fractional conversion at which to
+                                                terminate the simulation (0.0 to 1.0).
+        terminationTime (Quantity, optional): The maximum time to simulate (e.g. '10 s').
+        terminationRateRatio (float, optional): The minimum ratio of production rate to consumption rate
+                                               for all core species before terminating the simulation.
+        terminationPolymerConversion (float, optional): The fractional drop (0 < f < 1) in the
+                                               defect-adjusted condensed polymer mass, summed over ALL
+                                               solver polymer pools (r86), at which to terminate.
+        sensitivity (list, optional): A list of Species objects or reaction labels to calculate
+                                      sensitivities for.
+        sensitivityThreshold (float, optional): The cutoff threshold for sensitivity analysis.
+                                                Default is 1e-3.
+        sens_conditions (dict, optional): A dictionary specifying conditions for sensitivity
+                                            analysis (e.g. {'T': 800, 'P': 1e5}).
+        constant_gas_volume (bool, optional): If True, the gas phase volume remains fixed at its
+                                              initial value calculated from T, P, and initial gas moles.
+                                              If False (default), the gas volume expands/contracts
+                                              isobarically to maintain constant Pressure.
+        allow_unpaired_reference_state (bool, optional): If True, bypass the build-time refusal on
+                                              reversible reactions whose thermo reference-state term
+                                              is unpaired (U > 3 decades); the census is still
+                                              logged. The deck author asserts their thermo handles
+                                              the melt reference state. See the invariant section
+                                              of docs/multi_pool_design.md.
+    """
+    def __init__(self,
+                 temperature,
+                 pressure,
+                 initialMoles: Dict[Species, float],
+                 polymerPhase: 'PolymerPhase',
+                 terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
+                 terminationTime: Optional[Union[Quantity, float]] = None,
+                 terminationRateRatio=None,
+                 terminationPolymerConversion: Optional[float] = None,
+                 sensitivity: Optional[List[Union[Species, str]]] = None,
+                 sensitivityThreshold: float = 1e-3,
+                 sens_conditions: Optional[Dict[str, Union[float, Quantity]]] = None,
+                 constant_gas_volume: bool = False,
+                 allow_unpaired_reference_state: bool = False,
+                 n_sims=1,
+                 ):
+        ReactionSystem.__init__(self)
+
+        if not hasattr(self, 'listeners'):
+            self.listeners = []
+
+        if type(temperature) != list:
+            self.T = Quantity(temperature)
+            self.Trange = [self.T, self.T]
+            self.temperature = Quantity(temperature)
+        else:
+            self.Trange = [Quantity(t) for t in temperature]
+            self.temperature = [Quantity(t) for t in temperature]
+
+        if type(pressure) != list:
+            self.P = Quantity(pressure)
+            self.Prange = [self.P, self.P]
+            self.pressure = Quantity(pressure)
+        else:
+            self.Prange = [Quantity(p) for p in pressure]
+            self.pressure = [Quantity(p) for p in pressure]
+
+        self.initialMoles = initialMoles
+        self.initial_mole_fractions = initialMoles
+        self.polymerPhase = polymerPhase
+        self.terminationConversion = terminationConversion
+        self.terminationTime = terminationTime
+        self.terminationRateRatio = terminationRateRatio
+        self.terminationPolymerConversion = terminationPolymerConversion
+        self.sensitivity = sensitivity
+        self.sensitive_species = list()
+        self.sensitivityThreshold = sensitivityThreshold
+        self.sens_conditions = sens_conditions
+        self.constant_gas_volume = constant_gas_volume
+        self.allow_unpaired_reference_state = allow_unpaired_reference_state
+        self.n_sims = n_sims
+        self.const_spc_names = []
+        self.solver = None
+
+    def initialize_model(self, core_species, core_reactions, edge_species, edge_reactions,
+                          surface_species=None, surface_reactions=None, pdep_networks=None,
+                          atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
+                          filter_reactions=False, conditions=None, **kwargs):
+        """
+        Standard RMG hook:
+        1. Update conditions (T, P) on the blueprint.
+        2. Create the fast Cython solver.
+        3. Delegate numerical setup to the solver.
+        """
+        # 1. Update the Blueprint (Reactor) settings based on RMG 'conditions'
+        ReactionSystem.initialize_model(self, core_species=core_species, core_reactions=core_reactions,
+                                        edge_species=edge_species, edge_reactions=edge_reactions,
+                                        surface_species=surface_species, surface_reactions=surface_reactions,
+                                        pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                        sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
+                                        conditions=conditions)
+
+        # 2. Build the Solver Engine (using the updated T/P from step 1)
+        self.solver = self.to_solver_object(core_species, core_reactions, edge_species, edge_reactions)
+        self.solver.listeners = self.listeners
+
+        # 3. Delegate ALL numerical initialization to the Solver Engine
+        result = self.solver.initialize_model(core_species=core_species, core_reactions=core_reactions,
+                                            edge_species=edge_species, edge_reactions=edge_reactions,
+                                            surface_species=surface_species, surface_reactions=surface_reactions,
+                                            pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                            sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
+                                            conditions=conditions)
+
+        # 4. Sync threshold arrays back from solver so RMG main can read them
+        self.unimolecular_threshold = self.solver.unimolecular_threshold
+        self.bimolecular_threshold = self.solver.bimolecular_threshold
+        if hasattr(self.solver, 'trimolecular_threshold') and self.solver.trimolecular_threshold is not None:
+            self.trimolecular_threshold = self.solver.trimolecular_threshold
+
+        return result
+
+    def simulate(self, core_species, core_reactions, edge_species, edge_reactions, **kwargs):
+        """
+        Run the simulation using the underlying solver.
+        pass the command to the numerical solver created in initialize()
+        """
+        n_core = len(core_species)
+        n_rxn = len(core_reactions)
+        if (self.solver is None or
+                self.solver.num_core_species != n_core or
+                self.solver.num_core_reactions != n_rxn):
+            self.initialize_model(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
+        result = self.solver.simulate(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
+
+        # Sync threshold arrays back from solver so RMG main can read them
+        self.unimolecular_threshold = self.solver.unimolecular_threshold
+        self.bimolecular_threshold = self.solver.bimolecular_threshold
+        if hasattr(self.solver, 'trimolecular_threshold') and self.solver.trimolecular_threshold is not None:
+            self.trimolecular_threshold = self.solver.trimolecular_threshold
+
+        return result
+
+    def convert_initial_keys_to_species_objects(self, species_dict):
+        """
+        Convert species labels into species objects across the reactor
+        and the associated polymer phase.
+        """
+        # 1. Convert Reactor-level initialMoles
+        # Matches your signature: initialMoles = {Species/str: float}
+        new_initial_moles = {}
+        for key, value in self.initialMoles.items():
+            if isinstance(key, str):
+                new_initial_moles[species_dict[key]] = value
+            else:
+                new_initial_moles[key] = value
+        self.initialMoles = new_initial_moles
+
+        # 2. Convert Phase-level initial_explicit
+        # The polymerPhase was initialized with labels; swap them for objects now.
+        if hasattr(self.polymerPhase, 'initial_explicit'):
+            new_explicit = {}
+            for key, value in self.polymerPhase.initial_explicit.items():
+                if isinstance(key, str):
+                    new_explicit[species_dict[key]] = value
+                else:
+                    new_explicit[key] = value
+            self.polymerPhase.initial_explicit = new_explicit
+
+        # 3. Convert Pool-level species (Monomers and Mu_species)
+        if hasattr(self.polymerPhase, 'pools'):
+            for pool in self.polymerPhase.pools:
+                # Resolve Monomer
+                if isinstance(pool.monomer, str):
+                    pool.monomer = species_dict[pool.monomer]
+
+                # Resolve Mu_species (the 3 placeholder species for moments)
+                if pool.mu_species:
+                    new_mu = []
+                    for spc in pool.mu_species:
+                        if isinstance(spc, str):
+                            new_mu.append(species_dict[spc])
+                        else:
+                            new_mu.append(spc)
+                    pool.mu_species = new_mu
+
+                # Resolve Explicit Map (Oligomers)
+                if pool.explicit_map:
+                    new_map = {}
+                    for dp, spc in pool.explicit_map.items():
+                        if isinstance(spc, str):
+                            new_map[dp] = species_dict[spc]
+                        else:
+                            new_map[dp] = spc
+                    pool.explicit_map = new_map
+
+        # 4. Handle Sensitivity (if applicable)
+        if self.sensitivity:
+            new_sens = []
+            for spec in self.sensitivity:
+                if isinstance(spec, str):
+                    new_sens.append(species_dict[spec])
+                else:
+                    new_sens.append(spec)
+            self.sensitive_species = new_sens
+
+    def to_solver_object(self, core_species, core_reactions, edge_species, edge_reactions):
+        """
+        Convert this Input settings object into a runnable Solver engine.
+        """
+
+        # 0. Create efficient lookup map (Performance: O(1) vs O(N))
+        spc_map = {spc: i for i, spc in enumerate(core_species)}
+
+        # Validate initialMoles keys
+        unknown_initials = [spc for spc in self.initialMoles if spc not in spc_map]
+        if unknown_initials:
+            raise ValueError(f"Initial moles specified for species not in core: {unknown_initials}")
+
+        # 1. Calculate Polymer Volume (Mass / Density)
+        # Note: Validates that explicit species don't exceed total distribution mass.
+        V_poly = self.polymerPhase.calculate_volume()
+
+        # 2. Identify Phases (Robust Masking)
+        # Determines which core species are Gas vs Polymer
+        gas_mask = self.polymerPhase.get_gas_mask(core_species)
+        if len(gas_mask) != len(core_species):
+            # Emergency resize if get_gas_mask returns a shorter list
+            new_mask = np.zeros(len(core_species), dtype=bool)
+            new_mask[:len(gas_mask)] = gas_mask
+            gas_mask = new_mask
+
+        # Item 17 (spec 2026-06-12 SS3(a), A5-2) stage-1 prospective seed: the
+        # SAME config-keyed classifier over chain(core, edge) -- same
+        # function, same phase object, longer list; no second classifier
+        # exists to drift. A5-2: this build-frozen seed went STALE on the
+        # engine-reuse path (the engine outlives the edge list that produced
+        # the seed), so it is now only a one-time first-build hint; the
+        # AUTHORITATIVE production source is the classifier handle passed below
+        # (prospective_classifier=self.polymerPhase.get_gas_mask), which the
+        # solver re-runs over the LIVE chain(core, edge) on every
+        # initialize_model. The solver's stage-2 pass + rider R1 (core-prefix
+        # parity raise) + R1-EDGE (edge-suffix provenance raise) complete and
+        # verify the construction at initialize_model time.
+        prospective_seed = self.polymerPhase.get_gas_mask(
+            list(core_species) + list(edge_species))
+
+        # 3. Calculate Initial Gas Volume (Headspace)
+        # Logic: Sum MOLES of species that are actually in the gas phase.
+        total_gas_moles = 0.0
+        for spc, moles in self.initialMoles.items():
+            # We already validated spc is in spc_map
+            idx = spc_map[spc]
+            if gas_mask[idx]:
+                total_gas_moles += moles
+
+        V_gas0 = None
+        if total_gas_moles > 0:
+            V_gas0 = (total_gas_moles * constants.R * self.temperature.value_si) / self.pressure.value_si
+
+        # Enforce consistency for constant volume constraint
+        if self.constant_gas_volume and (V_gas0 is None or V_gas0 <= 0):
+            raise ValueError("HybridPolymerReactor with constant_gas_volume=True requires positive initial gas moles "
+                "to define the headspace volume.")
+
+        # 4. Construct Termination Objects (Handle Species vs Label)
+        termination = list()
+        if self.terminationTime is not None:
+            termination.append(TerminationTime(self.terminationTime))
+
+        if self.terminationConversion:
+            for spec_key, conv in self.terminationConversion.items():
+                spec_obj = None
+
+                # Case A: Input is a string label
+                if isinstance(spec_key, str):
+                    matches = [s for s in core_species if getattr(s, "label", None) == spec_key]
+                    if len(matches) == 0:
+                        raise ValueError(f"TerminationConversion label '{spec_key}' not found in core species.")
+                    if len(matches) > 1:
+                        raise ValueError(f"TerminationConversion label '{spec_key}' is ambiguous (matches multiple species).")
+                    spec_obj = matches[0]
+
+                # Case B: Input is a Species object
+                else:
+                    spec_obj = spec_key
+                    if spec_obj not in spc_map:
+                        raise ValueError(f"TerminationConversion species '{spec_obj}' is not in the core species list.")
+
+                termination.append(TerminationConversion(spec_obj, conv))
+
+        if self.terminationRateRatio is not None:
+            termination.append(TerminationRateRatio(self.terminationRateRatio))
+
+        # 5. Convert Input Objects -> Solver Configs
+        # Pass spc_map to avoid re-searching the list
+        pool_configs = [p.to_config(spc_map) for p in self.polymerPhase.pools]
+        # Auto-register scission/spawn daughter pools (proxy_reaction_reality_rules.md
+        # Layer 2): daughters are registered as core Polymer species + _muN dummies by
+        # _register_polymer, but polymerPhase.pools never grows at runtime. Derive
+        # their pool configs from the live core species so their stamped
+        # SCISSION_FRAGMENT/MIGRATION flux resolves instead of demoting to UNRESOLVED.
+        static_pool_labels = {p.label for p in self.polymerPhase.pools}
+        pool_configs += derive_daughter_pool_configs(
+            core_species, spc_map, static_pool_labels,
+            edge_species=edge_species)
+
+        # r86 terminationPolymerConversion: materialize AFTER the pool
+        # configs are final (deck pools + runtime daughter pools), so the
+        # no-pool rejection sees the same pool census the metric will. The
+        # 0 < f < 1 bounds live in the TerminationPolymerConversion
+        # constructor (single chokepoint).
+        if self.terminationPolymerConversion is not None:
+            if not pool_configs:
+                raise ValueError(
+                    'terminationPolymerConversion requested but the model '
+                    'has no polymer pools (neither deck-configured pools '
+                    'nor runtime daughter pools) -- the polymer conversion '
+                    'metric would be undefined.')
+            termination.append(TerminationPolymerConversion(
+                self.terminationPolymerConversion))
+
+        mt_configs = [mt.to_config(spc_map) for mt in self.polymerPhase.mass_transfer]
+
+        # Validate indices consistent with get_gas_mask()
+        for mt_cfg in mt_configs:
+            gi = mt_cfg.gas_index
+            pi = mt_cfg.poly_index
+
+            if not gas_mask[gi]:
+                raise ValueError("MassTransfer error: gas_species mapped to non-gas by get_gas_mask().")
+            if gas_mask[pi]:
+                raise ValueError("MassTransfer error: poly_species mapped to gas by get_gas_mask().")
+
+        # 5.5. Extract Pressure-Dependent Collider Data
+        # We mirror SimpleReactor logic to ensure gas-phase P-dep reactions
+        # use efficiency-weighted effective pressure.
+        pdep_indices, pdep_kinetics, efficiencies = [], [], []
+
+        for i, rxn in enumerate(core_reactions):
+            if rxn.kinetics is not None and rxn.kinetics.is_pressure_dependent():
+                if hasattr(rxn.kinetics, 'efficiencies') and rxn.kinetics.efficiencies:
+                    pdep_indices.append(i)
+                    pdep_kinetics.append(rxn.kinetics)
+                    # Calculate efficiencies for all core species
+                    efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(core_species))
+
+        pdep_collision_indices = np.array(pdep_indices, int)
+        collider_eff = np.array(efficiencies, float)
+
+        poly_labels = set()
+        for spc in self.polymerPhase.initial_explicit.keys():
+            poly_labels.add(spc.label)
+        for pool in self.polymerPhase.pools:
+            poly_labels.add(pool.proxy_species.label)
+            for mu in pool.mu_species:
+                poly_labels.add(mu.label)
+            if pool.explicit_map:
+                for dp, spc in pool.explicit_map.items():
+                    poly_labels.add(spc.label)
+        for mt in self.polymerPhase.mass_transfer:
+            poly_labels.add(mt.poly_species.label)
+
+        # 5.7. Translate explicit-oligomer loadings to the solver's shape.
+        # The solver contract for initial_explicit_species is
+        # {pool_label: {dp: moles}} (polymer.pyx set_initial_conditions step 2
+        # looks up `pool.label in self.initial_explicit_species`). The
+        # phase-level initial_explicit dict is {Species: moles} -- dissolved
+        # gases/solvents plus any explicit-oligomer loadings -- so passing it
+        # through verbatim made the channel silently dead (a Species key never
+        # matches a str pool label). Dissolved species already receive y0
+        # through initialMoles (step 1); here we forward ONLY the oligomer
+        # loadings, keyed the way the solver reads them (the same Species-keyed
+        # moles source calculate_volume's explicit_mu1 accounting uses).
+        initial_explicit_dp = {}
+        for pool in self.polymerPhase.pools:
+            if not pool.explicit_map:
+                continue
+            dp_moles = {}
+            for dp, spc in pool.explicit_map.items():
+                moles = self.polymerPhase.initial_explicit.get(spc, 0.0)
+                if moles:
+                    dp_moles[int(dp)] = float(moles)
+            if dp_moles:
+                initial_explicit_dp[pool.label] = dp_moles
+
+        # 6. Instantiate the Numerical Engine
+        # Note: We pass 'initialMoles' to the solver's 'initial_mole_fractions' argument
+        # to satisfy the base class signature, but the solver correctly interprets them as moles.
+        solver = HybridPolymerSystem(
+            T=self.temperature.value_si,
+            P=self.pressure.value_si,
+            initial_mole_fractions=self.initialMoles,  # Passed as moles
+            V_poly=V_poly,
+            polymer_pools=pool_configs,
+            mass_transfer=mt_configs,
+            polymer_species_labels=poly_labels,
+            gas_species_mask=gas_mask,
+            prospective_gas_mask=prospective_seed,
+            # A5-2: the authoritative production source for stage 1 -- the
+            # solver re-runs this over the LIVE chain(core, edge) on every
+            # initialize_model (base.pyx:simulate already calls
+            # initialize_model with the live edge), so the frozen seed above
+            # can never go stale and silently demote the build to the
+            # edge-defaults-GAS fallback. Production builds are held to the
+            # stage-1 contract (allow_default_prospective_edge left default
+            # False -> R1-EDGE raises if the fallback ever fires here).
+            prospective_classifier=self.polymerPhase.get_gas_mask,
+            # Spec 2026-06-29: the live edge-daughter condensed-mask predicate.
+            # Bound method re-run over chain(core, edge) every initialize_model
+            # (callable, never frozen -> no stale-set hazard).
+            prospective_condensed_edge_daughter_classifier=self.polymerPhase.get_condensed_edge_daughter_bases,
+            constant_gas_volume=self.constant_gas_volume,
+            V_gas0=V_gas0,
+            initial_polymer_moments=self.polymerPhase.initial_moments,
+            initial_explicit_species=initial_explicit_dp,
+            termination=termination,
+            sensitive_species=self.sensitive_species,
+            sensitivity_threshold=self.sensitivityThreshold,
+            sens_conditions=self.sens_conditions,
+            const_spc_names=self.const_spc_names,
+            pdep_collision_reaction_indices=pdep_collision_indices,
+            pdep_collider_kinetics=pdep_kinetics,
+            collider_efficiencies=collider_eff,
+            allow_unpaired_reference_state=self.allow_unpaired_reference_state,
+            # Round-20 increment 7 plumbing (Codex round-22 P1): the deck's
+            # filterThreshold reaches this reactor as an attribute stamped
+            # by RMG.initialize (rmgpy/rmg/main.py) -- forward it so the
+            # census-only QSSA k_out policy really is
+            # max(filterThreshold, 1/terminationTime), not the bare
+            # 1/terminationTime fallback. Default 0.0 = no deck floor.
+            qssa_kout_floor_s=float(
+                getattr(self, "qssa_kout_floor_s", 0.0) or 0.0),
+        )
+
+        solver.V = (V_gas0 if V_gas0 is not None else 0.0) + V_poly
+
+        species_to_pool = np.full(len(core_species), -1, dtype=np.int32)
+
+        for p_idx, pool in enumerate(self.polymerPhase.pools):
+            proxy = getattr(pool, "proxy_species", None)
+            if proxy is None:
+                continue
+            # Find the RMG Species object that acts as the proxy for this pool
+            try:
+                s_idx = core_species.index(proxy)
+                species_to_pool[s_idx] = p_idx
+            except ValueError:
+                continue
+
+        solver.species_to_pool_indices = species_to_pool
+
+        return solver
+
+    def set_colliders(self, core_reactions, edge_reactions, core_species):
+        """
+        Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
+        and store specific collider indices
+        """
+        pdep_collider_reaction_indices = []
+        self.pdep_collider_kinetics = []
+        collider_efficiencies = []
+        pdep_specific_collider_reaction_indices = []
+        self.pdep_specific_collider_kinetics = []
+        self.specific_collider_species = []
+
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            if rxn.kinetics.is_pressure_dependent():
+                if rxn.kinetics.efficiencies:
+                    j = self.reaction_index[rxn]
+                    pdep_collider_reaction_indices.append(j)
+                    self.pdep_collider_kinetics.append(rxn.kinetics)
+                    collider_efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(core_species))
+                if rxn.specific_collider:
+                    pdep_specific_collider_reaction_indices.append(self.reaction_index[rxn])
+                    self.pdep_specific_collider_kinetics.append(rxn.kinetics)
+                    self.specific_collider_species.append(rxn.specific_collider)
+
+        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, int)
+        self.collider_efficiencies = np.array(collider_efficiencies, float)
+        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, int)
+
+    def generate_rate_coefficients(self, core_reactions, edge_reactions):
+        """
+        Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
+        and equilibrium constants (Keq) arrays with the values computed at the temperature
+        and (effective) pressure of the reaction system.
+        """
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
+            Peff = self.calculate_effective_pressure(rxn)
+            self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, Peff)
+
+            if rxn.reversible:
+                self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
+                self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                self.kb[j] = 0.0
+                self.Keq[j] = np.inf
+
+    def calculate_effective_pressure(self, rxn):
+        """
+        Computes the effective pressure for a reaction as:
+
+        .. math:: P_{eff} = P * \\sum_i \\frac{y_i * eff_i}{\\sum_j y_j}
+
+        with:
+            - P the pressure of the reactor,
+            - y the array of initial moles of the core species
+
+        or as:
+
+        .. math:: P_{eff} = \\frac{P * y_{specific_collider}}{\\sum_j y_j}
+
+        if a specific_collider is mentioned.
+        """
+
+        y0_core_species = self.y0[:self.num_core_species]
+        sum_core_species = np.sum(y0_core_species)
+
+        j = self.reaction_index[rxn]
+        for i in range(self.pdep_collision_reaction_indices.shape[0]):
+            if j == self.pdep_collision_reaction_indices[i]:
+                # Calculate effective pressure
+                if rxn.specific_collider is None:
+                    Peff = self.P.value_si * np.sum(self.collider_efficiencies[i] * y0_core_species / sum_core_species)
+                else:
+                    Peff = self.P.value_si * self.y0[self.species_index[rxn.specific_collider]] / sum_core_species
+                return Peff
+        return self.P.value_si
+
+
+class PolymerPhase(object):
+    """
+    Input container for polymer phase properties.
+    """
+
+    def __init__(self,
+                 density,
+                 initial_moments,
+                 initial_explicit,
+                 pools,
+                 mass_transfer=None,
+                 ):
+        self.density = density
+        self.initial_moments = initial_moments
+        self.initial_explicit = initial_explicit
+        self.pools = pools
+        self.mass_transfer = mass_transfer or list()
+
+    def calculate_volume(self):
+        """
+        Calculates V_poly = Mass_total / Density.
+
+        Mass Logic:
+        Mass_total = Mass(Explicit Species) + Mass(Tails)
+
+        Note: If initial_explicit contains non-polymer species (e.g. dissolved gases),
+        their mass contributes to the total phase volume. This assumes 'density'
+        refers to the mixture density.
+
+        FR1-K2 mass audit note (round-72 P2): the tail term
+        ``mu1 * monomer_mw`` is deliberately NOT defect-aware. This is a
+        t=0 computation over the DECK pools' declared initial_moments;
+        X-loss feature pools (chain_mass_defect_g_mol > 0) are
+        producer-spawned born-at-zero daughters, never deck pools with
+        initial_moments, so their defect term (mu0 * defect) is exactly
+        0.0 at the only instant this runs -- and V_poly is constant
+        thereafter by contract.
+        """
+        total_mass_kg = 0.0
+
+        # 1. Add Mass of Explicit Species (Directly)
+        for species, moles in self.initial_explicit.items():
+            # species.molecular_weight.value_si is in kg/molecule
+            total_mass_kg += float(moles) * species.molecular_weight.value_si * constants.Na
+
+        # 2. Add Mass of Tails
+        for pool in self.pools:
+            label = pool.label
+            if label not in self.initial_moments:
+                continue
+
+            # Validate Moment Array Shape
+            moments = self.initial_moments[label]
+            if len(moments) < 2:
+                raise ValueError(f"Pool '{label}': initial_moments must provide at least (mu0, mu1).")
+
+            mu0, mu1 = moments[0], moments[1]
+
+            if not pool.monomer:
+                if mu1 > 1e-9:
+                    raise ValueError(f"Pool '{label}' has moments but no monomer defined.")
+                continue
+
+            monomer_mw = pool.monomer.get_molecular_weight()  # kg/mol
+
+            # Calculate explicit contribution to Mu1
+            explicit_mu1 = 0.0
+            if pool.explicit_map:
+                for n_dp, spc in pool.explicit_map.items():
+                    if spc in self.initial_explicit:
+                        explicit_mu1 += float(n_dp) * float(self.initial_explicit[spc])
+
+            # Sanity Check: Explicit mass cannot exceed Total mass
+            tail_mu1 = mu1 - explicit_mu1
+            if tail_mu1 < -1e-12:
+                raise ValueError(
+                    f"Polymer pool '{label}': Explicit mass (mu1={explicit_mu1:.3e}) exceeds "
+                    f"Total defined moments (mu1={mu1:.3e}). Check inputs."
+                )
+
+            total_mass_kg += max(0.0, tail_mu1) * monomer_mw
+
+        rho_kg_m3 = self.density.value_si
+        if rho_kg_m3 <= 0.0:
+            raise ValueError(f"Polymer density must be positive, got {rho_kg_m3}.")
+
+        return total_mass_kg / rho_kg_m3
+
+    def get_gas_mask(self, core_species) -> np.ndarray:
+        """
+        Returns boolean array (True=Gas, False=Polymer).
+        Uses ID checks with Label fallback for robustness against species copying.
+        Warns if duplicate labels prevent reliable fallback.
+        """
+        poly_ids = set()
+        poly_labels = set()
+
+        def register(spc):
+            if spc:
+                poly_ids.add(id(spc))
+                if hasattr(spc, 'label') and spc.label:
+                    poly_labels.add(spc.label)
+
+        # A. Explicit Initials — register only species that are genuinely
+        #    polymer-phase. initial_explicit also holds gas-phase solvents and
+        #    dissolved gases (e.g. N2).
+        #
+        #    The is_polymer_proxy tag MUST NOT be used as the discriminator
+        #    here: family.py:1657 blanket-stamps it onto EVERY structure of a
+        #    proxy-touching reaction, and model.py:486 propagates the tag to the
+        #    Species. A gas solvent that merely reacts with the proxy therefore
+        #    acquires is_polymer_proxy=True during reaction generation -- AFTER
+        #    the build-time gas_species_mask was computed but BEFORE the solver
+        #    rebuilds the prospective mask. Keying section A on that mutable tag
+        #    makes the SAME core species (e.g. N2) classify GAS at build and
+        #    CONDENSED at simulate, which is exactly the divergence RIDER R1
+        #    (solver/polymer.pyx) raises on.
+        #
+        #    is_moment_dummy is set once at species creation (model.py:387) and
+        #    is never propagated, so it is the stable polymer-phase marker.
+        #    Genuine proxies / monomers / explicit oligomers / mu-species are
+        #    registered structurally in sections B/C below and condensed by the
+        #    pool-label override pass, independent of the mutable tag.
+        for spc in self.initial_explicit.keys():
+            if getattr(spc, 'is_moment_dummy', False):
+                register(spc)
+
+        # B. Pool Definitions
+        for pool in self.pools:
+            register(pool.monomer)
+            if pool.explicit_map:
+                for spc in pool.explicit_map.values():
+                    register(spc)
+            if pool.mu_species:
+                for spc in pool.mu_species:
+                    register(spc)
+
+        # C. Mass Transfer
+        for mt in self.mass_transfer:
+            register(mt.poly_species)
+
+        # Check for Label Ambiguity in Core Species
+        core_labels = [getattr(s, "label", None) for s in core_species]
+        core_labels = [lab for lab in core_labels if lab]
+        label_fallback_safe = (len(core_labels) == len(set(core_labels)))
+
+        mask = np.ones(len(core_species), dtype=bool)
+        for i, spc in enumerate(core_species):
+            # Check ID match
+            if id(spc) in poly_ids:
+                mask[i] = False
+            # Check Label match (only if safe)
+            elif label_fallback_safe and (spc.label and spc.label in poly_labels):
+                mask[i] = False
+
+        # D. H-loss radical daughters of configured condensed pool proxies
+        #    (P1-A core-mask extension, ratified 2026-07-03). The SAME narrow
+        #    qualifier the solver applies to edge slots
+        #    (get_h_loss_radical_daughter_bases -- ONE predicate, never
+        #    duplicated): once such a daughter is PROMOTED TO CORE it must
+        #    keep its condensed classification here too, or static Gate B
+        #    zeroes its core production rows and regeneration stalls one
+        #    step after promotion. Gas products, volatile fragments,
+        #    spawned proxies and gas-vetoed species are unaffected (the
+        #    predicate rejects them); R1 core-prefix parity holds because
+        #    the combined-list stage-1 classifier is this same method.
+        h_loss_bases = self.get_h_loss_radical_daughter_bases(core_species)
+        if h_loss_bases:
+            for i, spc in enumerate(core_species):
+                label = getattr(spc, "label", None)
+                if label and _base_label(label) in h_loss_bases:
+                    mask[i] = False
+
+        return mask
+
+    def get_condensed_edge_daughter_bases(self, combined_species) -> set:
+        """Return the set of BASE labels of qualifying polymer daughters in
+        ``combined_species`` (chain(core, edge)). Two qualifying branches:
+
+        1. Spawned Polymer daughters (spec 2026-06-29): a Polymer,
+           is_polymer_proxy, base NOT a static-deck pool label, and a
+           complete {base}_mu0/_mu1/_mu2 moment-dummy triplet (each with
+           is_moment_dummy=True) present in combined_species.
+
+        2. H-loss radical daughters of configured condensed pool proxies
+           (ratified 2026-07-03, PP thin-core fix: Gate B zeroed every
+           proxy H-abstraction because ordinary radical daughters could
+           never qualify, so the PP core could not grow). A plain Species
+           qualifies ONLY when ALL hold:
+             (i)   it is a plain Species (NOT a Polymer proxy -- those go
+                   through branch 1 exclusively);
+             (ii)  it is radical-bearing and neutral;
+             (iii) it has the same non-H element composition (heavy-atom
+                   skeleton) as a configured condensed pool proxy;
+             (iv)  it differs from that proxy by H-loss only
+                   (H_proxy - H_daughter == its radical count >= 1,
+                   e.g. C9H20 -> C9H19*);
+             (v)   it is NOT durably gas-vetoed
+                   (POLYMER_REFERENCE_STATE_GAS_VETO_KEY) -- and smaller
+                   scission/volatile fragments are structurally excluded
+                   by (iii).
+           MW-window-alone qualification is explicitly REJECTED:
+           near-monomer volatiles (e.g. alpha-methylstyrene) would
+           misclassify. Physically an H-abstracted chain proxy IS a
+           condensed-phase radical; classifying it prospectively condensed
+           lets Gate B pass its REAL flux instead of zeroing it.
+
+        Spec 2026-06-29. Recomputed by the solver over the LIVE combined list on
+        every initialize_model (callable, never a frozen set) -- mirrors
+        prospective_classifier so it cannot go stale on the engine-reuse path.
+        The solver restricts APPLICATION to edge slots; this predicate is
+        base-level. is_moment_dummy is the stable marker; is_polymer_proxy is
+        over-stamped (family.py:1657) and never gates alone."""
+        # local imports: avoid an import cycle
+        from rmgpy.polymer import Polymer, has_polymer_gas_veto
+
+        static_pool_labels = {p.label for p in self.pools}
+
+        # Index the confirmed moment-dummy universe: (base, k) present iff a
+        # species labelled "{base}_mu{k}" carries is_moment_dummy=True.
+        present = {}
+        for spc in combined_species:
+            label = getattr(spc, "label", None)
+            if not label:
+                continue
+            for k in (0, 1, 2):
+                suffix = "_mu%d" % k
+                if label.endswith(suffix) and getattr(spc, "is_moment_dummy", False):
+                    raw = label[:-len(suffix)]
+                    present[(_base_label(raw), k)] = True
+
+        qualifying = set()
+        for spc in combined_species:
+            if not isinstance(spc, Polymer):
+                continue
+            if not getattr(spc, "is_polymer_proxy", False):
+                continue
+            base = _base_label(spc.label)
+            if base in static_pool_labels:
+                continue
+            if all(present.get((base, k), False) for k in (0, 1, 2)):
+                qualifying.add(base)
+
+        # --- Branch 2: H-loss radical daughters (ratified 2026-07-03) ---
+        # ONE predicate, shared with the CORE mask path (get_gas_mask) so a
+        # qualifying daughter classifies consistently in core and edge.
+        qualifying |= self.get_h_loss_radical_daughter_bases(combined_species)
+
+        return qualifying
+
+    def get_h_loss_radical_daughter_bases(self, species_list) -> set:
+        """The NARROW H-loss radical-daughter qualifier (ratified 2026-07-03,
+        branch 2 of get_condensed_edge_daughter_bases -- see its docstring
+        for conditions (i)-(v) and the rationale). Returns the set of BASE
+        labels of plain-Species members of ``species_list`` that are
+        prospectively condensed H-loss radical daughters of a configured
+        condensed pool proxy.
+
+        SINGLE SOURCE for the qualifier: called by
+        get_condensed_edge_daughter_bases (edge-slot application in the
+        solver) AND by get_gas_mask (core mask construction, P1-A core-mask
+        extension 2026-07-03) -- a qualifying daughter promoted to core must
+        classify CONDENSED there too, or static Gate B zeroes its core
+        production rows and regeneration stalls one step after promotion
+        (R1 core-prefix parity holds because both masks derive from the
+        same predicate)."""
+        # local imports: avoid an import cycle
+        from rmgpy.polymer import (Polymer, has_polymer_gas_veto,
+                                   is_h_loss_radical_daughter)
+
+        static_pool_labels = {p.label for p in self.pools}
+
+        def _element_counts(spc):
+            mols = getattr(spc, "molecule", None) or []
+            if not mols or mols[0] is None:
+                return None
+            try:
+                return mols[0].get_element_count()
+            except Exception:
+                return None
+
+        # Composition universe of the CONFIGURED condensed pool proxies:
+        # the live core proxy carrying the pool's base label (exactly the
+        # species the solver's stage-2 override condenses), plus any
+        # explicitly-configured proxy_species.
+        proxy_comps = []
+        for spc in species_list:
+            if isinstance(spc, Polymer) or getattr(spc, "is_moment_dummy", False):
+                continue
+            label = getattr(spc, "label", None)
+            if label and _base_label(label) in static_pool_labels:
+                comp = _element_counts(spc)
+                if comp:
+                    proxy_comps.append(comp)
+        for pool in self.pools:
+            comp = _element_counts(getattr(pool, "proxy_species", None))
+            if comp:
+                proxy_comps.append(comp)
+
+        qualifying = set()
+        if proxy_comps:
+            for spc in species_list:
+                if isinstance(spc, Polymer):        # (i): branch 1 only
+                    continue
+                if getattr(spc, "is_moment_dummy", False):
+                    continue
+                label = getattr(spc, "label", None)
+                base = _base_label(label) if label else ""
+                if not base or base in static_pool_labels or base in qualifying:
+                    continue
+                mols = getattr(spc, "molecule", None) or []
+                if not mols or mols[0] is None:
+                    continue
+                if has_polymer_gas_veto(spc):       # (v)
+                    continue
+                # (ii)+(iii)+(iv): the shared structural core
+                # (rmgpy.polymer.is_h_loss_radical_daughter) -- ONE
+                # predicate, also consumed by the handshake veto scoping
+                # (_handshake_structures, family.py, which additionally
+                # requires the chain-window MW conjunct before exempting a
+                # refused product from the durable gas veto); never
+                # duplicated.
+                if is_h_loss_radical_daughter(mols[0], proxy_comps):
+                    qualifying.add(base)
+
+        return qualifying
+
+
+class PolymerPhaseBlueprint(object):
+    """Temporary container for input file settings."""
+    def __init__(self,
+                 label: str,
+                 species: List[str],
+                 solvent: str,
+                 density: Union[float, tuple] = (1000.0, 'kg/m^3'),
+                 mass_transfer: Optional[List['MassTransfer']] = None,
+                 ):
+        self.label = label
+        self.species_labels = species
+        self.solvent_label = solvent
+        self.density = density
+        self.mass_transfer = mass_transfer or list()
+
+
+def polymer_phase(label: str,
+                  species: List[str],
+                  solvent: str,
+                  density: Union[float, tuple] = (1000.0, 'kg/m^3'),
+                  mass_transfer: Optional[List['MassTransfer']] = None):
+    """
+    Input file helper to define the polymer phase contents.
+    Returns a blueprint that hybrid_polymer_reactor will compile into a real PolymerPhase.
+
+    Args:
+        mass_transfer (Optional[List[MassTransfer]]): MassTransfer objects describing
+            gas <-> polymer-melt transport for dissolved species. Defaults to an empty list.
+    """
+    return PolymerPhaseBlueprint(label, species, solvent, density, mass_transfer)
+
+
+def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
+                          initial_moles: Dict[Species, float],
+                          species_dict: Dict[str, Species]) -> PolymerPhase:
+    """
+    Converts a Blueprint + Initial Conditions into a fully realized PolymerPhase object.
+    Calculates moments, generates pools, and maps species.
+    """
+    # If the user somehow passed a ready-made object, return it.
+    if not isinstance(blueprint, PolymerPhaseBlueprint):
+        return blueprint
+
+    # A. Resolve Density
+    rho = Quantity(blueprint.density)
+
+    # B. Resolve Phase Species
+    phase_species_set = set()
+    for label in blueprint.species_labels:
+        if label not in species_dict:
+            raise ValueError(f"PolymerPhase species '{label}' not defined in species block.")
+        phase_species_set.add(species_dict[label])
+
+    # B2. Validate Mass Transfer definitions
+    mass_transfer = blueprint.mass_transfer or list()
+    for mt in mass_transfer:
+        if not isinstance(mt, MassTransfer):
+            raise ValueError(
+                f"PolymerPhase mass_transfer must contain MassTransfer objects, got {type(mt).__name__}.")
+
+    # C. Compile State
+    initial_moments = {}
+    initial_explicit = {}
+    pools = []
+
+    for spc, moles in initial_moles.items():
+        # Skip if this species isn't in the polymer phase list
+        if spc not in phase_species_set:
+            continue
+
+        # Check for Polymer Type
+        # We assume the Species object was enriched with polymer attributes in Phase 1
+        if hasattr(spc, 'Mn') and hasattr(spc, 'monomer'):
+            # --- CALCULATE MOMENTS ---
+            if hasattr(spc, 'monomer_mw_g_mol'):
+                monomer_mw = spc.monomer_mw_g_mol / 1000.0
+            else:
+                # Fallback: Calculate from graph
+                monomer_mw = spc.monomer.get_molecular_weight().value_si
+
+            # Create distinct dummy species for moments
+            mu0_spc = species_dict[f"{spc.label}_mu0"]
+            mu1_spc = species_dict[f"{spc.label}_mu1"]
+            mu2_spc = species_dict[f"{spc.label}_mu2"]
+            for m_spc in [mu0_spc, mu1_spc, mu2_spc]:
+                if m_spc.label not in species_dict:
+                    species_dict[m_spc.label] = m_spc
+
+            mu0 = moles
+            mn_kg = spc.Mn / 1000.0
+            mw_kg = spc.Mw / 1000.0
+
+            dp_n = mn_kg / monomer_mw
+            dp_w = mw_kg / monomer_mw
+
+            mu1 = mu0 * dp_n
+            mu2 = mu1 * dp_w
+
+            initial_moments[spc.label] = (mu0, mu1, mu2)
+
+            # --- Single source of truth for the t=0 moment state ---
+            # initialMoles[proxy] is authoritative for mu0: it is what the
+            # solver actually integrates as y0. The Polymer object's .moments,
+            # by contrast, are what write_polymer_pools_sidecar serializes
+            # (it reads Polymer.moments). If we leave .moments at its
+            # distribution-derived value (initial_mass/Mn), the sidecar would
+            # report a t=0 state the solver never simulated. Reconcile here so
+            # the report MIRRORS the engine: the sidecar reports exactly the
+            # moments the solver integrates.
+            spc.moments = np.array([mu0, mu1, mu2], dtype=np.float64)
+
+            # Warn if the pool's stated loading (initial_mass/Mn) implies a
+            # different chain count (mu0) than initialMoles. Both are valid
+            # ways to state the t=0 amount, but they must agree; if they don't,
+            # the solver silently honors initialMoles and the initial_mass +
+            # Mn/Mw in the deck misrepresent the simulated state.
+            initial_mass_g = getattr(spc, 'initial_mass_g', None)
+            if initial_mass_g and spc.Mn:
+                mu0_from_mass = initial_mass_g / spc.Mn
+                if abs(mu0_from_mass - mu0) > 1e-6 * max(abs(mu0_from_mass), abs(mu0)):
+                    logging.warning(
+                        "Polymer pool '%s': initial_mass/Mn implies mu0=%g chains, but "
+                        "initialMoles gives mu0=%g. These disagree; the solver integrates "
+                        "the initialMoles value (mu0=%g) and the sidecar mirrors it. "
+                        "Reconcile initial_mass/Mn/Mw with initialMoles in the input deck.",
+                        spc.label, mu0_from_mass, mu0, mu0)
+
+            # Explicit-DP handshake (stage A): the deck flag explicit_dp=True
+            # (input.py polymer() step 4c) auto-generated exactly ONE capped
+            # oligomer at DP == cutoff (xs) and registered it as a real core
+            # species. Wire it into the pool's explicit_map so
+            # PolymerPhase.get_gas_mask condenses it (section B) and
+            # PolymerPool.to_config resolves explicit_dp_to_species_index =
+            # {xs: core index}. No ladder in v1: exactly one entry, at the
+            # cutoff. Flag OFF keeps the map {} -- byte-identical to the
+            # legacy (structurally inert) behavior.
+            explicit_map = {}
+            if getattr(spc, 'explicit_dp', False):
+                dp_spc = getattr(spc, 'explicit_dp_species', None)
+                if dp_spc is None:
+                    # HARD ERROR, never silent: a flag with no species would
+                    # recreate the inert feature (empty map, dead handshake).
+                    raise ValueError(
+                        f"Polymer pool '{spc.label}': explicit_dp=True but no "
+                        f"auto-generated DP={spc.cutoff} oligomer species is "
+                        f"attached (explicit_dp_species is None) -- the "
+                        f"explicit-DP handshake would be silently inert. The "
+                        f"species is created by the polymer() input block when "
+                        f"explicit_dp=True; a pool cannot enable the flag "
+                        f"without it.")
+                explicit_map = {int(spc.cutoff): dp_spc}
+
+            # Create Pool Config
+            pool = PolymerPool(
+                label=spc.label,
+                xs=spc.cutoff,
+                monomer=spc.monomer,
+                explicit_map=explicit_map,
+                mu_species=[mu0_spc, mu1_spc, mu2_spc],
+                k_scission=spc.k_scission,
+                k_unzip=spc.k_unzip,
+                proxy_species=spc,
+                monomer_product=getattr(spc, 'monomer_product_species', None),
+                radical_qssa_unzip=getattr(spc, 'radical_qssa_unzip', None),
+                k_homolysis=getattr(spc, 'k_homolysis', None),
+                side_group_homolysis=getattr(spc, 'side_group_homolysis',
+                                             None),
+                side_group_gas_species=getattr(spc, 'side_group_gas_species',
+                                               None),
+            )
+            pools.append(pool)
+        else:
+            # Standard Solvents / Dissolved Gases
+            initial_explicit[spc] = moles
+
+    # D. Instantiate Real Object
+    return PolymerPhase(
+        density=rho,
+        initial_moments=initial_moments,
+        initial_explicit=initial_explicit,
+        pools=pools,
+        mass_transfer=mass_transfer
+    )
+
+
+class PolymerPool(object):
+    """
+    Input class for defining a polymer pool configuration.
+
+    This class configures the hybrid Method of Moments (HMOM) representation for a
+    specific polymer type (e.g., Polyethylene, Polystyrene). It defines the boundary
+    between explicit oligomers and the statistical tail, as well as the kinetic
+    parameters driving the distribution dynamics.
+
+    Args:
+        label (str): A unique name for this polymer pool (e.g., 'PE', 'PS').
+                     Used for logging and identification.
+        xs (int): The hybrid cutoff index. Chains with length n <= xs are treated as
+                  explicit chemical species. Chains with n > xs are tracked statistically
+                  via moments.
+        monomer (Species): The RMG Species object representing the monomer unit.
+                           Used to calculate molecular weights and mass balances.
+        explicit_map (Dict[int, Species]): A dictionary mapping degree of polymerization (DP)
+                                           to explicit Species objects.
+                                           Format: {1: Monomer, 2: Dimer, ..., xs: Oligomer_xs}.
+        mu_species (List[Species]): A list of exactly three Species objects representing the
+                                    statistical moments [Mu0, Mu1, Mu2]. These are placeholder
+                                    species used by the solver to track the moment values.
+        k_scission (float, optional): The random scission rate coefficient [1/s].
+                                      Defaults to 0.0.
+        k_unzip (float, optional): The chain-end scission (unzipping) rate coefficient [1/s].
+                                   This parameter drives the physical flux ('handshake')
+                                   from the statistical tail into the explicit oligomers.
+                                   Defaults to 0.0.
+        radical_qssa_unzip (dict, optional): Radical QSSA unzip channel config
+                                   (initiation/depropagation/termination Arrhenius
+                                   triplets {A, n, Ea} -- SI convention: A [s^-1]
+                                   unimolecular, [m^3 mol^-1 s^-1] bimolecular
+                                   termination, Ea [J/mol] -- plus optional
+                                   transfer triplet (A [s^-1], PSEUDO-first-order:
+                                   ktr multiplies the active-end concentration R
+                                   directly in the rate law; premultiply a
+                                   literature bimolecular k_tr by the substrate
+                                   concentration [mol/m^3] before configuring
+                                   it), efficiency, monomer_yield, basis). Validated + normalized in to_config
+                                   via validate_radical_qssa_unzip. Requires a
+                                   resolvable monomer_product and is mutually
+                                   exclusive with k_unzip > 0. M1: stored on the
+                                   solver config but inert (no RHS reads it
+                                   until the M2 rate law). Also accepts the
+                                   weak-link allyl/U-state vocabulary
+                                   (schema-2.2, all-or-nothing group:
+                                   initiation_allyl, termination_recombination,
+                                   termination_disproportionation,
+                                   unsaturated_tail_ends_initial [mol, >= 0];
+                                   legacy summed termination must then be
+                                   ABSENT -- see validate_radical_qssa_unzip;
+                                   the solver refuses weak-link configs until
+                                   its rate law lands). Defaults to None.
+    """
+    def __init__(self,
+                 label: str,
+                 xs: int,
+                 monomer: Species,
+                 explicit_map: Dict[int, Species],
+                 mu_species: List[Species],
+                 k_scission: float = 0.0,
+                 k_unzip: float = 0.0,
+                 proxy_species: Optional[Species] = None,
+                 monomer_product: Optional[Species] = None,
+                 radical_qssa_unzip: Optional[dict] = None,
+                 k_homolysis: Optional[dict] = None,
+                 side_group_homolysis: Optional[list] = None,
+                 side_group_gas_species: Optional[List[Species]] = None,
+                 ):
+        self.label = label
+        self.xs = xs
+        self.monomer = monomer
+        self.explicit_map = explicit_map
+        self.mu_species = mu_species
+        self.k_scission = k_scission
+        self.k_unzip = k_unzip
+        self.proxy_species = proxy_species
+        # Real reactive GAS species (e.g. styrene) that chain-unzip releases
+        # into the gas phase (incident 2026-07-03: release = direct
+        # devolatilization). Distinct from `monomer` (the repeat-unit
+        # Molecule used for mass).
+        self.monomer_product = monomer_product
+        self.radical_qssa_unzip = radical_qssa_unzip
+        # Radical-homolysis initiation kernel (Stage 1, round 66): Arrhenius
+        # triplet {A, n, Ea} (SI: A [s^-1], Ea [J/mol]) or None. Validated +
+        # normalized in to_config via validate_k_homolysis; mutually
+        # exclusive with k_scission > 0, with radical_qssa_unzip, and (round
+        # 67) with k_unzip > 0.
+        self.k_homolysis = k_homolysis
+        # Side-group homolysis initiation kernel (FR1-K1, round 70): LIST
+        # of channel dicts or None. Validated + normalized in to_config via
+        # validate_side_group_homolysis; mutually exclusive with k_unzip > 0
+        # and with radical_qssa_unzip (MAY coexist with k_homolysis /
+        # k_scission -- different bonds). side_group_gas_species is the
+        # aligned list of registered gas X-radical Species (one per channel,
+        # rmgpy/rmg/input.py step 4e); to_config resolves their core
+        # indices into side_group_gas_indices.
+        self.side_group_homolysis = side_group_homolysis
+        self.side_group_gas_species = side_group_gas_species
+
+    def to_config(self, spc_map):
+        """
+        Converts Input Object -> Solver Config (resolving indices using pre-built map).
+        """
+        # 1. Resolve Explicit Map Indices
+        explicit_indices = dict()
+        if self.explicit_map:
+            for dp, spc in self.explicit_map.items():
+                if dp > self.xs:
+                    raise ValueError(f"Pool '{self.label}': explicit_map contains DP={dp} > xs={self.xs}.")
+
+                if spc in spc_map:
+                    explicit_indices[dp] = spc_map[spc]
+                else:
+                    raise ValueError(f"Pool {self.label}: Explicit species for DP={dp} ({spc}) not in core species.")
+
+        # 2. Resolve Moment Indices
+        if len(self.mu_species) != 3:
+            raise ValueError(f"Pool {self.label}: mu_species must contain exactly 3 species objects.")
+
+        try:
+            mu_idxs = tuple(spc_map[s] for s in self.mu_species)
+        except KeyError as e:
+            raise ValueError(f"Pool {self.label}: Moment species {e} missing from core list.")
+
+        # 3. Resolve Monomer Index
+        # The released-monomer target must be a real core Species. `self.monomer`
+        # is the repeat-unit Molecule (never a key in the Species-keyed spc_map),
+        # so resolve from `monomer_product` when provided.
+        monomer_idx = None
+        if self.monomer_product is not None:
+            monomer_idx = spc_map.get(self.monomer_product)
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {self.label}: monomer_product {self.monomer_product} not in core species; "
+                    f"cannot wire unzip-to-monomer release.")
+
+        # HARD ERROR: a non-finite k_unzip/k_scission is not a valid rate
+        # constant. NaN passes BOTH the `< 0` and `> 0` gates as False, so
+        # it would make the channel SILENTLY INERT (a laundered no-op); inf
+        # poisons the residual. Config assembly is the last generation-side
+        # point before the solver; refuse here even with routing wired.
+        for _rate_name, _rate_val in (("k_unzip", self.k_unzip),
+                                      ("k_scission", self.k_scission)):
+            if not math.isfinite(_rate_val):
+                raise ValueError(
+                    f"Pool {self.label}: {_rate_name}={_rate_val!r} is not "
+                    f"finite -- NaN/inf is not a valid rate constant (NaN "
+                    f"would silently disable the channel; inf would poison "
+                    f"the residual). Set {_rate_name} to a finite value >= 0.")
+
+        # HARD ERROR: a negative k_unzip is not a valid rate constant. Every
+        # downstream unzip consumer is gated on k_unzip > 0, so a negative
+        # value would silently become an inert channel instead of failing --
+        # and a wired monomer_product must not dodge the sign check.
+        if self.k_unzip < 0.0:
+            raise ValueError(
+                f"Pool {self.label}: k_unzip={self.k_unzip:g} is negative -- a "
+                f"negative k_unzip is not a valid rate constant. Set k_unzip >= 0.")
+
+        # HARD ERROR: k_unzip > 0 with no resolvable monomer emission target.
+        # The solver drains the condensed moments unconditionally when
+        # k_unzip > 0 (polymer.pyx: dmu1_dt -= k_unzip*mu0) but only emits the
+        # released monomer when monomer_poly_index is not None -- so this
+        # config shape would silently un-conserve mass (the drained repeat
+        # units go nowhere). Refuse at configuration time, before the solver.
+        if self.k_unzip > 0.0 and monomer_idx is None:
+            raise ValueError(
+                f"Pool {self.label}: k_unzip={self.k_unzip:g} > 0 but no monomer_product "
+                f"is defined for this pool. The unzip channel would drain the condensed "
+                f"moments (mu1/mu2) with no released-monomer emission target, leaving "
+                f"mass silently un-conserved. Define monomer_product (the real monomer "
+                f"species released on unzip) or set k_unzip=0.")
+
+        # Radical-QSSA unzip channel (M1: config + validation only; nothing in
+        # the solver residual reads it until the M2 rate law). Normalize +
+        # validate the dict shape (field rules live in
+        # validate_radical_qssa_unzip, the shared single source of truth),
+        # then enforce the two cross-invariants this layer can resolve:
+        # a released-monomer emission target must exist (the channel reuses
+        # the pool's existing monomer_product routing -- no new routing
+        # field), and the channel is mutually exclusive with the lumped
+        # k_unzip representation (double-count guard).
+        qssa_channel = None
+        if self.radical_qssa_unzip is not None:
+            qssa_channel = validate_radical_qssa_unzip(self.label, self.radical_qssa_unzip)
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {self.label}: radical_qssa_unzip is configured but no "
+                    f"monomer_product resolves for this pool. The QSSA unzip channel "
+                    f"releases monomer through the pool's existing monomer routing; "
+                    f"without an emission target the depropagated repeat units would "
+                    f"leave the condensed phase silently un-conserved. Define "
+                    f"monomer_product (the real monomer species released on unzip) "
+                    f"or remove radical_qssa_unzip.")
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: radical_qssa_unzip is configured AND "
+                    f"k_unzip={self.k_unzip:g} > 0. These are two representations of "
+                    f"the SAME chain-end depropagation channel and are mutually "
+                    f"exclusive on a pool (enabling both would double-count the unzip "
+                    f"flux). Set k_unzip=0 or remove radical_qssa_unzip.")
+
+        # 3b. Radical-homolysis initiation kernel (Stage 1, adjudicated round
+        #     66): validate + normalize the triplet (shared single source of
+        #     truth: validate_k_homolysis) and re-enforce the two hard mutual
+        #     exclusions -- a directly-constructed PolymerPool must not dodge
+        #     the deck-read checks in rmgpy/rmg/input.py.
+        khom_channel = None
+        if self.k_homolysis is not None:
+            khom_channel = validate_k_homolysis(self.label, self.k_homolysis)
+            if self.k_scission > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"k_scission={self.k_scission:g} > 0. Both parameterize the "
+                    f"SAME random backbone-break event (homolysis IS random "
+                    f"scission, with the products routed to the end-radical "
+                    f"pools) and are mutually exclusive on a pool -- enabling "
+                    f"both would double-count chain initiation. Set k_scission=0 "
+                    f"or remove k_homolysis.")
+            if self.radical_qssa_unzip is not None:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"radical_qssa_unzip is configured. The QSSA channel's "
+                    f"initiation block IS random backbone homolysis, so the two "
+                    f"are mutually exclusive on a pool -- enabling both would "
+                    f"double-count initiation. Remove one of them.")
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"k_unzip={self.k_unzip:g} > 0. Legacy k_unzip is a "
+                    f"phenomenological closed-chain monomer-loss channel, while "
+                    f"k_homolysis creates radical-end pools that feed explicit "
+                    f"beta-scission/unzip chemistry; the two are mutually "
+                    f"exclusive on a pool -- enabling both would double-carry "
+                    f"depolymerization. Set k_unzip=0 or remove k_homolysis.")
+
+        # 3c. Side-group homolysis initiation kernel (FR1-K1, adjudicated
+        #     round 70): validate + normalize the channel list (shared
+        #     single source of truth: validate_side_group_homolysis),
+        #     re-enforce the mutual exclusions, and resolve each channel's
+        #     gas-product core index -- a directly-constructed PolymerPool
+        #     must not dodge the deck-read checks in rmgpy/rmg/input.py.
+        sgh_channels = None
+        sgh_gas_indices = None
+        if self.side_group_homolysis is not None:
+            # Round-72 P1: this layer holds the monomer structure (Species
+            # or Molecule -- same duck-typing as the monomer_mw resolution
+            # below), so run the FULL structural selector law, not just the
+            # shape check.
+            sgh_monomer = None
+            _mono_list = getattr(self.monomer, "molecule", None)
+            if _mono_list:
+                sgh_monomer = _mono_list[0]
+            elif self.monomer is not None and hasattr(self.monomer, "atoms"):
+                sgh_monomer = self.monomer
+            sgh_channels = validate_side_group_homolysis(
+                self.label, self.side_group_homolysis, monomer=sgh_monomer)
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis is configured "
+                    f"AND k_unzip={self.k_unzip:g} > 0. Legacy k_unzip is a "
+                    f"phenomenological closed-chain monomer-loss channel, "
+                    f"while side_group_homolysis creates radical-defect "
+                    f"feature pools that feed explicit degradation "
+                    f"chemistry; the two are mutually exclusive on a pool "
+                    f"-- enabling both would double-carry degradation. Set "
+                    f"k_unzip=0 or remove side_group_homolysis.")
+            if self.radical_qssa_unzip is not None:
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis is configured "
+                    f"AND radical_qssa_unzip is configured. Two lumped "
+                    f"initiation carriers on one pool are mutually "
+                    f"exclusive -- enabling both would double-carry "
+                    f"initiation. Remove one of them.")
+            gas_list = self.side_group_gas_species or []
+            if len(gas_list) != len(sgh_channels):
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis has "
+                    f"{len(sgh_channels)} channel(s) but "
+                    f"{len(gas_list)} registered gas-product species. The "
+                    f"kernel emits one X radical per event; every channel "
+                    f"needs its registered gas Species (rmgpy/rmg/input.py "
+                    f"step 4e) or the ejected X would silently vanish "
+                    f"(un-conserved mass).")
+            resolved = []
+            for ci, g_spc in enumerate(gas_list):
+                g_idx = spc_map.get(g_spc)
+                if g_idx is None:
+                    raise ValueError(
+                        f"Pool {self.label}: side_group_homolysis channel "
+                        f"'{sgh_channels[ci]['label']}' gas_product species "
+                        f"{g_spc} not in core species; cannot wire the "
+                        f"kernel's gas X-radical release (the ejected X "
+                        f"would silently vanish -- un-conserved mass).")
+                resolved.append(g_idx)
+            sgh_gas_indices = tuple(resolved)
+
+        # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
+        #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
+        #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the
+        #    polymer() input helper / Polymer._validate_monomer), but may be a
+        #    Species when resolved from species_dict; handle BOTH. A Species carries
+        #    a .molecule list; a Molecule answers get_molecular_weight() directly.
+        #    Reading only the Species idiom left monomer_mw_g_mol=0 for Molecule
+        #    monomers, collapsing chain_window to the slack and leaking small gas
+        #    fragments into the melt reference-state sum. Best-effort: 0.0 (-> the
+        #    gate defers) when no resolvable structure.
+        monomer_mw_g_mol = 0.0
+        mol_list = getattr(self.monomer, "molecule", None)
+        try:
+            if mol_list:
+                monomer_mw_g_mol = mol_list[0].get_molecular_weight() * 1000.0
+            elif self.monomer is not None and hasattr(self.monomer, "get_molecular_weight"):
+                monomer_mw_g_mol = self.monomer.get_molecular_weight() * 1000.0
+        except Exception:
+            monomer_mw_g_mol = 0.0
+        # 4b. Monomer heavy-atom (non-H) count -- the SECOND axis of the r89
+        #     dual-axis melt gate in the solver's reference-state tripwire
+        #     (mirrors rmgpy.polymer._discrete_is_polymer_sized: mass AND
+        #     structure, both computable, both at/above threshold). Same
+        #     Molecule-or-Species idiom and same best-effort posture as the
+        #     MW above: 0 (-> axis uncomputable -> the gate answers
+        #     conservative-gas and warns) when no resolvable structure.
+        monomer_heavy_atoms = _monomer_heavy_atom_count(self.monomer)
+
+        return PolymerPoolConfig(
+            label=self.label,
+            xs=self.xs,
+            explicit_dp_to_species_index=explicit_indices,
+            mu_indices=mu_idxs,
+            monomer_poly_index=monomer_idx,
+            monomer_mw_g_mol=monomer_mw_g_mol,
+            monomer_heavy_atoms=monomer_heavy_atoms,
+            k_scission=self.k_scission,
+            k_unzip=self.k_unzip,
+            radical_qssa_unzip=qssa_channel,
+            k_homolysis=khom_channel,
+            side_group_homolysis=sgh_channels,
+            side_group_gas_indices=sgh_gas_indices,
+        )
+
+
+def _monomer_heavy_atom_count(monomer):
+    """Heavy-atom (non-H) count of a pool monomer, handling BOTH monomer
+    idioms (a Molecule from the polymer() input helper, or a Species resolved
+    from species_dict -- the same dual idiom as the monomer-MW read in
+    ``to_pool_config``). Best-effort 0 when no resolvable structure: the r89
+    dual-axis melt gate treats 0 as an UNCOMPUTABLE heavy axis (conservative-
+    gas + census warning), never as a decided answer."""
+    try:
+        mol_list = getattr(monomer, "molecule", None)
+        mol = mol_list[0] if mol_list else (
+            monomer if hasattr(monomer, "get_num_atoms") else None)
+        if mol is None:
+            return 0
+        return int(mol.get_num_atoms() - mol.get_num_atoms('H'))
+    except Exception:
+        return 0
+
+
+def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels,
+                                 edge_species=None):
+    """
+    Build a :class:`PolymerPoolConfig` for each daughter Polymer registered as a
+    core species but not covered by a static deck pool.
+
+    A scission tail or spawn-intent (``<parent>_d{n}``) daughter is registered by
+    ``CoreEdgeReactionModel._register_polymer`` as a core Polymer species plus its
+    own ``_mu0`` / ``_mu1`` / ``_mu2`` moment-dummy species -- but ``pool_configs``
+    is built only from the static deck list ``polymerPhase.pools``. Without a pool
+    config the daughter's species map to ``-1`` in ``species_to_pool_indices``, so
+    a stamped SCISSION_FRAGMENT / MIGRATION reaction targeting it demotes to
+    UNRESOLVED (``polymer.pyx`` "could not resolve their solver pool(s)"). Deriving
+    the config from the registered core species closes that gap uniformly for both
+    daughter paths; the solver binds the pool by label on the next rebuild.
+
+    Daughters spawn honest-empty (no explicit oligomers); only label + xs +
+    moment indices are needed for the solver to resolve the pool.
+
+    Labels use the solver's binding convention: RMG appends a ``(N)`` index to
+    registered species labels (a proxy displays as ``PS(2)`` while its dummies
+    stay the clean ``PS_mu0``), and ``_apply_pool_phase_overrides`` binds on
+    ``strip_rmg_index_suffix(label) == pool.label`` (trailing-index strip ONLY
+    -- structural SMILES parentheses survive). So the derived pool label and
+    the moment-dummy lookup both use that same base label.
+
+    Item 16 discovery extension: ``edge_species`` (optional) widens DISCOVERY
+    -- not configuration -- beyond the core. Configs are ONLY ever built from
+    core-resident daughters whose full mu-dummy triplet is core-resident: a
+    PolymerPoolConfig points at mu indices in the integrated core state, and
+    an edge-only config would invent indices or integrate nothing (the
+    rejected "narrower" alternative). A spawned daughter Polymer discovered
+    in the EDGE therefore means the item-16 spawn/enlarge-boundary promotion
+    (CoreEdgeReactionModel._promote_spawned_polymer_pools) did not reach it;
+    it is censused LOUDLY here (the solver's r91 refusal will keep any of
+    its stamped rows conduit-deferred, zero-flux) instead of silently
+    re-entering the pre-item-16 self-sealing loop. Likewise a core-resident
+    daughter missing part of its mu triplet is now a loud skip, not a
+    silent one.
+    """
+    from rmgpy.polymer import Polymer, is_engine_spawned_pool_daughter
+
+    base = _base_label
+
+    static = set(existing_pool_labels)
+    # Base-label -> core index, using the same index-suffix strip the solver
+    # binds with (ONE convention: rmgpy.polymer.strip_rmg_index_suffix).
+    base_to_index = {}
+    for spc in core_species:
+        base_to_index.setdefault(base(spc.label), spc_map[spc])
+
+    configs = []
+    seen = set()
+    for spc in core_species:
+        if not isinstance(spc, Polymer):
+            continue
+        b = base(spc.label)
+        if b in static or b in seen:
+            # Static deck pool's proxy (never re-derived) or a base already
+            # configured (the proxy plus its index-suffixed copies).
+            continue
+        mu_indices = tuple(base_to_index.get(f"{b}_mu{k}") for k in (0, 1, 2))
+        if any(i is None for i in mu_indices):
+            # Daughter registered without its full moment-dummy triplet in the
+            # core map; skip rather than build an unresolvable pool -- but
+            # LOUDLY (item 16): the daughter stays config-less, so the r91
+            # refusal keeps every stamped row targeting it conduit-deferred.
+            logging.warning(
+                "Item 16: core-resident spawned polymer daughter '%s' is "
+                "missing part of its %s_mu0/_mu1/_mu2 moment-dummy triplet "
+                "in the core (present: %s); no pool config derived -- its "
+                "stamped rows stay refused conduit-deferred (r91).",
+                b, b,
+                [f"{b}_mu{k}" for k, i in zip((0, 1, 2), mu_indices)
+                 if i is not None])
+            continue
+        seen.add(b)
+        # Carry the daughter's own monomer MW [g/mol] (same repeat unit as the
+        # parent; the daughter Polymer computed it in __init__). Omitting it left
+        # the config at 0.0, which drags max(monomer_mw over pools) -> 0 and
+        # collapses the reference-state tripwire chain_window to the bare slack,
+        # leaking small gas scission fragments into the melt sum.
+
+        # Daughter-pool channel inheritance (radical_qssa_unzip milestone 5,
+        # closing the M1 DECISION recorded at this site): the daughter Polymer
+        # species carries the parent's channel (deep-copied at creation --
+        # Polymer.create_reacted_copy / drain_spawn_intents, via
+        # _inherit_unzip_channel) plus the parent's monomer_product_species by
+        # reference. Wire both into the derived config:
+        # - the channel runs through the SHARED validator (daughters do not
+        #   bypass validation; malformed channels fail loudly, naming the
+        #   daughter pool), then is deep-copied so post-hoc mutation of the
+        #   species' dict cannot reach the config;
+        # - monomer routing resolves against the SAME object-keyed spc_map this
+        #   build uses for the static deck pools (line ~351), so the daughter
+        #   gets the identical released-monomer core index as its parent. A
+        #   channel WITHOUT resolvable routing is a hard error (mirrors
+        #   PolymerPool.to_config): the QSSA channel drains condensed moments
+        #   and must have an emission target, else mass silently un-conserves.
+        # Flattening/census timing: the solver engine is REBUILT from these
+        # configs on every HybridPolymerReactor.initialize_model, and its
+        # validate_configuration -> _flatten_radical_qssa_state + the M2
+        # double-count census re-run per rebuild -- so a daughter spawned at
+        # enlarge time has its channel flattened into the solver-owned arrays
+        # (qssa_enabled) on the next rebuild, never left enabled-in-dict but
+        # absent-in-arrays. k_unzip stays 0.0 on derived daughters, so the
+        # mutual-exclusion invariant (channel XOR k_unzip>0) holds trivially
+        # and is re-checked by the solver's shared validator path anyway.
+        monomer_idx = None
+        monomer_product = getattr(spc, "monomer_product_species", None)
+        if monomer_product is not None:
+            monomer_idx = spc_map.get(monomer_product)
+        qssa_channel = None
+        channel = getattr(spc, "radical_qssa_unzip", None)
+        if channel is not None:
+            qssa_channel = copy.deepcopy(validate_radical_qssa_unzip(b, channel))
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {b}: inherited radical_qssa_unzip is configured but no "
+                    f"monomer_product resolves for this daughter pool. The QSSA "
+                    f"unzip channel releases monomer through the pool's monomer "
+                    f"routing; without an emission target the depropagated repeat "
+                    f"units would leave the condensed phase silently un-conserved. "
+                    f"The parent pool's monomer_product_species must be a live "
+                    f"core species (it is for any validated QSSA deck pool).")
+
+        # End-radical DEPROPAGATION kernel (adjudicated round 74 SS2): the
+        # deck declares k_depropagation on the PARENT pool's k_homolysis
+        # context; generate_end_radical_daughters copies the triplet (deep
+        # copy) plus the released-monomer routing (BY REFERENCE) onto both
+        # spawned daughters, and it reaches the solver HERE. Same posture
+        # as the inherited QSSA channel above: shared validator (daughters
+        # never bypass validation), deep-copied storage, and a HARD error
+        # when the kernel has no resolvable monomer routing (the released
+        # units would leave the condensed phase silently un-conserved).
+        kdep_channel = None
+        kdep = getattr(spc, "k_depropagation", None)
+        if kdep is not None:
+            kdep_channel = copy.deepcopy(validate_k_depropagation(b, kdep))
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {b}: inherited k_depropagation is configured but "
+                    f"no monomer_product resolves for this daughter pool. "
+                    f"The depropagation kernel releases one monomer "
+                    f"volatile per unzip event; without an emission target "
+                    f"the released units would leave the condensed phase "
+                    f"silently un-conserved. The parent pool's "
+                    f"monomer_product_species must be a live core species "
+                    f"(the deck helper requires monomer_product whenever "
+                    f"k_depropagation is configured).")
+
+        configs.append(PolymerPoolConfig(
+            label=b,
+            xs=spc.cutoff,
+            # v1 LIMITATION (explicit-DP stage A, documented + tested):
+            # daughter pools spawned mid-run get NO explicit-DP entry even
+            # when the parent pool carries explicit_dp=True. Auto-generating
+            # AND core-registering a capped DP=xs oligomer at enlarge time is
+            # out of stage-A scope, so derived daughters stay honest-empty
+            # here -- their boundary-crossing chains remain statistical. See
+            # test_daughter_pools_do_not_get_explicit_dp_in_v1
+            # (solverPolymerTest.py).
+            explicit_dp_to_species_index={},
+            mu_indices=mu_indices,
+            monomer_poly_index=monomer_idx,
+            monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
+            # r89 dual-axis heavy denominator: a spawned daughter Polymer
+            # carries the parent's monomer structure (intact-chain transfer),
+            # so the derived config gets the same heavy-atom axis the static
+            # deck pool would -- without it every tag-branch candidate in a
+            # daughter-only deck would be heavy-axis-undecidable.
+            monomer_heavy_atoms=_monomer_heavy_atom_count(
+                getattr(spc, "monomer", None)),
+            radical_qssa_unzip=qssa_channel,
+            k_depropagation=kdep_channel,
+            # FR1-K1 mass contract: an X-loss feature daughter's exact
+            # per-chain defect (M_X of the spawning channel's gas_product,
+            # pinned by generate_side_loss_daughters) must survive config
+            # derivation -- dropping it re-opens the round-70 P1
+            # mass-minting trap, and the solver's
+            # _flatten_side_group_state hard-errors on a kernel destination
+            # without it. 0.0 on every other daughter class (unchanged).
+            chain_mass_defect_g_mol=float(
+                getattr(spc, "chain_mass_defect_g_mol", 0.0) or 0.0),
+        ))
+
+    # Item 16 discovery census over the EDGE (never configuration): any
+    # spawned daughter Polymer still edge-resident at rebuild time escaped
+    # the spawn/enlarge-boundary core promotion, so it cannot be configured
+    # (its mu dummies carry no integrated state) and the r91 refusal will
+    # zero its stamped rows. Say so loudly instead of leaving the
+    # pre-item-16 silence.
+    if edge_species:
+        configured = static | seen
+        stranded = sorted({
+            base(spc.label) for spc in edge_species
+            if is_engine_spawned_pool_daughter(spc)
+            and base(spc.label) not in configured})
+        if stranded:
+            logging.warning(
+                "Item 16: %d spawned polymer daughter pool(s) are still "
+                "EDGE-resident at solver rebuild time and cannot be "
+                "configured (a pool config needs integrated core mu "
+                "indices; the enlarge-boundary promotion did not reach "
+                "them): %s. Their stamped rows stay refused "
+                "conduit-deferred (r91).",
+                len(stranded), ", ".join(stranded))
+    return configs
+
+
+class MassTransfer(object):
+    """
+    Input class for Mass Transfer definition.
+
+    Defines the transport of a specific chemical species between the gas phase headspace
+    and the polymer melt phase. The flux is driven by the concentration difference relative
+    to equilibrium: J = kLa * (C_poly - K * C_gas).
+
+    Args:
+        gas_species (Species): The RMG Species object representing the component in the gas phase.
+        poly_species (Species): The RMG Species object representing the component dissolved in the polymer phase.
+        K (Union[float, Quantity]): The partition coefficient (Equilibrium Constant), defined as
+                                    K = C_poly_eq / C_gas_eq. Dimensionless.
+        kLa (Union[float, Quantity]): The volumetric mass transfer coefficient [1/s].
+    """
+
+    def __init__(self,
+                 gas_species: Species,
+                 poly_species: Species,
+                 K: Union[float, Quantity],
+                 kLa: Union[float, Quantity],
+                 ):
+        self.gas_species = gas_species
+        self.poly_species = poly_species
+        self.K = K
+        self.kLa = kLa
+
+    def to_config(self, spc_map):
+        """
+        Converts Input Object -> Solver Config (resolving indices using pre-built map).
+        """
+        if self.gas_species not in spc_map:
+            raise ValueError(f"MassTransfer gas species '{self.gas_species}' not found in core species.")
+
+        if self.poly_species not in spc_map:
+            raise ValueError(f"MassTransfer polymer species '{self.poly_species}' not found in core species.")
+
+        gas_index = spc_map[self.gas_species]
+        poly_index = spc_map[self.poly_species]
+
+        # Handle Quantities if present
+        K_val = self.K.value_si if hasattr(self.K, 'value_si') else float(self.K)
+        kLa_val = self.kLa.value_si if hasattr(self.kLa, 'value_si') else float(self.kLa)
+
+        # Enforce Physical Bounds
+        if K_val <= 0.0:
+            raise ValueError(f"MassTransfer K (partition coeff) must be > 0, got {K_val}.")
+        if kLa_val < 0.0:
+            raise ValueError(f"MassTransfer kLa must be >= 0, got {kLa_val}.")
+
+        return MassTransferConfig(
+            gas_index=gas_index,
+            poly_index=poly_index,
+            K=K_val,
+            kLa=kLa_val,
+        )

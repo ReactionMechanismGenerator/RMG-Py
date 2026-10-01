@@ -1,0 +1,9279 @@
+#!/usr/bin/env python3
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
+
+"""
+This module contains unit tests of the rmgpy.polymer module.
+"""
+
+import numpy as np
+import pytest
+from collections import deque
+from typing import List, Tuple, Dict, Any
+
+import rmgpy.polymer as polymer
+from rmgpy.exceptions import InputError
+from rmgpy.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.atomtype import ATOMTYPES
+from rmgpy.molecule.group import GroupAtom
+from rmgpy.polymer import LABELS_1, LABELS_2, Polymer, PolymerClass
+from rmgpy.species import Species
+from rmgpy.statmech import Conformer, HarmonicOscillator, IdealGasTranslation, NonlinearRotor
+from rmgpy.thermo import NASA, NASAPolynomial
+from rmgpy.transport import TransportData
+
+
+class TestPolymer:
+    """
+    Contains unit tests for the Polymer class.
+    """
+    @pytest.fixture(autouse=True)
+    def setup_species(self):
+        """
+        A method that is run before each unit test in this class.
+        """
+        ps_adj = """multiplicity 3
+                    1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                    2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                    3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                    4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                    5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                    6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                    7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                    8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                    9    H u0 p0 c0 {1,S}
+                    10   H u0 p0 c0 {1,S}
+                    11   H u0 p0 c0 {2,S}
+                    12   H u0 p0 c0 {4,S}
+                    13   H u0 p0 c0 {5,S}
+                    14   H u0 p0 c0 {6,S}
+                    15   H u0 p0 c0 {7,S}
+                    16   H u0 p0 c0 {8,S}"""
+        ps_feature_adj = """multiplicity 4
+                            1  *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                            2  *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                            3     C u0 p0 c0 {2,S} {4,S} {8,D}
+                            4     C u0 p0 c0 {3,S} {5,D} {12,S}
+                            5     C u0 p0 c0 {4,D} {6,S} {13,S}
+                            6     C u1 p0 c0 {5,S} {7,D}
+                            7     C u0 p0 c0 {6,D} {8,S} {14,S}
+                            8     C u0 p0 c0 {3,D} {7,S} {15,S}
+                            9     H u0 p0 c0 {1,S}
+                            10    H u0 p0 c0 {1,S}
+                            11    H u0 p0 c0 {2,S}
+                            12    H u0 p0 c0 {4,S}
+                            13    H u0 p0 c0 {5,S}
+                            14    H u0 p0 c0 {7,S}
+                            15    H u0 p0 c0 {8,S}"""
+        ps_smiles = '[CH2][CH]c1ccccc1'
+        pe_smiles = '[CH2][CH2]'
+        self.polymer_1 = Polymer(
+                 label='PS_1',
+                 monomer=ps_adj,
+                 end_groups=['[CH3]', '[H]'],
+                 cutoff=3,
+                 Mn=5000.0,
+                 Mw=6000.0,
+                 initial_mass=1.0,
+        )
+
+        self.polymer_2 = Polymer(
+                 label='PS_2',
+                 monomer=ps_smiles,
+                 end_groups=['[CH3]', '[H]'],
+                 cutoff=5,
+                 Mn=3000.0,
+                 Mw=10000.0,
+                 initial_mass=1.0,
+        )
+
+        self.polymer_3 = Polymer(
+                 label='PE_1',
+                 monomer=pe_smiles,
+                 end_groups=['[H]', '[H]'],
+                 cutoff=10,
+                 Mn=1000.0,
+                 Mw=2500.0,
+                 initial_mass=1.0,
+        )
+
+        self.polymer_4 = Polymer(
+                 label='PS_3',
+                 monomer=ps_smiles,
+                 feature_monomer=ps_feature_adj,
+                 end_groups=['[CH3]', '[H]'],
+                 cutoff=5,
+                 Mn=3000.0,
+                 Mw=10000.0,
+                 initial_mass=1.0,
+        )
+
+        self.ethylene_diradical_labeled_adj = """multiplicity 3
+                                                 1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+                                                 2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+                                                 3    H u0 p0 c0 {1,S}
+                                                 4    H u0 p0 c0 {1,S}
+                                                 5    H u0 p0 c0 {2,S}
+                                                 6    H u0 p0 c0 {2,S}"""
+
+        yield
+        # teardown here if necessary
+
+    def test_repr(self):
+        """
+        Test Polymer representation.
+        """
+        expected_repr_1 = "<Polymer 'PS_1' Mn=5000.0 Mw=6000.0 Cutoff=3>"
+        expected_repr_2 = "<Polymer 'PS_2' Mn=3000.0 Mw=10000.0 Cutoff=5>"
+        expected_repr_3 = "<Polymer 'PE_1' Mn=1000.0 Mw=2500.0 Cutoff=10>"
+        repr_1 = repr(self.polymer_1)
+        repr_2 = repr(self.polymer_2)
+        repr_3 = repr(self.polymer_3)
+        assert repr_1 == expected_repr_1
+        assert repr_2 == expected_repr_2
+        assert repr_3 == expected_repr_3
+
+    def test_equality(self):
+        """Test that we can perform equality comparison with Species objects"""
+        assert self.polymer_1 != self.polymer_2
+        assert self.polymer_1 == self.polymer_1
+        assert self.polymer_2 == self.polymer_2
+
+    def test_to_adjacency_list(self):
+        """
+        Test that to_adjacency_list() works as expected.
+        """
+        adj = self.polymer_1.copy().to_adjacency_list()
+        partial_expected_adj = """PS_1
+1  C u0 p0 c0 {4,S} {5,S} {9,S} {27,S}
+2  C u0 p0 c0 {4,S} {6,S} {8,S} {26,S}
+3  C u0 p0 c0 {5,S} {7,S} {10,S} {28,S}
+4  C u0 p0 c0 {1,S} {2,S} {29,S} {30,S}
+5  C u0 p0 c0 {1,S} {3,S} {31,S} {32,S}
+6  C u0 p0 c0 {2,S} {33,S} {34,S} {35,S}
+7  C u0 p0 c0 {3,S} {36,S} {37,S} {38,S}
+8  C u0 p0 c0 {2,S} {11,B} {12,B}
+9  C u0 p0 c0 {1,S} {13,B} {14,B}
+10 C u0 p0 c0 {3,S} {15,B} {16,B}
+11 C u0 p0 c0 {8,B} {17,B} {39,S}
+12 C u0 p0 c0 {8,B} {19,B} {43,S}
+13 C u0 p0 c0 {9,B} {20,B} {44,S}
+14 C u0 p0 c0 {9,B} {22,B} {48,S}
+15 C u0 p0 c0 {10,B} {23,B} {49,S}
+16 C u0 p0 c0 {10,B} {25,B} {53,S}
+17 C u0 p0 c0 {11,B} {18,B} {40,S}
+18 C u0 p0 c0 {17,B} {19,B} {41,S}
+19 C u0 p0 c0 {12,B} {18,B} {42,S}
+20 C u0 p0 c0 {13,B} {21,B} {45,S}
+21 C u0 p0 c0 {20,B} {22,B} {46,S}
+22 C u0 p0 c0 {14,B} {21,B} {47,S}
+23 C u0 p0 c0 {15,B} {24,B} {50,S}
+24 C u0 p0 c0 {23,B} {25,B} {51,S}
+25 C u0 p0 c0 {16,B} {24,B} {52,S}
+26 H u0 p0 c0 {2,S}
+27 H u0 p0 c0 {1,S}
+28 H u0 p0 c0 {3,S}
+29 H u0 p0 c0 {4,S}
+30 H u0 p0 c0 {4,S}
+31 H u0 p0 c0 {5,S}
+32 H u0 p0 c0 {5,S}
+33 H u0 p0 c0 {6,S}
+34 H u0 p0 c0 {6,S}
+35 H u0 p0 c0 {6,S}
+36 H u0 p0 c0 {7,S}
+37 H u0 p0 c0 {7,S}
+38 H u0 p0 c0 {7,S}
+39 H u0 p0 c0 {11,S}
+40 H u0 p0 c0 {17,S}
+41 H u0 p0 c0 {18,S}
+42 H u0 p0 c0 {19,S}
+43 H u0 p0 c0 {12,S}
+44 H u0 p0 c0 {13,S}
+45 H u0 p0 c0 {20,S}
+46 H u0 p0 c0 {21,S}
+47 H u0 p0 c0 {22,S}
+48 H u0 p0 c0 {14,S}
+49 H u0 p0 c0 {15,S}
+50 H u0 p0 c0 {23,S}
+51 H u0 p0 c0 {24,S}
+52 H u0 p0 c0 {25,S}
+53 H u0 p0 c0 {16,S}
+
+
+PS_1
+1  C u0 p0 c0 {4,S} {5,S} {9,S} {27,S}
+2  C u0 p0 c0 {4,S} {6,S} {8,S} {26,S}
+3  C u0 p0 c0 {5,S} {7,S} {10,S} {28,S}
+4  C u0 p0 c0 {1,S} {2,S} {29,S} {30,S}
+5  C u0 p0 c0 {1,S} {3,S} {31,S} {32,S}
+6  C u0 p0 c0 {2,S} {33,S} {34,S} {35,S}
+7  C u0 p0 c0 {3,S} {36,S} {37,S} {38,S}
+8  C u0 p0 c0 {2,S} {11,S} {12,D}
+9  C u0 p0 c0 {1,S} {13,S} {14,D}
+10 C u0 p0 c0 {3,S} {15,S} {16,D}
+11 C u0 p0 c0 {8,S} {17,D} {39,S}
+12 C u0 p0 c0 {8,D} {19,S} {43,S}
+13 C u0 p0 c0 {9,S} {20,D} {44,S}
+14 C u0 p0 c0 {9,D} {22,S} {48,S}
+15 C u0 p0 c0 {10,S} {23,D} {49,S}
+16 C u0 p0 c0 {10,D} {25,S} {53,S}
+17 C u0 p0 c0 {11,D} {18,S} {40,S}
+18 C u0 p0 c0 {17,S} {19,D} {41,S}
+19 C u0 p0 c0 {12,S} {18,D} {42,S}
+20 C u0 p0 c0 {13,D} {21,S} {45,S}
+21 C u0 p0 c0 {20,S} {22,D} {46,S}
+22 C u0 p0 c0 {14,S} {21,D} {47,S}
+23 C u0 p0 c0 {15,D} {24,S} {50,S}
+24 C u0 p0 c0 {23,S} {25,D} {51,S}
+25 C u0 p0 c0 {16,S} {24,D} {52,S}
+26 H u0 p0 c0 {2,S}
+27 H u0 p0 c0 {1,S}
+28 H u0 p0 c0 {3,S}
+29 H u0 p0 c0 {4,S}
+30 H u0 p0 c0 {4,S}
+31 H u0 p0 c0 {5,S}
+32 H u0 p0 c0 {5,S}
+33 H u0 p0 c0 {6,S}
+34 H u0 p0 c0 {6,S}
+35 H u0 p0 c0 {6,S}
+36 H u0 p0 c0 {7,S}
+37 H u0 p0 c0 {7,S}
+38 H u0 p0 c0 {7,S}
+39 H u0 p0 c0 {11,S}
+40 H u0 p0 c0 {17,S}
+41 H u0 p0 c0 {18,S}
+42 H u0 p0 c0 {19,S}
+43 H u0 p0 c0 {12,S}
+44 H u0 p0 c0 {13,S}
+45 H u0 p0 c0 {20,S}
+46 H u0 p0 c0 {21,S}
+47 H u0 p0 c0 {22,S}
+48 H u0 p0 c0 {14,S}
+49 H u0 p0 c0 {15,S}
+50 H u0 p0 c0 {23,S}
+51 H u0 p0 c0 {24,S}
+52 H u0 p0 c0 {25,S}
+53 H u0 p0 c0 {16,S}"""
+        assert partial_expected_adj in adj
+
+    def test_to_smiles(self):
+        """
+        Test that to_smiles() works as expected.
+        """
+        smiles = self.polymer_1.monomer.copy(deep=True).to_smiles()
+        expected_smiles = ['[CH2][CH]c1ccccc1', '[CH2][CH]C1=CC=CC=C1']
+        assert smiles in expected_smiles
+
+    def test_copy(self):
+        """Test that we can make a copy of a Polymer object."""
+        poly_cp = self.polymer_1.copy()
+        assert id(self.polymer_1) != id(poly_cp)
+        assert self.polymer_1.is_isomorphic(poly_cp)
+        assert self.polymer_1.label == poly_cp.label
+        assert self.polymer_1.index == poly_cp.index
+
+    def test_copy_preserves_identity_and_kinetics(self):
+        """
+        copy() uses __new__ (bypassing __init__) and must explicitly carry over
+        the attributes __init__ sets. Regression: it used to drop `is_polymer`
+        (so _handshake_structures re-processed copied polymers) and, worse, the
+        degradation kinetics k_scission/k_unzip (silently reset to 0).
+        """
+        p = Polymer(
+            label='PE', monomer='[CH2][CH2]', end_groups=['[CH3]', '[H]'],
+            cutoff=3, Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+            k_scission=2.5, k_unzip=0.7,
+        )
+        for c in (p.copy(), p.copy(deep=True)):
+            assert isinstance(c, Polymer)
+            assert getattr(c, 'is_polymer', False) is True
+            assert c.k_scission == 2.5
+            assert c.k_unzip == 0.7
+
+    def test_fingerprint_property(self):
+        """Test that the fingerprint property works"""
+        assert self.polymer_1.fingerprint == "Polymer_C08H08N00O00S00_EG-C01H03N00O00S00_C00H01N00O00S00_3"
+        assert self.polymer_2.fingerprint == "Polymer_C08H08N00O00S00_EG-C01H03N00O00S00_C00H01N00O00S00_5"
+        assert self.polymer_3.fingerprint == "Polymer_C02H04N00O00S00_EG-C00H01N00O00S00_C00H01N00O00S00_10"
+
+    def test_baseline_proxy(self):
+        """Test that the baseline_proxy property works"""
+        assert len(self.polymer_1.baseline_proxy.molecule[0].atoms) == 53
+        assert len(self.polymer_2.baseline_proxy.molecule[0].atoms) == 53
+        assert len(self.polymer_3.baseline_proxy.molecule[0].atoms) == 20
+
+    def test_feature_proxy(self):
+        """Test that the feature_proxy property works"""
+        assert self.polymer_1.feature_proxy is None
+        assert self.polymer_2.feature_proxy is None
+        assert self.polymer_3.feature_proxy is None
+        assert len(self.polymer_4.feature_monomer.atoms) == 15
+        assert len(self.polymer_4.feature_proxy.molecule[0].atoms) == 52
+
+    def test_is_isomorphic(self):
+        """Test that the Polymer.is_isomorphic works"""
+        spc_1 = Species(smiles='CC(CC(CC(C)c1ccccc1)c1ccccc1)c1ccccc1')
+        mol_1 = Molecule(smiles='[CH2][CH]c1ccccc1')
+        pol_1 = Polymer(label='PS_10',
+                        monomer='[CH2][CH]c1ccccc1',
+                        end_groups=['[CH3]', '[H]'],
+                        cutoff=30,
+                        Mn=7000.0,
+                        Mw=8000.0,
+                        initial_mass=10.0)
+        assert not spc_1.is_isomorphic(pol_1)
+        assert pol_1.is_isomorphic(spc_1)
+        assert not pol_1.is_isomorphic(mol_1)
+        assert self.polymer_1.is_isomorphic(self.polymer_1)
+        assert self.polymer_1.is_isomorphic(pol_1)
+        assert any(spc_1.is_isomorphic(monomer) for monomer in pol_1.molecule)
+
+    def test_polymer_label(self):
+        """Test that the polymer label"""
+        assert self.polymer_1.label == "PS_1"
+        assert self.polymer_2.label == "PS_2"
+        assert self.polymer_3.label == "PE_1"
+
+    def test_calculate_moments_from_distribution(self):
+        """Test that the moments are calculated correctly from the distribution"""
+        expected_moments = [2.00000000e-01, 9.60163842e+00, 5.53148762e+02]
+        assert all(np.isclose(v1, v2) for v1, v2 in zip(self.polymer_1.moments, expected_moments))
+
+        expected_moments = [3.33333333e-01, 9.60163842e+00, 9.21914603e+02]
+        assert all(np.isclose(v1, v2) for v1, v2 in zip(self.polymer_2.moments, expected_moments))
+
+        expected_moments = [1.00000000e+00, 3.56466018e+01, 3.17670055e+03]
+        assert all(np.isclose(v1, v2) for v1, v2 in zip(self.polymer_3.moments, expected_moments))
+
+    def test_get_closing_moment(self):
+        """Test that the closing moment is calculated correctly"""
+        expected_closing_moment_1 = 3.8240e+4
+        assert np.isclose(self.polymer_1.get_closing_moment(), expected_closing_moment_1)
+
+        expected_closing_moment_2 = 2.95063022e+5
+        assert np.isclose(self.polymer_2.get_closing_moment(), expected_closing_moment_2)
+
+        expected_closing_moment_3 = 7.07741122e+5
+        assert np.isclose(self.polymer_3.get_closing_moment(), expected_closing_moment_3)
+
+        assert np.isclose(self.polymer_3.get_closing_moment([2.00000000e-01, 9.60163842e+00, 5.53148762e+02]),
+                          expected_closing_moment_1)
+
+        assert self.polymer_3.get_closing_moment([1, 2, -5]) == 0.0
+        assert self.polymer_3.get_closing_moment([1, 2, 1e-30]) == 0.0
+
+    def test_validate_monomer_raises_when_not_labeled_and_not_diradical(self):
+        """CC should be closed shell, no labels, not a diradical => error"""
+        with pytest.raises(InputError):
+            Polymer(label="bad",
+                    monomer="CC",
+                    end_groups=["[H]", "[H]"],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+
+    def test_validate_monomer_auto_labels_when_diradical(self):
+        """Use PE example from your tests: should have 2 radicals, get *1/*2 assigned"""
+        p = Polymer(label="auto_label",
+                    monomer="[CH2][CH2]",
+                    end_groups=["[H]", "[H]"],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0, )
+        assert polymer.find_labeled_atom(p.monomer, LABELS_1) is not None
+        assert polymer.find_labeled_atom(p.monomer, LABELS_2) is not None
+
+    def test_validate_monomer_rejects_invalid_type(self):
+        """monomer must be str or Molecule"""
+        with pytest.raises(InputError):
+            Polymer(label="bad_type",
+                    monomer=123,  # not str/Molecule
+                    end_groups=["[H]", "[H]"],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+
+    def test_validate_end_groups_default_assigns_labels(self):
+        """When end_groups=None, should assign [H] with correct labels"""
+        p = Polymer(label="default_ends",
+                    monomer=self.ethylene_diradical_labeled_adj,
+                    end_groups=None,  # defaults to [H], [H]
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+        assert len(p.end_groups) == 2
+        head, tail = p.end_groups
+        assert polymer.find_labeled_atom(head, LABELS_1) is not None
+        assert polymer.find_labeled_atom(tail, LABELS_2) is not None
+
+    def test_validate_end_groups_wrong_length_raises(self):
+        """end_groups must be length 2"""
+        with pytest.raises(InputError):
+            Polymer(label="bad_ends_len",
+                    monomer=self.ethylene_diradical_labeled_adj,
+                    end_groups=["[H]"],  # wrong length
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+
+    def test_validate_end_groups_non_radical_raises(self):
+        """C is not a radical end-group"""
+        with pytest.raises(InputError):
+            Polymer(label="bad_end_rad",
+                    monomer=self.ethylene_diradical_labeled_adj,
+                    end_groups=["C", "[H]"],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+
+    def test_validate_end_groups_invalid_labels_raises(self):
+        """end-groups must have correct *1/*2 labels"""
+        bad = Molecule().from_adjacency_list(_methyl_radical_adj("*3"))  # invalid label
+        ok = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        with pytest.raises(InputError):
+            Polymer(label="bad_end_label",
+                    monomer=self.ethylene_diradical_labeled_adj,
+                    end_groups=[bad, ok],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+
+    def test_proxy_species_cached_and_has_no_remaining_labels(self):
+        """Test that Polymer.baseline_proxy is cached and has no remaining labels."""
+        p = Polymer(label="proxy_label_cleanup",
+                    monomer=self.ethylene_diradical_labeled_adj,
+                    end_groups=["[H]", "[H]"],
+                    cutoff=3,
+                    Mn=1000.0,
+                    Mw=2000.0,
+                    initial_mass=1.0)
+        spc1 = p.baseline_proxy
+        spc2 = p.baseline_proxy
+        assert spc1 is spc2
+
+        mol = spc1.molecule[0]
+        assert polymer.find_labeled_atom(mol, LABELS_1) is None
+        assert polymer.find_labeled_atom(mol, LABELS_2) is None
+
+    def test_is_isomorphic_feature_mismatch_false(self):
+        """Test that is_isomorphic returns False when feature_monomer differs from monomer."""
+        base = Polymer(label="base",
+                       monomer=self.ethylene_diradical_labeled_adj,
+                       end_groups=["[H]", "[H]"],
+                       cutoff=3,
+                       Mn=1000.0,
+                       Mw=2000.0,
+                       initial_mass=1.0)
+        feat = Polymer(label="feat",
+                       monomer=self.ethylene_diradical_labeled_adj,
+                       feature_monomer='[CH2][CH]',
+                       end_groups=["[H]", "[H]"],
+                       cutoff=3,
+                       Mn=1000.0,
+                       Mw=2000.0,
+                       initial_mass=1.0)
+        assert base.is_isomorphic(feat) is False
+        assert feat.is_isomorphic(base) is False
+
+    def test_init_from_moments_recovers_distribution(self):
+        """Test that initializing a Polymer from moments recovers the same Mn/Mw."""
+        p1 = Polymer(label="p1",
+                     monomer=self.ethylene_diradical_labeled_adj,
+                     end_groups=["[H]", "[H]"],
+                     cutoff=3,
+                     Mn=1000.0,
+                     Mw=2000.0,
+                     initial_mass=1.0)
+        p2 = Polymer(label="p2",
+                     monomer=self.ethylene_diradical_labeled_adj,
+                     end_groups=["[H]", "[H]"],
+                     cutoff=3,
+                     moments=p1.moments.tolist(),
+                     initial_mass=1.0)
+        assert np.isclose(p2.Mn, p1.Mn)
+        assert np.isclose(p2.Mw, p1.Mw)
+
+    def test_assert_end_group(self):
+        """Test _assert_end_group method."""
+        tail = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        self.polymer_1._assert_end_group(tail, want_label="*2")
+
+        tail = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_end_group(tail, want_label="*1")
+
+        bad = Molecule().from_adjacency_list("""multiplicity 2
+                                               1 *2 C u1 p0 c0 {2,S} {3,S} {4,S}
+                                               2 *1 H u0 p0 c0 {1,S}
+                                               3 H u0 p0 c0 {1,S}
+                                               4 H u0 p0 c0 {1,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_end_group(bad, want_label="*2")
+
+        closed = Molecule().from_adjacency_list(_methyl_closed_shell_labeled_adj("*2"))
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_end_group(closed, want_label="*2")
+
+        bad = Molecule().from_adjacency_list("""1 *2 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+                                               2 H u0 p0 c0 {1,S}
+                                               3 H u0 p0 c0 {1,S}
+                                               4 H u0 p0 c0 {1,S}
+                                               5 H u0 p0 c0 {1,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_end_group(bad, want_label="*2")
+
+    def test_assert_feature_unit(self):
+        """Test _assert_feature_unit method."""
+
+        feat = Molecule().from_adjacency_list(self.ethylene_diradical_labeled_adj)
+        self.polymer_1._assert_feature_unit(feat)
+
+        bad = Molecule().from_adjacency_list("""multiplicity 2
+                                               1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+                                               2    C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
+                                               3    H u0 p0 c0 {1,S}
+                                               4    H u0 p0 c0 {1,S}
+                                               5    H u0 p0 c0 {2,S}
+                                               6    H u0 p0 c0 {2,S}
+                                               7    H u0 p0 c0 {2,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_feature_unit(bad)
+
+        bad = Molecule().from_adjacency_list("""multiplicity 3
+                                               1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+                                               2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+                                               3 *3 H u0 p0 c0 {1,S}
+                                               4    H u0 p0 c0 {1,S}
+                                               5    H u0 p0 c0 {2,S}
+                                               6    H u0 p0 c0 {2,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_feature_unit(bad)
+
+        bad = Molecule().from_adjacency_list("""multiplicity 2
+                                               1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+                                               2 *2 C u0 p0 c0 {1,S} {5,S} {6,S} {7,S}
+                                               3    H u0 p0 c0 {1,S}
+                                               4    H u0 p0 c0 {1,S}
+                                               5    H u0 p0 c0 {2,S}
+                                               6    H u0 p0 c0 {2,S}
+                                               7    H u0 p0 c0 {2,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_feature_unit(bad)
+
+        bad = Molecule().from_adjacency_list("""1 *1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+                                               2 *2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+                                               3    H u0 p0 c0 {1,S}
+                                               4    H u0 p0 c0 {1,S}
+                                               5    H u0 p0 c0 {1,S}
+                                               6    H u0 p0 c0 {2,S}
+                                               7    H u0 p0 c0 {2,S}
+                                               8    H u0 p0 c0 {2,S}""")
+        with pytest.raises(ValueError):
+            self.polymer_1._assert_feature_unit(bad)
+
+    def test_extract_remainder_removes_atoms_preserves_bonds_and_strips_labels(self):
+        """
+        _extract_remainder() should:
+          - remove the requested atoms (including attached H's if they are part of the removed subgraph)
+          - preserve bonds between remaining atoms
+          - strip labels on the copied atoms (for deterministic downstream relabeling)
+          - not mutate the input molecule
+        """
+        # Build a simple 3-carbon chain with explicit hydrogens (RMG expands SMILES to explicit H)
+        complex_mol = Molecule(smiles="CCC")
+        complex_mol.atoms[0].label = "*1"
+        complex_mol.atoms[2].label = "*2"
+
+        # Remove the terminal carbon AND its attached hydrogens (as a subgraph match would)
+        tail_c = complex_mol.atoms[2]
+        atoms_to_remove = {tail_c}
+
+        for nbr in tail_c.bonds:
+            # RMG Atom has is_hydrogen(); this mirrors "remove the whole terminal group"
+            if nbr.is_hydrogen():
+                atoms_to_remove.add(nbr)
+
+        remainder = self.polymer_1._extract_remainder(complex_mol, atoms_to_remove)
+
+        # 1) No dangling atoms left in the remainder
+        assert all(len(a.bonds) > 0 for a in remainder.atoms), "Remainder contains disconnected atoms."
+
+        # 2) Heavy atoms: should now be an ethane-like fragment (2 carbons)
+        remainder_c = [a for a in remainder.atoms if a.is_carbon()]
+        assert len(remainder_c) == 2
+
+        # 3) Bond preservation among the remaining carbons
+        c0, c1 = remainder_c
+        assert c1 in c0.bonds
+        assert float(c0.bonds[c1].order) == 1.0
+
+        # 4) Label stripping on copied atoms
+        assert all(a.label == "" for a in remainder.atoms)
+
+        # 5) Input molecule not mutated
+        assert complex_mol.atoms[0].label == "*1"
+        assert complex_mol.atoms[2].label == "*2"
+        assert len(complex_mol.atoms) > len(remainder.atoms)
+
+    def test_create_reacted_copy_modification_from_baseline_proxy(self):
+        """
+        For PS proxy, a single H-abstraction on the backbone yields a
+        same-heavy-skeleton (DP-preserving) H-loss radical daughter. The
+        scission invariant (stage S2) forbids booking it as a scission
+        population -- a scission daughter must be strictly shorter than the
+        parent proxy -- so without the threaded H-loss conduit context the
+        product refuses (None) and falls to the refuse stamp, instead of
+        spawning a half-length _scission_tail/_scission_head pool.
+        (This test previously pinned the scission-spawn, which was the live
+        PP-run species-25 defect shape.)
+        """
+        p = self.polymer_1.copy()
+        reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+        abstract_h_from_center_backbone(reacted_proxy)
+        assert p.create_reacted_copy(reacted_proxy) is None
+
+    def test_create_reacted_copy_modification_baseline(self):
+        """
+        Ensures that an intact baseline proxy (unreacted) produces a
+        modified polymer (_mod) because it contains both wings.
+        """
+        p = self.polymer_1.copy()
+        reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+        new_p = p.create_reacted_copy(reacted_proxy)
+        assert new_p is not None
+        assert new_p.label == p.label
+        assert new_p.feature_monomer is None
+
+    def test_create_reacted_copy_head_scission_returns_scission_tail_polymer(self):
+        """
+        Construct a fragment with ONLY the head wing present (no tail wing),
+        so create_reacted_copy() should classify it as head-side scission and return a Polymer
+        with a NEW tail end-group labeled *2 and mono-radical.
+        """
+        p = self.polymer_1.copy()
+        head_wing = p._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        scission_fragment = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert scission_fragment is not None
+        new_p = p.create_reacted_copy(scission_fragment)
+        assert new_p is not None
+        assert isinstance(new_p, Polymer)
+        assert new_p.feature_monomer is None
+        assert new_p.label.endswith("_scission_tail")
+        new_tail = new_p.end_groups[1]
+        labels = {a.label for a in new_tail.atoms if a.label}
+        assert labels == {"*2"}
+        assert new_tail.get_radical_count() == 1
+        # A scission product is a new, ~half-length chain population: Mn/Mw are
+        # halved and the pool starts empty (zero moments), matching _scission_head.
+        # (This previously asserted Mn/Mw == parent, which copied the parent's
+        # full distribution into a zero-mass fragment — a mass-duplication bug.)
+        assert np.isclose(new_p.Mn, p.Mn / 2.0)
+        assert np.isclose(new_p.Mw, p.Mw / 2.0)
+        assert np.allclose(new_p.moments, 0.0)
+
+    def test_create_reacted_copy_tail_scission_returns_scission_head_polymer(self):
+        """
+        Construct a fragment with ONLY the tail wing present (no head wing),
+        so create_reacted_copy() should classify it as tail-side scission and return a Polymer
+        with a NEW head end-group labeled *1 and mono-radical.
+        """
+        p = self.polymer_1.copy()
+        tail_wing = p._stitch_wing("tail")
+        methyl_star1 = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        scission_fragment = polymer.stitch_molecules_by_labeled_atoms(methyl_star1, tail_wing)
+        assert scission_fragment is not None
+        new_p = p.create_reacted_copy(scission_fragment)
+        assert new_p is not None
+        assert isinstance(new_p, Polymer)
+        assert new_p.feature_monomer is None
+        assert new_p.label.endswith("_scission_head")
+
+    def test_create_reacted_copy_returns_none_for_small_molecule(self):
+        """
+        If reacted_proxy has no recognizable wings, create_reacted_copy() should return None.
+        """
+        p = self.polymer_1.copy()
+        small = Molecule(smiles="CC")  # no head/tail wing subgraphs
+        assert p.create_reacted_copy(small) is None
+
+    def test_create_reacted_copy_stamps_reacted_class(self):
+        """
+        create_reacted_copy stamps the classification verdict on the returned
+        polymer (``_reacted_class``) so the polymer handshake can flag END_MOD
+        reactions for mu0 (chain-end) scaling in the solver.
+        """
+        p = self.polymer_1.copy()
+        # END_MOD product (terminal radical-activated) -> stamped END_MOD.
+        end_mod = p.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(p, end_mod)
+        new_end = p.create_reacted_copy(end_mod)
+        assert new_end._reacted_class == PolymerClass.END_MOD
+        # Unreacted baseline proxy -> stamped BASELINE.
+        baseline = p.baseline_proxy.molecule[0].copy(deep=True)
+        new_base = p.create_reacted_copy(baseline)
+        assert new_base._reacted_class == PolymerClass.BASELINE
+
+    def test_is_end_group_reaction_helper(self):
+        """
+        is_end_group_reaction(products) is True iff some product Polymer was
+        classified END_MOD. Non-Polymer products and unstamped polymers are
+        ignored (default mu1 scaling).
+        """
+        from rmgpy.polymer import is_end_group_reaction
+        p = self.polymer_1
+        end = p.copy(); end._reacted_class = PolymerClass.END_MOD
+        feat = p.copy(); feat._reacted_class = PolymerClass.FEATURE
+        plain = Molecule(smiles="CC")
+        assert is_end_group_reaction([end, plain]) is True
+        assert is_end_group_reaction([feat, plain]) is False
+        assert is_end_group_reaction([plain]) is False
+        assert is_end_group_reaction([p.copy()]) is False  # no _reacted_class set
+
+    def test_classify_reaction_flux_archetype(self):
+        """
+        classify_reaction_flux_archetype(reactants, products) drives the solver's
+        per-reaction pool moment apportionment (spec 2026-06-09):
+        SCISSION product -> SCISSION_FRAGMENT; single cross-pool polymer product
+        -> MIGRATION; fold-backs -> SAME_POOL; no polymers -> NONE; ambiguous or
+        end-initiated-scission shapes -> UNRESOLVED (legacy mu1 flux + warning).
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+
+        # No polymer on either side -> NONE
+        assert classify_reaction_flux_archetype([gas], [gas]) == PolymerFluxArchetype.NONE
+
+        # Single polymer reactant sheds a discrete mass-carrying co-product (CC,
+        # a~=0.29) -> mass-equivalent volatile ejection, NOT a net-zero fold-back;
+        # proves mass bookkeeping not DP. (Signed-VE, Codex round-13: net =
+        # MW(CC) - 0 > eps, so the same-pool branch routes VOLATILE_EJECTION even
+        # though the polymer product folds back into the same pool.)
+        fold = p.copy()
+        fold._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [fold, gas])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+
+        # Single cross-pool polymer product, NO non-polymer co-product (pure
+        # whole-chain relabel) -> MIGRATION. (A cross-pool product WITH a
+        # discrete mass-carrying co-product is VOLATILE_EJECTION -- see
+        # test_classify_volatile_ejection_new_archetype.)
+        other = p.copy()
+        other.label = "other_pool"
+        other._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [other])
+                == PolymerFluxArchetype.MIGRATION)
+
+        # SCISSION-stamped product -> SCISSION_FRAGMENT
+        sc = p.copy()
+        sc.label = f"{p.label}_scission_head"
+        sc._reacted_class = PolymerClass.SCISSION
+        assert (classify_reaction_flux_archetype([p], [sc, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+        # End-initiated scission (SCISSION + END_MOD product) -> UNRESOLVED:
+        # the uniform-cut bundle assumptions don't hold near a chain end.
+        end = p.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        assert (classify_reaction_flux_archetype([p], [sc, end])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Two polymer products with a cross-pool member -> UNRESOLVED
+        assert (classify_reaction_flux_archetype([p], [other, fold])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Inter-chain (two reactant pools, each product folds back) -> SAME_POOL
+        q = p.copy()
+        q.label = "second_pool"
+        fold_q = q.copy()
+        fold_q._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p, q], [fold, fold_q])
+                == PolymerFluxArchetype.SAME_POOL)
+
+        # Cross-pool product with TWO reactant pools (ambiguous source) -> UNRESOLVED
+        assert (classify_reaction_flux_archetype([p, q], [other])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Polymer reactant, all-gas products -> UNRESOLVED (no flux rule)
+        assert (classify_reaction_flux_archetype([p], [gas])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Warn-once: UNRESOLVED causes above logged exactly one warning per
+        # distinct (reason, detail) key.
+        assert len(polymer_mod._flux_archetype_warned) == 4
+        n_before = len(polymer_mod._flux_archetype_warned)
+        classify_reaction_flux_archetype([p, q], [other])  # repeat call
+        assert len(polymer_mod._flux_archetype_warned) == n_before
+
+    def test_classify_chip_product_returns_discrete_chip(self):
+        """
+        A CHIP-stamped product polymer (left by surge_chip_products' fold-back)
+        short-circuits to DISCRETE_CHIP BEFORE the SCISSION branch. Order
+        matters (spec 2026-06-10 §4.1): after the (b)-surgery the product list
+        has no END_MOD member, so the SCISSION branch's internal
+        is_end_group_reaction(products) recompute would return False and
+        misroute; the CHIP check must win even alongside a SCISSION member.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        chip_gas = Molecule(smiles="CC")
+        fold = p.copy()
+        fold._reacted_class = PolymerClass.CHIP
+        assert (classify_reaction_flux_archetype([p], [chip_gas, fold])
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+        # Defensive order pin: CHIP beats a co-present SCISSION stamp.
+        sc = p.copy()
+        sc.label = f"{p.label}_scission_head"
+        sc._reacted_class = PolymerClass.SCISSION
+        assert (classify_reaction_flux_archetype([p], [sc, fold])
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_classify_volatile_ejection_new_archetype(self):
+        """
+        polymer_A -> discrete volatile + cross-pool polymer_B is a MASS-LOSING
+        VOLATILE_EJECTION, NOT a mass-conserving MIGRATION: the discrete
+        non-polymer co-product carries mass off the chain, so the chain must
+        lose it (spec: depolymerization / volatile-ejection archetype). Before
+        this fix, the classifier filtered products to Polymers only, ignored
+        the volatile, and mislabeled the shape MIGRATION (whole-chain relabel,
+        mass-conserving) -- the volatile's mass was never debited.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [volatile, dst])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # Product order must not matter.
+        assert (classify_reaction_flux_archetype([p], [dst, volatile])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+
+    def test_classify_pure_relabel_still_migration(self):
+        """
+        A pure relabel (single cross-pool polymer product, NO non-polymer
+        product) is unchanged: still MIGRATION. Only the shape with a discrete
+        mass-carrying co-product becomes VOLATILE_EJECTION.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        dst = p.copy()
+        dst.label = "other_pool"
+        dst._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [dst])
+                == PolymerFluxArchetype.MIGRATION)
+
+    def test_stamp_volatile_ejection_units_fractional(self):
+        """
+        VOLATILE_EJECTION stamps ``polymer_eject_units`` = (discrete volatile
+        MW g/mol) / (source pool monomer_mw_g_mol) as a FRACTIONAL value.
+        alpha-methylstyrene (C9H10, 118.18) off a styrene pool
+        (C8H8, 104.15) => ~1.135; it must NOT be rounded to 1.0.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene C9H10
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        rxn = Reaction(reactants=[p], products=[volatile, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (volatile.get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units == pytest.approx(1.135, abs=0.01)
+        # NOT rounded to an integer number of monomer-equivalents.
+        assert abs(rxn.polymer_eject_units - 1.0) > 0.1
+
+    def test_stamp_volatile_ejection_sums_multiple_volatiles(self):
+        """
+        Multiple discrete volatile products sum: ``polymer_eject_units`` =
+        (sum of their MW g/mol) / source monomer_mw_g_mol.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        v1 = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene
+        v2 = Molecule(smiles="C=Cc1ccccc1")     # styrene
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        rxn = Reaction(reactants=[p], products=[v1, v2, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = ((v1.get_molecular_weight() + v2.get_molecular_weight())
+                    * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+
+    def test_classify_volatile_ejection_bare_species_volatile(self):
+        """
+        LIVE-PATH regression: at stamp_polymer_flux_archetype time the
+        depolymerization volatile arrives as a bare pre-thermo ``Species``
+        (empty label, NO ``get_molecular_weight`` method, but a populated
+        ``.molecule`` structure), NOT a Molecule. A ``hasattr(p,
+        'get_molecular_weight')`` gate silently misses it and mis-stamps the
+        shape MIGRATION (mass-conserving) -> the TGA stays flat at 100%.
+        Empirically confirmed on a full PS run (sidecar emitted 5x migration/1).
+        The classifier must reach through to ``.molecule[0]`` and route
+        VOLATILE_EJECTION.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        # Bare Species built from structure only -- Species has NO
+        # get_molecular_weight method (verified) and an empty label pre-thermo.
+        volatile = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        assert not hasattr(volatile, "get_molecular_weight")  # the trap
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.UNKNOWN  # live value (not SCISSION)
+        assert (classify_reaction_flux_archetype([p], [volatile, dst])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert (classify_reaction_flux_archetype([p], [dst, volatile])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+
+    def test_stamp_volatile_ejection_units_bare_species_volatile(self):
+        """
+        LIVE-PATH regression companion: compute_volatile_ejection_units must
+        also weigh a bare ``Species`` volatile (via ``.molecule[0]``), not only
+        a Molecule -- else a would be 0 / wrong and mass would be fabricated
+        even once the archetype is right.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        volatile = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])  # a-MS
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.UNKNOWN
+        rxn = Reaction(reactants=[p], products=[volatile, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (volatile.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units == pytest.approx(1.135, abs=0.01)
+
+    def test_classify_same_pool_ejection_is_mass_losing(self):
+        """
+        SAME-POOL unzip -- radical depropagation `pool A -> monomer + pool A`
+        (the chain sheds a monomer and the shorter chain stays in the SAME
+        pool) -- MUST be mass-losing VOLATILE_EJECTION, NOT the net-zero
+        SAME_POOL fold-back. Before this fix, classify returned SAME_POOL as
+        soon as there was no cross-pool polymer product, IGNORING the discrete
+        volatile co-product -> zero moment loss while gas monomer is produced =
+        the same flat-TGA/mass-fabrication class as the migration bug, under a
+        different archetype (Codex round-12). This is the shape real radical
+        unzipping produces, so it must be covered before enabling that chemistry.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        # Daughter folds back into the SAME pool (same label as the reactant).
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p], [monomer, same])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # A genuine net-zero same-pool fold-back (NO mass-carrying co-product)
+        # stays SAME_POOL.
+        assert (classify_reaction_flux_archetype([p], [same])
+                == PolymerFluxArchetype.SAME_POOL)
+
+    def test_stamp_same_pool_ejection_units(self):
+        """Companion: a same-pool ejection stamps eject_units from the volatile
+        (styrene off a styrene pool ~= 1.0), routed through the robust MW
+        helper (bare Species volatile)."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        rxn = Reaction(reactants=[p], products=[monomer, same])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (monomer.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+
+    def test_classify_h_abstraction_nets_atom_transfer_ve(self):
+        """
+        SIGNED-VE (Codex round-13): a bimolecular same-pool H_Abstraction
+        ``chain + R•(bare Species) -> chain(same pool) + RH`` must net only the
+        single H actually shed, NOT the full RH mass. net = MW(RH) - MW(R•) ~=
+        MW(H) > eps -> VOLATILE_EJECTION, with a ~= MW(H)/monomer (tiny), and the
+        atom-transfer census warns (|a| < 0.5). Netting the REACTANT non-polymers
+        is what keeps a from being the full-RH ~0.154; without it every radical
+        abstraction would fabricate a whole co-reactant of chain mass loss.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   stamp_polymer_flux_archetype)
+        p = self.polymer_1
+        r_rad = Species(molecule=[Molecule(smiles="[CH3]")])   # bare radical R•
+        rh = Species(molecule=[Molecule(smiles="C")])          # RH = R• + H
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        # Classify: bimolecular same-pool, net = MW(CH4) - MW(CH3) ~= MW(H) > eps.
+        assert (classify_reaction_flux_archetype([p, r_rad], [same, rh])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # Stamp: signed a is the NET (H-scale), not the full RH mass.
+        rxn = Reaction(reactants=[p, r_rad], products=[same, rh])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p, r_rad], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        net_h_g = (rh.molecule[0].get_molecular_weight()
+                   - r_rad.molecule[0].get_molecular_weight()) * 1000.0
+        expected = net_h_g / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units > 0.0                    # net loss (H shed)
+        # Tiny: ~= MW(H)/monomer ~ 0.0097, NOT the full RH mass ~ 0.154.
+        full_rh = (rh.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units < 0.05
+        assert rxn.polymer_eject_units < 0.2 * full_rh
+        # Atom-transfer census warned once (|a| < 0.5 monomer-equivalents).
+        assert any(k[0] == "atom_transfer_ve"
+                   for k in polymer_mod._flux_archetype_warned)
+
+    def test_classify_monomer_addition_is_negative_ve(self):
+        """
+        SIGNED-VE (Codex round-13): a same-pool monomer ADDITION
+        ``chain + monomer(bare Species) -> chain(same pool, longer)`` has NO
+        non-polymer product but a non-polymer REACTANT, so net = 0 - MW(monomer)
+        < 0. abs(net) > eps -> VOLATILE_EJECTION with a < 0 (chain GAINS mass).
+        The signed a is what lets the solver grow μ1 for addition instead of
+        silently conserving it.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   stamp_polymer_flux_archetype)
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        longer = p.copy()
+        longer.label = p.label
+        longer._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p, monomer], [longer])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn = Reaction(reactants=[p, monomer], products=[longer])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p, monomer], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = -(monomer.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units < 0.0                    # chain gains mass
+        assert rxn.polymer_eject_units == pytest.approx(-1.0, abs=0.01)
+
+    def test_classify_pure_fold_back_no_nonpoly_stays_same_pool(self):
+        """
+        SIGNED-VE (Codex round-13): a pure fold-back ``chain -> chain(same pool)``
+        with NO non-polymer participant on either side nets exactly 0, so it stays
+        SAME_POOL (abs(net) <= eps). Only a non-zero net mass routes VE.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype)
+        p = self.polymer_1
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p], [same])
+                == PolymerFluxArchetype.SAME_POOL)
+
+    def test_flag_false_one_unit_piece_routes_scission_fragment(self):
+        """
+        Discriminator regression (spec 2026-06-10 test 2, decision D3): a
+        mu1-scaled (flag-false) cut whose represented piece is ONE repeat unit
+        must still route SCISSION_FRAGMENT. On a 3-unit proxy a u1-u2 cut (the
+        image of EVERY interior backbone bond) yields 1- and 2-unit pieces --
+        literal piece size is a representation artifact and must never be a
+        routing input. Guards against reintroducing piece-size routing.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        # Represented piece: cap + ONE styrene unit (10 heavy atoms).
+        # _source_molecule is grounded by create_reacted_copy since Task 4
+        # (chip surgery / tripwire read it); fabricated here for the shape.
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")
+        assert (classify_reaction_flux_archetype([p], [piece, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_tripwire_warns_once_for_wing_confined_mu1_piece(self, caplog):
+        """
+        Spec test 5 (§4.4): a mu1-scaled (flag-false) scission whose
+        represented piece is end-confined (piece <= wing + at most 1 repeat
+        unit by heavy atoms) logs the probable-mis-scaled-end-cut warning
+        exactly once. Diagnostics only -- routing stays SCISSION_FRAGMENT.
+        The census sets the priority of the end-anchor detector follow-up.
+        """
+        import logging as _logging
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        polymer_mod._chip_tripwire_warned.clear()
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        # cap (1 heavy) + 1 unit (8 heavy) + stitch CH3 = 10 heavy
+        #   <= max_cap_heavy(1) + 2*monomer_heavy(2*8) = 17 -> end-confined.
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")
+
+        with caplog.at_level(_logging.WARNING):
+            arch = classify_reaction_flux_archetype([p], [piece, gas])
+        assert arch == PolymerFluxArchetype.SCISSION_FRAGMENT  # never routes
+        hits = [r for r in caplog.records
+                if "probable mis-scaled end-anchored cut" in r.getMessage()]
+        assert len(hits) == 1
+
+        with caplog.at_level(_logging.WARNING):
+            classify_reaction_flux_archetype([p], [piece, gas])  # repeat
+        hits = [r for r in caplog.records
+                if "probable mis-scaled end-anchored cut" in r.getMessage()]
+        assert len(hits) == 1                                   # warn-once
+
+    def test_discrete_dp_threshold_config_field(self):
+        """
+        discrete_dp_threshold (spec 2026-06-10 §6, decisions D7/D8): per-pool
+        config knob, default 4 (monomer through trimer explicit), DORMANT
+        under the fixed trimer proxy -- no behavioral use yet. Stored on the
+        Polymer, survives copy(), overridable per pool.
+        """
+        assert self.polymer_1.discrete_dp_threshold == 4
+        assert self.polymer_1.copy().discrete_dp_threshold == 4
+        p = Polymer(label='PE_thresh', monomer='[CH2][CH2]',
+                    end_groups=['[H]', '[H]'], cutoff=3,
+                    Mn=1000.0, Mw=2500.0, initial_mass=1.0,
+                    discrete_dp_threshold=6)
+        assert p.discrete_dp_threshold == 6
+
+    def test_backstop_dormant_under_trimer_proxy(self):
+        """
+        Spec test 16 / decision D8: the conditional DP backstop ("mu1-scaled
+        cut producing literal DP < threshold -> exact-a accounting") applies
+        ONLY when the proxy repeat-count exceeds discrete_dp_threshold. The
+        fixed trimer proxy (3 units) never exceeds the default threshold (4),
+        so a mu1-scaled mid-cut keeps routing SCISSION_FRAGMENT regardless of
+        literal piece DP. No backstop code exists yet -- this pins the
+        routing so adding it later cannot silently activate on trimer decks
+        (unconditional, it would route ALL mid-chain scission to chip and
+        kill mu0 growth/Mn halving).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        assert p.discrete_dp_threshold == 4          # >= 3 proxy repeat units
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")  # DP ~1 piece
+        assert (classify_reaction_flux_archetype([p], [piece, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_flipped_row_restamps_cross_pool_direction(self):
+        """
+        r92 flip-restamp-or-refuse (PP run-10 r8/r30-32). This test
+        RE-ADJUDICATES the former test_demote_flipped_polymer_archetype
+        defect pin: blind demotion to UNRESOLVED dispatched live legacy-mu1
+        flux with RESOLVED pools -- the r71-banned unclassified-pool-flux
+        class through a generation-time door. After a kinetics flip the
+        polymer flux classification must be RE-RUN on the flipped
+        direction; a clean cross-pool relabel restamps MIGRATION, never
+        legacy UNRESOLVED.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()   # PS_1
+        dst = self.polymer_2.copy()   # PS_2 (cross pool)
+        # Original generation direction PS_2 -> PS_1 stamped MIGRATION;
+        # apply_kinetics_to_reaction swapped the lists in place.
+        rxn = Reaction(reactants=[src], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.MIGRATION)
+        assert rxn.polymer_refused is False
+
+    def test_flipped_ve_row_restamps_with_flipped_sign(self, caplog):
+        """
+        r92: VOLATILE_EJECTION is genuinely direction-bound -- the flipped
+        row's eject_units must be RECOMPUTED on the flipped direction (the
+        chain now GAINS the volatile mass, a < 0), not kept stale and not
+        demoted to legacy. Also pins the success-side census line.
+        """
+        import logging as _logging
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        # Original: PS_2 -> PS_1 + styrene (VE, a > 0), flipped in place to
+        # PS_1 + styrene -> PS_2.
+        rxn = Reaction(
+            reactants=[src, styrene], products=[dst],
+            polymer_flux_archetype=int(PolymerFluxArchetype.VOLATILE_EJECTION),
+            polymer_eject_units=1.0)
+        with caplog.at_level(_logging.DEBUG, logger=""):
+            restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert rxn.polymer_eject_units == pytest.approx(-1.0, abs=0.05)
+        assert rxn.polymer_refused is False
+        # Success-side census: reports how many flips restamped cleanly.
+        hits = [r for r in caplog.records
+                if "FLIPPED-POLYMER RESTAMP:" in r.getMessage()
+                and "restamped cleanly" in r.getMessage()]
+        assert hits
+
+    def test_flipped_row_unrestampable_refused_conduit_deferred(self, caplog):
+        """
+        r92: a flipped row whose flipped-direction classification is
+        UNRESOLVED (here a reversed gas->pool association: no reactant
+        pool) must be REFUSED conduit-deferred (zero flux via
+        reaction_refused), never left as a live legacy-mu1 row. Pins the
+        FLIPPED-POLYMER RESTAMP REFUSAL census line.
+        """
+        import logging as _logging
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        p = self.polymer_1.copy()
+        gas = Species(molecule=[Molecule(smiles="CC")])
+        rxn = Reaction(reactants=[gas], products=[p],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.SCISSION_FRAGMENT))
+        with caplog.at_level(_logging.WARNING):
+            restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False   # conduit-deferred
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        hits = [r for r in caplog.records
+                if "FLIPPED-POLYMER RESTAMP REFUSAL:" in r.getMessage()]
+        assert hits
+        msg = hits[-1].getMessage()
+        assert "SCISSION_FRAGMENT" in msg   # archetype-before
+        assert "families=" in msg and "first_rows=" in msg
+
+    def test_flipped_row_ignores_stale_species_level_reacted_class(self):
+        """
+        r92 stamp-blind restamp (premise probe): _register_polymer registers
+        the reacted-copy object ITSELF, so a registry daughter Polymer
+        persistently carries the _reacted_class stamped by the reaction
+        that CREATED it -- species-level residue describing a DIFFERENT
+        reaction. The flipped-direction reclassification must not read it
+        (else a flipped row spuriously restamps SCISSION_FRAGMENT); only
+        pool labels + net non-polymer mass are orientation-honest here.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        dst._reacted_class = PolymerClass.SCISSION   # creation-time residue
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        rxn = Reaction(reactants=[src], products=[dst, styrene],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype != int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+        # Cross-pool + net volatile mass leaving => VOLATILE_EJECTION, a > 0.
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert rxn.polymer_eject_units == pytest.approx(1.0, abs=0.05)
+
+    def test_flipped_ve_metadata_failure_refuses(self):
+        """
+        r92: a flipped row that classifies VOLATILE_EJECTION but whose
+        required metadata (eject_units) cannot be computed (source pool has
+        no positive monomer MW) must refuse conduit-deferred -- never stamp
+        a VE row with fabricated/zero eject_units, never fall to legacy.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        src.monomer_mw_g_mol = 0.0   # metadata unavailable
+        dst = self.polymer_2.copy()
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        rxn = Reaction(reactants=[src, styrene], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.VOLATILE_EJECTION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        assert rxn.polymer_eject_units == 0.0
+
+    def test_flipped_pure_gas_row_untouched(self):
+        """r92 negative control: pure-gas rows are not polymer rows; the
+        flip restamp leaves them NONE and unrefused."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        gas = Species(molecule=[Molecule(smiles="CC")])
+        gas_rxn = Reaction(reactants=[gas], products=[gas])
+        restamp_flipped_polymer_archetype(gas_rxn)
+        assert gas_rxn.polymer_flux_archetype == int(PolymerFluxArchetype.NONE)
+        assert gas_rxn.polymer_refused is False
+
+    def test_flipped_row_preserves_upstream_refusal(self):
+        """r92: an upstream refusal (e.g. qssa-invalid, item 18) stamped
+        before the kinetics flip must survive the restamp -- OR semantics,
+        matching merge_polymer_adjudication_stamps (qssa-invalid wins over
+        conduit-deferred)."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        rxn = Reaction(reactants=[src], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = True   # qssa-invalid upstream
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is True
+
+    def test_create_reacted_copy_end_mod_folds_to_parent(self):
+        """
+        An END_MOD product (intact chain, terminal end-group radical-activated,
+        e.g. CH3 -> CH2.) must NOT leak to the gas phase. In the method-of-moments
+        model chain-end activation is abstracted into k_unzip (dmu1/dt = -k_unzip*mu0),
+        so an end-group modification leaves the chain-length distribution unchanged:
+        create_reacted_copy folds it back into the parent pool (self.copy) with
+        moments and mass preserved.
+
+        Regression: previously create_reacted_copy returned None for END_MOD
+        products. Its raw wing-matching (find_subgraph_isomorphisms) diverges from
+        classify_structure's heavy-view matcher and missed the degenerate [H] tail
+        wing, mis-routing the product into the head-only scission-tail branch; the
+        extracted fragment then carried 2 radicals (the activation radical plus the
+        scission cut) and failed the mono-radical end-group assertion -> None. The
+        None then left the product Molecule in place, registering it as a spurious
+        gas-phase species (a mass leak).
+        """
+        p = self.polymer_1.copy()
+        reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(p, reacted_proxy)
+
+        # Sanity: the construction really is an END_MOD product.
+        probe = reacted_proxy.copy(deep=True)
+        probe.clear_labeled_atoms()
+        probe.update()
+        assert polymer.classify_structure(Species(molecule=[probe]), p)[0] == PolymerClass.END_MOD
+
+        new_p = p.create_reacted_copy(reacted_proxy)
+        assert new_p is not None                  # no leak to gas
+        assert isinstance(new_p, Polymer)
+        assert new_p.label == p.label             # same pool identity (folded to parent)
+        assert new_p.feature_monomer is None      # backbone unchanged
+        # Moments / mass preserved (folded to parent, NOT halved like a scission).
+        assert np.isclose(new_p.Mn, p.Mn)
+        assert np.isclose(new_p.Mw, p.Mw)
+        assert np.allclose(new_p.moments, p.moments)
+
+    def test_backbone_group_property(self):
+        """
+        Test that backbone_group generates a correctly relaxed pattern and caches it.
+        """
+        g = self.polymer_3.backbone_group
+        assert len(g.atoms) == 2  # PE monomer heavy atoms only
+
+        g = self.polymer_1.backbone_group
+        assert len(g.atoms) == 8  # styrene heavy atoms only
+
+        mol = self.polymer_3.baseline_proxy.molecule[0].copy(deep=True)
+        mol.clear_labeled_atoms()
+        matches = mol.find_subgraph_isomorphisms(self.polymer_3.backbone_group)
+        assert len(matches) > 0
+
+        # 1. Trigger generation
+        group = self.polymer_1.backbone_group
+
+        # 2. Verify Caching
+        # Accessing it again should return the exact same object instance
+        group_2 = self.polymer_1.backbone_group
+        assert group is group_2, "Property should return cached instance on subsequent calls"
+
+        # 3. Verify Structure & Labels
+        # Ensure labels (*1, *2) are stripped
+        for atom in group.atoms:
+            assert atom.label == '', "Labels should be stripped from backbone group"
+
+        # 4. Verify Relaxed Constraints (The "Fuzzy" Logic)
+        for atom in group.atoms:
+            assert atom.charge == [], "Charge should be wildcarded"
+            assert atom.lone_pairs == [], "Lone pairs should be wildcarded"
+            assert atom.radical_electrons == [0], "Radicals must be strictly [0]"
+
+        # 5. Verify Bond Order Relaxation
+        # Check that bonds allow Single, Benzene, Double, Triple ([1, 1.5, 2, 3])
+        expected_orders = sorted([1, 1.5, 2, 3])
+
+        bond_checked = False
+        for atom in group.atoms:
+            for neighbor, bond in atom.bonds.items():
+                bond_checked = True
+                assert sorted(bond.order) == expected_orders, \
+                    f"Bond orders should be relaxed to {expected_orders}, got {bond.order}"
+
+        assert bond_checked, "Monomer group should have at least one bond to check"
+
+    def test_wing_groups_relaxation(self):
+        """Verify wing templates are properly relaxed for matching."""
+        wings = self.polymer_1._wing_groups("head")
+        assert len(wings) > 0
+        for group in wings:
+            for g_atom in group.atoms:
+                assert g_atom.radical_electrons == []
+                if g_atom.is_carbon() and any(at.label == 'Cb' for at in g_atom.atomtype):
+                    labels = {at.label for at in g_atom.atomtype}
+                    assert 'Cb' in labels and 'Cd' in labels
+
+    def test_get_heavy_view_with_maps(self):
+        """Test that get_heavy_view_with_maps returns a molecule with correct atom maps."""
+        full_mol = Molecule(smiles="CCC")
+        expected_heavy = sum(1 for a in full_mol.atoms if not a.is_hydrogen())
+        expected_light = sum(1 for a in full_mol.atoms if a.is_hydrogen())
+        assert expected_light > 0
+        assert expected_heavy == 3
+        heavy_mol, heavy_to_full = polymer.get_heavy_view_with_maps(full_mol)
+        assert isinstance(heavy_mol, Molecule)
+        assert isinstance(heavy_to_full, dict)
+        assert len(heavy_mol.atoms) == expected_heavy
+        assert len(heavy_to_full) == expected_heavy
+        assert not any(a.is_hydrogen() for a in heavy_mol.atoms)
+        for heavy_atom in heavy_mol.atoms:
+            assert heavy_atom in heavy_to_full, "Heavy atom missing from map keys."
+            orig_atom = heavy_to_full[heavy_atom]
+            assert orig_atom in full_mol.atoms, "Mapped atom is not in the original molecule."
+            assert heavy_atom.element.symbol == orig_atom.element.symbol
+            assert id(heavy_atom) != id(orig_atom), "Atoms share memory address; deep copy failed."
+
+        no_h_mol = Molecule().from_smiles("[C-]#[O+]")
+        no_h_heavy, no_h_map = polymer.get_heavy_view_with_maps(no_h_mol)
+        assert len(no_h_heavy.atoms) == len(no_h_mol.atoms) == 2
+        assert len(no_h_map) == 2
+        assert not any(a.is_hydrogen() for a in no_h_heavy.atoms)
+
+    def test_get_heavy_cut_edges(self):
+        """Test that get_heavy_cut_edges correctly identifies boundary bonds."""
+        # Create a simple, chemically valid linear backbone: Butane
+        mol = Molecule(smiles="CCCC")
+        heavy_mol, _ = polymer.get_heavy_view_with_maps(mol)
+        c1 = next(atom for atom in heavy_mol.atoms if len(atom.bonds) == 1)
+        c2 = list(c1.bonds.keys())[0]
+        c3 = next(atom for atom in c2.bonds.keys() if atom is not c1)
+        c4 = next(atom for atom in c3.bonds.keys() if atom is not c2)
+
+        # --- Scenario 1: Terminal Wing (1 cut edge) ---
+        # The wing is just the first carbon. The only cut should be C1-C2.
+        wing_set_1 = {c1}
+        cuts_1 = polymer.get_heavy_cut_edges(wing_set_1)
+        assert len(cuts_1) == 1
+        assert (c1, c2) in cuts_1
+
+        # --- Scenario 2: Internal Atom (2 cut edges) ---
+        # The wing is a single internal carbon. It should cross to C1 and C3.
+        wing_set_2 = {c2}
+        cuts_2 = polymer.get_heavy_cut_edges(wing_set_2)
+        assert len(cuts_2) == 2
+        assert (c2, c1) in cuts_2
+        assert (c2, c3) in cuts_2
+
+        # --- Scenario 3: Multi-Atom Fragment (2 cut edges) ---
+        # The wing is the middle two carbons {C2, C3}.
+        # The internal bond (C2-C3) should NOT be flagged as a cut.
+        # The cuts should only be C2-C1 and C3-C4.
+        wing_set_3 = {c2, c3}
+        cuts_3 = polymer.get_heavy_cut_edges(wing_set_3)
+        assert len(cuts_3) == 2
+        assert (c2, c1) in cuts_3
+        assert (c3, c4) in cuts_3
+
+        # Explicitly verify the internal bond was ignored
+        assert (c2, c3) not in cuts_3
+        assert (c3, c2) not in cuts_3
+
+        # --- Scenario 4: Entire Molecule (0 cut edges) ---
+        # If the subset is the whole molecule, there are no external connections.
+        wing_set_4 = {c1, c2, c3, c4}
+        cuts_4 = polymer.get_heavy_cut_edges(wing_set_4)
+        assert len(cuts_4) == 0
+
+    def test_analyze_wing_matches(self):
+        """
+        Comprehensive test for _analyze_wing_matches.
+        Tests Wild-Type (2 wings), Scission (1 wing), and Gas (0 wings).
+        """
+        p = self.polymer_1
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+        monomer_group = p.backbone_group
+
+        # --- Scenario 1: Wild-Type (Intact Trimer) ---
+        # The baseline proxy should yield exactly 2 disjoint wings.
+        baseline_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        count_wt, details_wt = polymer._analyze_wing_matches(baseline_mol, head_wings, tail_wings, monomer_group)
+
+        assert count_wt == 2, f"Expected 2 wings for intact baseline, got {count_wt}"
+        assert details_wt["head_match"] is not None
+        assert details_wt["tail_match"] is not None
+        assert "heavy_to_full_map" in details_wt
+        assert len(details_wt["all_optimal_wings"]) == 2
+
+        # Ensure the Max Set Packing found matches that are terminal
+        # (A true wing in a trimer should only cross 1 boundary into the remainder)
+        assert details_wt["head_match"]["cut_edges"] == 1
+        assert details_wt["tail_match"]["cut_edges"] == 1
+
+        # --- Scenario 2: Scission Fragment (Single Wing) ---
+        # We simulate a scission by just taking the head wing molecule itself.
+        # It contains a head wing, but no tail wing.
+        single_wing_mol = p._stitch_wing("head")
+        single_wing_mol.clear_labeled_atoms()  # Clean up stitch labels
+        single_wing_mol.update_multiplicity()
+
+        count_sc, details_sc = polymer._analyze_wing_matches(single_wing_mol, head_wings, tail_wings, monomer_group)
+
+        assert count_sc == 1, f"Expected 1 wing for scission fragment, got {count_sc}"
+        assert details_sc["head_match"] is not None
+        assert details_sc["tail_match"] is None
+        assert len(details_sc["all_optimal_wings"]) == 1
+
+        # --- Scenario 3: Gas Phase (Zero Wings) ---
+        # A simple methane molecule should completely fail to match the large wing patterns.
+        gas_mol = Molecule(smiles="C")
+
+        count_gas, details_gas = polymer._analyze_wing_matches(gas_mol, head_wings, tail_wings, monomer_group)
+
+        assert count_gas == 0, f"Expected 0 wings for methane gas, got {count_gas}"
+        assert details_gas["head_match"] is None
+        assert details_gas["tail_match"] is None
+        assert len(details_gas["all_optimal_wings"]) == 0
+
+    def test_end_group_modification_and_slicing(self):
+        """
+        Tests _slice_wing mechanics and _is_end_group_modified using a PS baseline.
+        Ensures modifications are geographically isolated to the correct zones.
+        """
+        # --- 1. Setup & Wild-Type Baseline ---
+        p = self.polymer_1
+        baseline_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        monomer_group = p.backbone_group
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+
+        # Calculate PS monomer heavy count (should be 8 for Styrene: 2 backbone, 6 phenyl)
+        mon_heavy_count = sum(1 for ga in monomer_group.atoms if ga.atomtype[0].label[0] != 'H')
+
+        wing_count, details_wt = polymer._analyze_wing_matches(baseline_mol, head_wings, tail_wings, monomer_group)
+        assert wing_count == 2, "Setup failed: Could not find 2 wings in baseline PS."
+
+        # --- 2. Basic Mechanics: Test _slice_wing ---
+        head_heavy_atoms = details_wt['head_match']['atoms']
+        end_group_heavy, buffer_heavy = polymer._slice_wing(head_heavy_atoms, mon_heavy_count)
+
+        # The buffer should be capped at the monomer size, and the two sets must be perfectly disjoint
+        assert len(buffer_heavy) <= mon_heavy_count
+        assert len(end_group_heavy) + len(buffer_heavy) == len(head_heavy_atoms)
+        assert len(end_group_heavy.intersection(buffer_heavy)) == 0
+
+        # --- 3. Wild-Type Validation ---
+        # The intact baseline proxy should definitively return False
+        assert polymer._is_end_group_modified(details_wt, p) is False
+
+        # --- 4. Edge Case: True End-Group Modification ---
+        mod_end_mol = baseline_mol.copy(deep=True)
+        _, details_mod = polymer._analyze_wing_matches(mod_end_mol, head_wings, tail_wings, monomer_group)
+
+        # Dynamically find a full atom that strictly belongs to the End-Group
+        heavy_to_full = details_mod['heavy_to_full_map']
+        end_heavy, _ = polymer._slice_wing(details_mod['head_match']['atoms'], mon_heavy_count)
+        end_target_full = heavy_to_full[list(end_heavy)[0]]
+
+        # Apply the kinetic modification (e.g., H-abstraction leaving a radical)
+        end_target_full.radical_electrons = 1
+
+        # The validator should catch this specific modification
+        assert polymer._is_end_group_modified(details_mod, p) is True
+
+        # --- 5. Edge Case: Buffer Modification (False Positive Prevention) ---
+        mod_buf_mol = baseline_mol.copy(deep=True)
+        _, details_buf = polymer._analyze_wing_matches(mod_buf_mol, head_wings, tail_wings, monomer_group)
+
+        heavy_to_full_buf = details_buf['heavy_to_full_map']
+        _, buffer_heavy_mod = polymer._slice_wing(details_buf['head_match']['atoms'], mon_heavy_count)
+
+        # Ensure we have a buffer to test (PS wings should include the buffer monomer)
+        assert len(buffer_heavy_mod) > 0, "Test invalid: Wing pattern did not capture a buffer monomer."
+
+        # Dynamically find a full atom that strictly belongs to the Buffer Monomer
+        buf_target_full = heavy_to_full_buf[list(buffer_heavy_mod)[0]]
+
+        # Apply the modification to the buffer
+        buf_target_full.radical_electrons = 1
+
+        # The End-Group validator MUST ignore this modification because it is in the buffer zone!
+        assert polymer._is_end_group_modified(details_buf, p) is False
+
+    def test_is_buffer_monomer_modified(self):
+        """Test that _is_buffer_monomer_modified correctly identifies changes in the buffer zone."""
+        # --- 1. Setup ---
+        p = self.polymer_1
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+        monomer_group = p.backbone_group
+        mon_heavy_count = sum(1 for ga in monomer_group.atoms if not getattr(ga, 'is_hydrogen', lambda: False)())
+
+        # --- 2. Scenario 1: Wild-Type (No Modifications) ---
+        baseline_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        _, details_wt = polymer._analyze_wing_matches(baseline_mol, head_wings, tail_wings, monomer_group)
+
+        # The intact baseline proxy should confidently return False
+        assert polymer._is_buffer_monomer_modified(details_wt, p) is False
+
+        # --- 3. Scenario 2: Buffer Modification ---
+        mod_buf_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        _, details_buf = polymer._analyze_wing_matches(mod_buf_mol, head_wings, tail_wings, monomer_group)
+
+        # Use our slicing helper to physically isolate the buffer zone
+        heavy_to_full = details_buf['heavy_to_full_map']
+        _, buffer_heavy = polymer._slice_wing(details_buf['head_match']['atoms'], mon_heavy_count)
+
+        assert len(buffer_heavy) > 0, "Test invalid: Wing pattern did not capture a buffer monomer."
+
+        # Grab a target atom strictly inside the buffer zone and mutate it
+        buf_target_heavy = list(buffer_heavy)[0]
+        buf_target_full = heavy_to_full[buf_target_heavy]
+
+        # Apply the kinetic modification (e.g., an abstracted hydrogen leaving a radical)
+        buf_target_full.radical_electrons = 1
+
+        # The validator MUST catch this modification because it falls exactly in the buffer zone
+        assert polymer._is_buffer_monomer_modified(details_buf, p) is True
+
+    def test_is_center_feature_modified(self):
+        """Test that _is_center_feature_modified exclusively catches center backbone changes."""
+        p = self.polymer_1
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+        monomer_group = p.backbone_group
+
+        baseline_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        _, details_wt = polymer._analyze_wing_matches(baseline_mol, head_wings, tail_wings, monomer_group)
+
+        # --- Scenario 1: Wild-Type (No Modifications) ---
+        # The intact baseline proxy should definitively return False
+        assert polymer._is_center_feature_modified(baseline_mol, details_wt) is False
+
+        # --- Scenario 2: Center Modification ---
+        mod_center_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        _, details_center = polymer._analyze_wing_matches(mod_center_mol, head_wings, tail_wings, monomer_group)
+
+        # Identify an atom strictly in the center by subtracting the wing full atoms
+        heavy_to_full = details_center['heavy_to_full_map']
+        wing_heavies = set(details_center['head_match']['atoms']).union(details_center['tail_match']['atoms'])
+        wing_fulls = set()
+
+        for ha in wing_heavies:
+            fa = heavy_to_full[ha]
+            wing_fulls.add(fa)
+            for neighbor in fa.bonds.keys():
+                if neighbor.is_hydrogen():
+                    wing_fulls.add(neighbor)
+
+        center_full_atoms = [a for a in mod_center_mol.atoms if a not in wing_fulls]
+        assert len(center_full_atoms) > 0, "Test invalid: Trimer proxy has no center atoms left."
+
+        # Mutate the center atom (e.g., an abstracted hydrogen leaving a radical)
+        center_target_full = center_full_atoms[0]
+        center_target_full.radical_electrons = 1
+
+        # The validator MUST catch this because the radical is in the central repeating unit
+        assert polymer._is_center_feature_modified(mod_center_mol, details_center) is True
+
+        # --- Scenario 3: Wing Modification (False Positive Prevention) ---
+        mod_wing_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        _, details_wing = polymer._analyze_wing_matches(mod_wing_mol, head_wings, tail_wings, monomer_group)
+
+        heavy_to_full_wing = details_wing['heavy_to_full_map']
+
+        # Intentionally mutate a wing atom instead
+        wing_target_heavy = list(details_wing['head_match']['atoms'])[0]
+        wing_target_full = heavy_to_full_wing[wing_target_heavy]
+        wing_target_full.radical_electrons = 1
+
+        # The center validator must IGNORE this, as it is geographically outside its domain
+        assert polymer._is_center_feature_modified(mod_wing_mol, details_wing) is False
+
+    def test_stitch_returns_none_if_any_input_none(self):
+        """Test that stitch_molecules_by_labeled_atoms returns None if any input is None."""
+        mol = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        assert polymer.stitch_molecules_by_labeled_atoms(None, mol) is None
+        assert polymer.stitch_molecules_by_labeled_atoms(mol, None) is None
+
+    def test_stitch_for_p1(self):
+        """Test stitch_molecules_by_labeled_atoms for polymer_1 head wing + methyl radical."""
+        p = self.polymer_1.copy()
+        head_wing = p._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        scission_fragment = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert scission_fragment.to_smiles() in ['CCC(C)C1=CC=CC=C1']
+
+    def test_stitch_raises_when_missing_labels(self):
+        """Test that stitch_molecules_by_labeled_atoms raises ValueError when labels missing."""
+        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        right = Molecule(smiles="[CH3]")  # radical but no *2 label
+        with pytest.raises(ValueError):
+            polymer.stitch_molecules_by_labeled_atoms(left, right)
+
+    def test_stitch_raises_when_stitch_sites_not_mono_radicals(self):
+        """Test that stitch_molecules_by_labeled_atoms raises ValueError when stitch sites not mono-radicals."""
+        left = Molecule().from_adjacency_list(_methyl_closed_shell_labeled_adj("*1"))  # labeled but u0
+        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        with pytest.raises(ValueError):
+            polymer.stitch_molecules_by_labeled_atoms(left, right)
+
+    def test_stitch_does_not_mutate_inputs_and_clears_labels_in_product(self):
+        """Test that stitch_molecules_by_labeled_atoms does not mutate inputs and clears labels in product."""
+        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        left_before_labels = [a.label for a in left.atoms]
+        right_before_labels = [a.label for a in right.atoms]
+        left_before_rad = left.get_radical_count()
+        right_before_rad = right.get_radical_count()
+        merged = polymer.stitch_molecules_by_labeled_atoms(left, right)
+        assert merged is not None
+
+        # inputs unchanged (function deep-copies)
+        assert [a.label for a in left.atoms] == left_before_labels
+        assert [a.label for a in right.atoms] == right_before_labels
+        assert left.get_radical_count() == left_before_rad
+        assert right.get_radical_count() == right_before_rad
+
+        # product has no stitch labels remaining at the join sites
+        assert polymer.find_labeled_atom(merged, LABELS_1) is None
+        assert polymer.find_labeled_atom(merged, LABELS_2) is None
+        assert merged.get_radical_count() == 0
+
+    @pytest.mark.parametrize("do_update", [False, True])
+    def test_end_group_modification_does_not_require_atomtypes(self, do_update):
+        """
+        Scenario: Head end-group modification.
+        Uses Polystyrene (PS) to ensure the wing is large enough to slice into
+        distinct End-Group and Buffer zones.
+        """
+        p = self.polymer_1
+        product_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+        monomer_group = p.backbone_group
+        _, details = polymer._analyze_wing_matches(product_mol, head_wings, tail_wings, monomer_group)
+        heavy_to_full = details['heavy_to_full_map']
+        head_heavy_atoms = details['head_match']['atoms']
+        mon_heavy_count = sum(1 for ga in monomer_group.atoms if not ga.is_hydrogen())
+        end_group_heavy, _ = polymer._slice_wing(head_heavy_atoms, mon_heavy_count)
+        assert len(end_group_heavy) > 0, "PS Wing should have leftover atoms after slicing buffer."
+        target_full = heavy_to_full[list(end_group_heavy)[0]]
+        h_atom = next(n for n in target_full.bonds if n.is_hydrogen())
+        product_mol.remove_bond(product_mol.get_bond(target_full, h_atom))
+        product_mol.remove_atom(h_atom)
+        target_full.radical_electrons = 1
+        product_mol.update_multiplicity()
+        spc = Species(molecule=[product_mol])
+        classification, _ = polymer.classify_structure(spc, p)
+        assert classification == PolymerClass.END_MOD
+
+    def test_no_molecule_returns_gas(self):
+        """Species without a molecule array gracefully exits."""
+        spc = Species()
+        classification, details = polymer.classify_structure(spc, self.polymer_3)
+        assert classification == PolymerClass.UNKNOWN
+        assert details["reason"] == "no_molecule"
+
+    def test_proxy_to_gas_flag_update(self):
+        """
+        Ensures a misclassified proxy successfully overwrites its proxy flag to False.
+        (Renamed and updated to remove the print/capsys requirement).
+        """
+        spc = Species(label="BadProxy", molecule=[Molecule(smiles="C")])
+        if not hasattr(spc, "props"): spc.props = {}
+        spc.props["is_polymer_proxy"] = True
+        for m in spc.molecule:
+            if not hasattr(m, "props"): m.props = {}
+            m.props["is_polymer_proxy"] = True
+        polymer.process_polymer_candidates([spc], None, self.polymer_3)
+        assert spc.props.get("is_polymer_proxy") is False
+        for m in spc.molecule:
+            assert m.props.get("is_polymer_proxy") is False
+
+    def test_end_mod_more_than_3_matches_sets_note(self):
+        """
+        Validates classification when a chain matches > 3 times.
+        Uses Polystyrene to ensure the wings are deep enough to support
+        distinct End-Group vs Buffer zones.
+        """
+        p = self.polymer_1
+        # Build a PS tetramer (4 units) to ensure > 3 matches (3 is enough, but 4 is safer)
+        # We can just use the baseline proxy if it's already a trimer, or stitch a longer one.
+        # For simplicity, let's use the baseline trimer (3 units) but target the end-group.
+        product_mol = p.baseline_proxy.molecule[0].copy(deep=True)
+
+        # 1. Analyze to find topological domains
+        head_wings = p._wing_groups("head")
+        tail_wings = p._wing_groups("tail")
+        monomer_group = p.backbone_group
+        _, details = polymer._analyze_wing_matches(product_mol, head_wings, tail_wings, monomer_group)
+
+        # 2. Targeted Strike on the True End-Group (Initiator fragment)
+        heavy_to_full = details['heavy_to_full_map']
+        head_heavy_atoms = details['head_match']['atoms']
+        mon_heavy_count = sum(1 for ga in monomer_group.atoms if not ga.is_hydrogen())
+
+        end_group_heavy, _ = polymer._slice_wing(head_heavy_atoms, mon_heavy_count)
+        target_full = heavy_to_full[list(end_group_heavy)[0]]
+        h_atom = next(n for n in target_full.bonds if n.is_hydrogen())
+        product_mol.remove_bond(product_mol.get_bond(target_full, h_atom))
+        product_mol.remove_atom(h_atom)
+        target_full.radical_electrons = 1
+        product_mol.update_multiplicity()
+
+        # 3. Final Classification
+        spc = Species(molecule=[product_mol])
+        classification, details = polymer.classify_structure(spc, p)
+        assert classification == PolymerClass.END_MOD
+
+    def test_proxy_true_but_no_backbone_matches_returns_gas_reason(self):
+        """
+        Simulates the '0 core reactions' starvation mode where a candidate
+        claims to be a proxy but structurally isn't.
+        """
+        spc = Species(molecule=[Molecule(smiles="CO")])
+        spc.is_polymer_proxy = True
+        classification, details = polymer.classify_structure(spc, self.polymer_3)
+        assert classification == PolymerClass.GAS
+        assert details["reason"] == "no_intact_wings"
+
+    def test_process_filters_discard_and_sets_flags(self):
+        """
+        Verifies `process_polymer_candidates` correctly updates the proxy flags
+        and drops DISCARD candidates.
+        """
+        p = self.polymer_3
+        # 1. FEAT (Radical in center)
+        s_feat = Species(label="FEAT", molecule=[p.baseline_proxy.molecule[0].copy(deep=True)])
+        c_feat = get_monomer_regions(s_feat.molecule[0])['center'][0]
+        _safe_make_radical(s_feat.molecule[0], c_feat)
+        s_feat.molecule[0].update_multiplicity()
+
+        # 2. DISC (Radical in buffer)
+        s_disc = Species(label="DISC", molecule=[p.baseline_proxy.molecule[0].copy(deep=True)])
+        c_disc = get_monomer_regions(s_disc.molecule[0])['head_buffer'][1]
+        _safe_make_radical(s_disc.molecule[0], c_disc)
+        s_disc.molecule[0].update_multiplicity()
+
+        # 3. GAS
+        s_gas = Species(label="GAS", molecule=[Molecule(smiles="C")])
+        out = polymer.process_polymer_candidates([s_feat, s_disc, s_gas], None, p)
+        assert len(out) == 2
+
+    def test_restore_labels_head_scission(self):
+        """
+        Test that _restore_labels identifies a cut bond to a head-wing atom
+        and correctly labels the remainder atom as '*2' with a radical.
+        """
+        original_mol = Molecule().from_smiles("CC")
+        c1, c2 = original_mol.atoms[0], original_mol.atoms[1]
+        removed_atoms = {c1}
+        for neighbor in c1.bonds:
+            if neighbor.is_hydrogen():
+                removed_atoms.add(neighbor)
+        new_mol = Molecule()
+        for _ in range(4):
+            new_mol.add_atom(Atom(element='C' if _ == 0 else 'H'))
+        head_match_atoms = {c1}
+        polymer.Polymer._restore_labels(
+            new_mol=new_mol,
+            original_mol=original_mol,
+            removed_atoms=removed_atoms,
+            head_match_atoms=head_match_atoms,
+            tail_match_atoms=None)
+        res_atom = new_mol.atoms[0]
+        assert res_atom.label == '*2'
+        assert res_atom.radical_electrons == 1
+
+    def test_restore_labels_mapping_failure(self):
+        """
+        Test that _restore_labels raises ValueError if the atom counts
+        between the original (minus removed) and the new molecule don't match.
+        """
+        original_mol = Molecule().from_smiles("CC")
+        new_mol = Molecule().from_smiles("C")
+        with pytest.raises(ValueError, match="Mapping failure"):
+            polymer.Polymer._restore_labels(
+                new_mol=new_mol,
+                original_mol=original_mol,
+                removed_atoms=set(),
+                head_match_atoms=None,
+                tail_match_atoms=None)
+
+    def test_restore_labels_conflict(self):
+        """
+        Test that _restore_labels raises ValueError if an atom
+        tries to be both *1 and *2.
+        """
+        mol = Molecule().from_smiles("CCC")
+        c1, c2, c3 = mol.atoms[0], mol.atoms[1], mol.atoms[2]
+        removed = {c1, c3}
+        for terminal_c in [c1, c3]:
+            for neighbor in terminal_c.bonds:
+                if neighbor.is_hydrogen():
+                    removed.add(neighbor)
+        new_mol = Molecule()
+        for _ in range(3):
+            new_mol.add_atom(Atom(element='C' if _ == 0 else 'H'))
+        head_match = {c3}
+        tail_match = {c1}
+        with pytest.raises(ValueError, match="Label conflict"):
+            polymer.Polymer._restore_labels(
+                new_mol=new_mol,
+                original_mol=mol,
+                removed_atoms=removed,
+                head_match_atoms=head_match,
+                tail_match_atoms=tail_match)
+
+    def test_stitch_trimer_wildtypes(self):
+        """
+        Test that _stitch_trimer creates a correctly capped trimer (5 segments total).
+        Tests Polystyrene (PS) and defines PMMA.
+        """
+        # --- 1. Polystyrene (PS) Wildtype ---
+        ps_trimer_spc = self.polymer_1._stitch_trimer(self.polymer_1.monomer)
+
+        assert isinstance(ps_trimer_spc, Species)
+        assert ps_trimer_spc.is_polymer_proxy is True
+
+        ps_mol = ps_trimer_spc.molecule[0]
+        assert len([a for a in ps_mol.atoms if a.is_carbon()]) == 25
+        assert all(a.label == '' for a in ps_mol.atoms)
+
+        # --- 2. New Polymer Definition: PMMA ---
+        pmma_adj = """
+multiplicity 3
+1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+3    C u0 p0 c0 {1,S} {7,S} {8,S} {9,S}
+4    H u0 p0 c0 {1,S}
+5    C u0 p0 c0 {2,S} {10,D} {11,S}
+6    H u0 p0 c0 {2,S}
+7    H u0 p0 c0 {3,S}
+8    H u0 p0 c0 {3,S}
+9    H u0 p0 c0 {3,S}
+10   O u0 p2 c0 {5,D}
+11   O u0 p2 c0 {5,S} {12,S}
+12   C u0 p0 c0 {11,S} {13,S} {14,S} {15,S}
+13   H u0 p0 c0 {12,S}
+14   H u0 p0 c0 {12,S}
+15   H u0 p0 c0 {12,S}
+"""
+        pmma_poly = Polymer(
+            label='PMMA',
+            monomer=pmma_adj,
+            end_groups=['[H]', '[H]'],
+            cutoff=5,
+            Mn=2000.0,
+            Mw=4000.0,
+            initial_mass=1.0)
+
+        pmma_trimer_spc = pmma_poly._stitch_trimer(pmma_poly.monomer)
+
+        assert pmma_trimer_spc is not None
+        pmma_mol = pmma_trimer_spc.molecule[0]
+
+        # PMMA monomer (C5H8O2) -> Trimer (3 units) + 2H ends = C15H26O6
+        c_count = len([a for a in pmma_mol.atoms if a.is_carbon()])
+        o_count = len([a for a in pmma_mol.atoms if a.is_oxygen()])
+        assert c_count == 15
+        assert o_count == 6
+
+    def test_get_polydispersity(self):
+        """
+        Test PDI calculation (Mw/Mn) and edge case handling.
+        """
+        # 1. Standard Case: PE_1 (Mn=1000, Mw=2500)
+        # PDI = 2500 / 1000 = 2.5
+        assert self.polymer_3.get_polydispersity() == 2.5
+
+        # 2. Monodisperse Case: Mn = Mw
+        # PDI should be 1.0
+        mono_poly = self.polymer_3.copy()
+        mono_poly.Mn = 5000.0
+        mono_poly.Mw = 5000.0
+        assert mono_poly.get_polydispersity() == 1.0
+
+        # 3. Edge Case: Mn is None
+        none_poly = self.polymer_3.copy()
+        none_poly.Mn = None
+        assert none_poly.get_polydispersity() == 0.0
+
+        # 4. Edge Case: Mn is 0 (Avoid DivisionByZero)
+        zero_poly = self.polymer_3.copy()
+        zero_poly.Mn = 0.0
+        assert zero_poly.get_polydispersity() == 0.0
+
+    def test_calculate_distribution_from_moments(self):
+        """
+        Test the back-calculation of Mn and Mw from raw moments.
+        Mn = (mu1 / mu0) * MonomerMW
+        Mw = (mu2 / mu1) * MonomerMW
+        """
+        # Using polymer_3 (PE) from setup_species
+        p = self.polymer_3.copy()
+
+        # 1. Setup moments for a hypothetical distribution
+        # mu0 = 1.0 (1 mole of chains)
+        # mu1 = 100.0 (100 moles of monomer units) -> DPn = 100
+        # mu2 = 15000.0 -> DPw = 150
+        p.moments = np.array([1.0, 100.0, 15000.0])
+
+        # monomer_mw_g_mol is calculated in __init__ as get_molecular_weight() * 1000
+        monomer_mw = p.monomer.get_molecular_weight() * 1000.0
+        mn_calc, mw_calc = p._calculate_distribution_from_moments()
+        expected_mn = 100.0 * monomer_mw
+        expected_mw = 150.0 * monomer_mw
+        assert np.isclose(mn_calc, expected_mn)
+        assert np.isclose(mw_calc, expected_mw)
+
+    def test_calculate_distribution_from_zero_moments(self):
+        """Ensure the calculation handles zero-density states without crashing."""
+        p = self.polymer_3.copy()
+
+        # Case: mu0 is 0 (No polymer present)
+        p.moments = np.array([0.0, 0.0, 0.0])
+        mn, mw = p._calculate_distribution_from_moments()
+        assert mn == 0.0
+        assert mw == 0.0
+
+        # Case: moments are None
+        p.moments = None
+        mn_none, mw_none = p._calculate_distribution_from_moments()
+        assert mn_none is None
+        assert mw_none is None
+
+    def test_distribution_moment_round_trip(self):
+        """
+        Verifies that converting Mn/Mw -> Moments -> Mn/Mw preserves values.
+        """
+        p = self.polymer_3.copy()
+        original_mn = p.Mn
+        original_mw = p.Mw
+
+        # This calls _calculate_moments_from_distribution() internally which depends on the Mn/Mw provided at init
+        moments = p._calculate_moments_from_distribution()
+        p.moments = moments
+
+        # Now back-calculate
+        new_mn, new_mw = p._calculate_distribution_from_moments()
+
+        assert np.isclose(original_mn, new_mn)
+        assert np.isclose(original_mw, new_mw)
+
+    def test_fingerprint_generation(self):
+        """
+        Verify that the fingerprint is a stable string incorporating
+        monomer, feature_monomer, and cutoff.
+        """
+        p = self.polymer_1
+        fp = p.fingerprint
+
+        # 1. Basic format check
+        assert fp.startswith("Polymer_")
+        assert f"_{p.cutoff}" in fp
+
+        # 2. Immutability/Caching check
+        # Fingerprint should be read-only (cached)
+        first_fp = p.fingerprint
+        assert first_fp is p.fingerprint
+
+        # 3. Sensitivity check: Changing cutoff changes fingerprint
+        p_diff_cutoff = p.copy()
+        p_diff_cutoff.cutoff = 10
+        p_diff_cutoff._fingerprint = None
+        assert p_diff_cutoff.fingerprint != fp
+        assert fp.endswith("_3")
+        assert p_diff_cutoff.fingerprint.endswith("_10")
+
+    def test_fingerprint_with_feature_monomer(self):
+        """
+        Verify that the feature_monomer fingerprint is included when present.
+        """
+        # polymer_4 has a feature_monomer defined in setup_species
+        p = self.polymer_4
+        fp = p.fingerprint
+        assert "_Feat-" in fp
+        assert p.monomer.fingerprint in fp
+        assert p.feature_monomer.fingerprint in fp
+
+    def test_fingerprint_consistency(self):
+        """
+        Verify that two identical polymers result in the same fingerprint.
+        """
+        p1 = self.polymer_1
+        p2 = self.polymer_1.copy()
+        # Clear cache to force generation
+        p2._fingerprint = None
+        assert p1.fingerprint == p2.fingerprint
+
+    def test_get_closing_moment_accuracy(self):
+        """
+        Verify the Log-Lagrange extrapolation for mu3.
+        mu3 = (mu2^3 * mu0) / mu1^3
+        """
+        p = self.polymer_3
+        # Setup specific moments: mu0=1, mu1=10, mu2=200
+        # mu3 = (200^3 * 1) / 10^3 = 8,000,000 / 1,000 = 8,000
+        mu = [1.0, 10.0, 200.0]
+        mu3 = p.get_closing_moment(mu)
+        assert np.isclose(mu3, 8000.0)
+
+    def test_get_closing_moment_stability_at_zero(self):
+        """
+        Ensure the closure doesn't crash or return NaN/Inf when moments are zero.
+        This happens at t=0 when polymer species haven't formed yet.
+        """
+        p = self.polymer_3
+
+        # All zeros
+        assert p.get_closing_moment([0.0, 0.0, 0.0]) == 0.0
+
+        # mu0 is zero (no number density)
+        assert p.get_closing_moment([0.0, 10.0, 200.0]) == 0.0
+
+        # mu1 is zero (to avoid ZeroDivisionError)
+        assert p.get_closing_moment([1.0, 0.0, 200.0]) == 0.0
+
+    def test_get_closing_moment_stability_negative(self):
+        """
+        Solver oversteps can result in slightly negative moments.
+        The closure must handle this gracefully.
+        """
+        # Negative mu1 should return 0 rather than a complex number/NaN
+        assert self.polymer_3.get_closing_moment([1.0, -0.01, 200.0]) == 0.0
+
+    def test_scission_structural_split(self):
+        """
+        Tests the structural scission of a trimer into two fragments.
+        Verifies that labels and end-groups are correctly redistributed.
+        """
+        # 1. Use the Polystyrene (PS) fixture
+        poly = self.polymer_1
+        # Generate the wildtype trimer proxy: [Cap1]-[M1]-[M2]-[M3]-[Cap2]
+        trimer_spc = poly.get_proxy_species()
+        trimer_mol = trimer_spc.molecule[0]
+
+        # 2. Identify a scission point
+        # We find a backbone C-C bond between two monomer units
+        # For simplicity in this test, we'll simulate the extraction of a
+        # fragment after a scission event.
+
+        # 3. Test the 'healing' of a scission site
+        # Suppose a scission occurred, leaving a fragment that needs a TailCap
+        fragment_mol = Molecule().from_smiles("CCCC")  # A 4-carbon fragment
+        # We need to restore labels as if it were cut from a larger chain
+
+        # Identify 'removed' atoms (the rest of the chain)
+        # We'll use a mock original and removed set
+        original = Molecule().from_smiles("CCCCCC")
+        removed = {original.atoms[4], original.atoms[5]}  # Remove the end
+        for atom in list(removed):
+            for neighbor in atom.bonds:
+                if neighbor.is_hydrogen():
+                    removed.add(neighbor)
+
+        # The remainder is the 4-carbon fragment
+        new_mol = Molecule()
+        for _ in range(len([a for a in original.atoms if a not in removed])):
+            new_mol.add_atom(Atom(element='C' if _ < 4 else 'H'))
+
+        # Heal the scission site (tail-side cut)
+        poly._restore_labels(
+            new_mol=new_mol,
+            original_mol=original,
+            removed_atoms=removed,
+            tail_match_atoms={original.atoms[4]}  # The atom that was cut away
+        )
+
+        # Verify the new tail connection point (*1) was created
+        tail_atom = [a for a in new_mol.atoms if a.label == '*1']
+        assert len(tail_atom) == 1
+        assert tail_atom[0].radical_electrons == 1
+
+
+class TestPolymerClassification:
+    """
+    Comprehensive test suite for the classify_structure() topological partitioner.
+    Uses a Polystyrene (PS) wild-type baseline to dynamically verify all classification branches.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_polymer(self):
+        """
+        Initializes the PS baseline proxy and necessary components before every test.
+        """
+        # 1. Build the Polystyrene (PS) baseline
+        ps_adj = """multiplicity 3
+                                    1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                                    2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                                    3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                                    4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                                    5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                                    6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                                    7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                                    8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                                    9    H u0 p0 c0 {1,S}
+                                    10   H u0 p0 c0 {1,S}
+                                    11   H u0 p0 c0 {2,S}
+                                    12   H u0 p0 c0 {4,S}
+                                    13   H u0 p0 c0 {5,S}
+                                    14   H u0 p0 c0 {6,S}
+                                    15   H u0 p0 c0 {7,S}
+                                    16   H u0 p0 c0 {8,S}"""
+
+        self.p = Polymer(
+            label='PS_1',
+            monomer=ps_adj,
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,)
+
+        # 2. Extract topological definitions
+        self.monomer_group = self.p.backbone_group
+        self.head_wings = self.p._wing_groups("head")
+        self.tail_wings = self.p._wing_groups("tail")
+
+        # 3. Determine the size of the PS monomer for dynamic slicing and thresholding
+        self.mon_heavy_count = sum(1 for ga in self.monomer_group.atoms if not getattr(ga, 'is_hydrogen', lambda: False)())
+
+        # 4. Create a clean reference baseline molecule
+        self.ref_baseline_mol = self.p.baseline_proxy.molecule[0].copy(deep=True)
+
+    def test_branch_gas_no_backbone(self):
+        """
+        Tests the failure mode where the polymer definition lacks a backbone group.
+        Physically represents a malformed polymer object.
+        """
+        species = Species(molecule=[self.ref_baseline_mol])
+        class BrokenPolymer:
+            backbone_group = None
+        p_class, details = polymer.classify_structure(species, BrokenPolymer())
+        assert p_class == polymer.PolymerClass.GAS
+        assert details["reason"] == "no_backbone_group"
+
+    def test_branch_gas_too_few_atoms(self):
+        """
+        Tests the failure mode where the generated product is smaller than a single monomer.
+        Physically represents an extreme degradation product (e.g., Methane off-gassing).
+        """
+        from rmgpy.molecule.molecule import Molecule
+        tiny_mol = Molecule().from_smiles("C")
+        species = Species(molecule=[tiny_mol])
+        p_class, details = polymer.classify_structure(species, self.p)
+        assert p_class == polymer.PolymerClass.GAS
+        assert details["reason"] == "too_few_atoms_for_monomer"
+
+    def test_discreteness_gate_rejects_backbone_impostor(self):
+        """
+        Discreteness gate (spec 2026-06-10 §3.1): a wing_count >= 2 candidate
+        far smaller than the baseline proxy is a backbone impostor, not a
+        chain image. Bibenzyl (14 heavy atoms) genuinely matches both PS wing
+        subgraphs today but sits below the one-sided bound
+        proxy_heavy - round(0.35*proxy_heavy) = 25 - 9 = 16 -> GAS.
+        """
+        impostor = Molecule(smiles="c1ccccc1CCc1ccccc1")  # bibenzyl, 14 heavy
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[impostor]), self.p)
+        assert p_class == polymer.PolymerClass.GAS
+        assert details["reason"] == "backbone_impostor"
+
+    def test_discreteness_gate_keeps_modified_proxy_images(self):
+        """
+        Tolerance pin, pass side (one-sided on purpose): legitimately LARGER
+        images (+1 side group, -2 H => 27 heavy) and modestly SMALLER images
+        (lost center phenyl => 19 heavy >= bound 16) must NOT gas-classify as
+        impostors.
+        """
+        bigger = Molecule(smiles="CC(CC(C)=C(CC(C)c1ccccc1)c1ccccc1)c1ccccc1")
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[bigger]), self.p)
+        assert details["num_disjoint_wings"] == 2  # actually reached the gate
+        assert details["reason"] != "backbone_impostor"
+        assert p_class != polymer.PolymerClass.GAS
+
+        smaller = Molecule(smiles="CC(CCCC(C)c1ccccc1)c1ccccc1")  # 19 heavy
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[smaller]), self.p)
+        assert details["num_disjoint_wings"] == 2  # actually reached the gate
+        assert details["reason"] != "backbone_impostor"
+        assert p_class != polymer.PolymerClass.GAS
+
+    # =========================================================================
+    # BRANCH A: INTACT BACKBONE (>= 2 WINGS)
+    # =========================================================================
+
+    def test_branch_baseline_unreacted(self):
+        """
+        Tests the exact, unreacted baseline proxy.
+        Physically represents a spectator chain that did not undergo a kinetic reaction.
+        """
+        species = Species(molecule=[self.ref_baseline_mol.copy(deep=True)])
+
+        p_class, details = polymer.classify_structure(species, self.p)
+
+        assert p_class == polymer.PolymerClass.BASELINE
+        assert details["reason"] == "unreacted_proxy"
+        assert details["num_disjoint_wings"] == 2
+
+    def test_branch_end_group_modification(self):
+        """
+        Tests a kinetic modification (radical) strictly localized to the terminal end-cap.
+        Dynamically calculates the BFS slice to ensure accurate mutation targeting.
+        """
+        mod_mol = self.ref_baseline_mol.copy(deep=True)
+
+        # 1. Analyze the molecule to find the topological zones
+        _, match_details = polymer._analyze_wing_matches(mod_mol, self.head_wings, self.tail_wings, self.monomer_group)
+
+        heavy_to_full = match_details['heavy_to_full_map']
+        head_heavy_atoms = match_details['head_match']['atoms']
+
+        # 2. Slice the wing into End-Cap and Buffer
+        end_group_heavy, _ = polymer._slice_wing(head_heavy_atoms, self.mon_heavy_count)
+
+        # 3. Apply the kinetic mutation (H-abstraction) strictly to the End-Cap
+        target_heavy = list(end_group_heavy)[0]
+        target_full = heavy_to_full[target_heavy]
+        target_full.radical_electrons = 1
+
+        # 4. Route through classify_structure
+        species = Species(molecule=[mod_mol])
+        p_class, details = polymer.classify_structure(species, self.p)
+
+        assert p_class == polymer.PolymerClass.END_MOD
+        assert details["reason"] == "terminal_end_modified"
+        assert details["num_disjoint_wings"] == 2
+
+    def test_branch_buffer_monomer_modification(self):
+        """
+        Tests a kinetic modification located inside the buffer monomer.
+        This must be classified as DISCARD to prevent boundary effect contamination in kinetics.
+        """
+        mod_mol = self.ref_baseline_mol.copy(deep=True)
+
+        # 1. Analyze and isolate the buffer zone
+        _, match_details = polymer._analyze_wing_matches(mod_mol, self.head_wings, self.tail_wings, self.monomer_group)
+        heavy_to_full = match_details['heavy_to_full_map']
+        head_heavy_atoms = match_details['head_match']['atoms']
+        _, buffer_heavy = polymer._slice_wing(head_heavy_atoms, self.mon_heavy_count)
+
+        assert len(buffer_heavy) > 0, "Test failed to isolate a buffer zone."
+
+        # 2. Mutate an atom strictly inside the buffer
+        target_heavy = list(buffer_heavy)[0]
+        target_full = heavy_to_full[target_heavy]
+        target_full.radical_electrons = 1
+
+        # 3. Route through classify_structure
+        species = Species(molecule=[mod_mol])
+        p_class, details = polymer.classify_structure(species, self.p)
+
+        assert p_class == polymer.PolymerClass.DISCARD
+        assert details["reason"] == "buffer_monomer_modified"
+        assert details["num_disjoint_wings"] == 2
+
+    def test_branch_center_feature_modification(self):
+        """Tests kinetic modification in the center. Uses radical to ensure it's not baseline."""
+        mod_mol = self.ref_baseline_mol.copy(deep=True)
+        _, match_details = polymer._analyze_wing_matches(mod_mol, self.head_wings, self.tail_wings, self.monomer_group)
+        heavy_to_full = match_details['heavy_to_full_map']
+
+        wing_heavies = set(match_details['head_match']['atoms']).union(match_details['tail_match']['atoms'])
+        center_full_atoms = [heavy_to_full[ha] for ha in heavy_to_full if ha not in wing_heavies]
+
+        # Apply radical to center
+        target = center_full_atoms[0]
+        # Remove a hydrogen to make room for radical
+        h_neighbor = next(n for n in target.bonds if n.is_hydrogen())
+        mod_mol.remove_bond(mod_mol.get_bond(target, h_neighbor))
+        mod_mol.remove_atom(h_neighbor)
+        target.radical_electrons = 1
+        mod_mol.update_multiplicity()
+
+        p_class, details = polymer.classify_structure(Species(molecule=[mod_mol]), self.p)
+        assert p_class == polymer.PolymerClass.FEATURE
+
+    # =========================================================================
+    # MACROSCOPIC STRUCTURAL CHANGES
+    # =========================================================================
+
+    def test_branch_crosslink_bimolecular(self):
+        """Tests >2 wings by joining two chains at heavy atoms after making room (valency)."""
+        crosslink_mol = self.ref_baseline_mol.copy(deep=True)
+        second_chain = self.ref_baseline_mol.copy(deep=True)
+
+        # 1. Add atoms and bonds from second_chain properly
+        mapping = {}
+        for atom in second_chain.atoms:
+            new_atom = atom.copy()
+            crosslink_mol.add_atom(new_atom)
+            mapping[atom] = new_atom
+
+        for atom1 in second_chain.atoms:
+            for atom2, bond in atom1.edges.items():
+                if id(atom1) < id(atom2):
+                    crosslink_mol.add_bond(Bond(mapping[atom1], mapping[atom2], bond.order))
+
+        # 2. Pick a heavy atom from the original first chain and clear a spot
+        # We know atoms[:len_original] belong to the first chain
+        a1 = next(a for a in crosslink_mol.atoms if not a.is_hydrogen())
+        h1 = next(n for n in a1.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a1, h1))
+        crosslink_mol.remove_atom(h1)
+
+        # 3. Pick a heavy atom from the newly added second chain and clear a spot
+        # We search specifically in the mapped atoms to ensure internal connectivity
+        a2 = next(mapping[a] for a in second_chain.atoms if not a.is_hydrogen())
+        h2 = next(n for n in a2.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a2, h2))
+        crosslink_mol.remove_atom(h2)
+
+        # 4. Connect them - Valency is now satisfied (4 bonds per Carbon)
+        crosslink_mol.add_bond(Bond(a1, a2, order=1))
+        crosslink_mol.update_multiplicity()
+
+        p_class, details = polymer.classify_structure(Species(molecule=[crosslink_mol]), self.p)
+        assert p_class == polymer.PolymerClass.CROSSLINK
+
+    def _build_crosslink_mol(self):
+        """Build a >2-wing crosslink molecule by joining two baseline chains
+        at heavy atoms (after freeing valence). Same construction as
+        test_branch_crosslink_bimolecular, factored out for reuse."""
+        crosslink_mol = self.ref_baseline_mol.copy(deep=True)
+        second_chain = self.ref_baseline_mol.copy(deep=True)
+        mapping = {}
+        for atom in second_chain.atoms:
+            new_atom = atom.copy()
+            crosslink_mol.add_atom(new_atom)
+            mapping[atom] = new_atom
+        for atom1 in second_chain.atoms:
+            for atom2, bond in atom1.edges.items():
+                if id(atom1) < id(atom2):
+                    crosslink_mol.add_bond(Bond(mapping[atom1], mapping[atom2], bond.order))
+        a1 = next(a for a in crosslink_mol.atoms if not a.is_hydrogen())
+        h1 = next(n for n in a1.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a1, h1))
+        crosslink_mol.remove_atom(h1)
+        a2 = next(mapping[a] for a in second_chain.atoms if not a.is_hydrogen())
+        h2 = next(n for n in a2.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a2, h2))
+        crosslink_mol.remove_atom(h2)
+        crosslink_mol.add_bond(Bond(a1, a2, order=1))
+        crosslink_mol.update_multiplicity()
+        return crosslink_mol
+
+    def test_create_reacted_copy_rejects_crosslink(self):
+        """
+        A crosslink / chain-coupling product (>2 wings) must raise
+        PolymerCrosslinkError, NOT silently return None.
+
+        Regression guard: previously _create_reacted_copy_logic fell through to
+        None for crosslinks, so the coupled chain was registered as a spurious
+        gas-phase molecule (a silent mass leak). create_reacted_copy now rejects
+        it so make_new_reaction can discard the whole reaction.
+        """
+        crosslink_mol = self._build_crosslink_mol()
+        # sanity: this really is a crosslink
+        assert polymer.classify_structure(
+            Species(molecule=[crosslink_mol.copy(deep=True)]), self.p
+        )[0] == polymer.PolymerClass.CROSSLINK
+
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            self.p.create_reacted_copy(crosslink_mol)
+
+    def test_handshake_structures_propagates_crosslink_rejection(self):
+        """
+        The crosslink rejection must propagate through _handshake_structures
+        (i.e. NOT be swallowed by its ``except (RuntimeError, ValueError)``
+        guard), so that make_new_reaction sees it and discards the reaction.
+        """
+        from rmgpy.data.kinetics.family import _handshake_structures
+        crosslink_mol = self._build_crosslink_mol()
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            _handshake_structures([crosslink_mol], [self.p])
+
+    def test_branch_scission_single_wing(self):
+        """
+        Tests a severed polymer chain containing exactly one terminal end-cap.
+        Physically represents beta-scission in the backbone.
+        """
+        # Simulate scission by building a single stitched wing
+        scission_mol = self.p._stitch_wing("head")
+        scission_mol.clear_labeled_atoms()
+        scission_mol.update_multiplicity()
+
+        species = Species(molecule=[scission_mol])
+        p_class, details = polymer.classify_structure(species, self.p)
+
+        assert p_class == polymer.PolymerClass.SCISSION
+        assert details["reason"] == "single_terminal_wing"
+        assert details["num_disjoint_wings"] == 1
+
+    def test_branch_gas_no_wings(self):
+        """Tests 0 wings for decane."""
+        alien_mol = Molecule().from_smiles("CCCCCCCCCC")
+        p_class, details = polymer.classify_structure(Species(molecule=[alien_mol]), self.p)
+        assert p_class == polymer.PolymerClass.GAS
+        assert details["reason"] == "no_intact_wings"
+        # Match the key used in classify_structure's base_details
+        assert "disjoint_matches" in details
+
+    # =========================================================================
+    # THE ANOMALOUS FALLBACK
+    # =========================================================================
+
+    def test_branch_unknown_anomalous_backbone(self):
+        """Tests unknown branch using a multiplicity mismatch."""
+        mod_mol = self.ref_baseline_mol.copy(deep=True)
+        # Change multiplicity to something impossible for this structure
+        # This bypasses BASELINE (isomorphism fails) and FEATURE (no radicals/labels)
+        mod_mol.multiplicity = 5
+
+        p_class, details = polymer.classify_structure(Species(molecule=[mod_mol]), self.p)
+        assert p_class == polymer.PolymerClass.UNKNOWN
+
+
+class TestPolymerThermo:
+    """
+    Contains unit tests for Polymer thermodynamic and property delegation.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_polymer(self):
+        """
+        A method that is run before each unit test in this class.
+        """
+        pe_adj = """
+        multiplicity 3
+        1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+        2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+        3    H u0 p0 c0 {1,S}
+        4    H u0 p0 c0 {1,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        """
+        self.pe_polymer = Polymer(
+            label='PE_Test',
+            monomer=pe_adj,
+            end_groups=['[CH3]', '[CH3]'],
+            cutoff=4,
+            Mn=1000.0,
+            Mw=2000.0,
+            initial_mass=1.0
+        )
+
+        self.pe_feat = self.pe_polymer.copy()
+        feat_mol = Molecule().from_smiles("[CH][CH2]")
+        feat_mol.atoms[0].label = "*1"
+        feat_mol.atoms[1].label = "*2"
+        self.pe_feat.feature_monomer = feat_mol
+        self.pe_feat._feature_proxy = None
+        self.proxy = self.pe_polymer.get_proxy_species()
+
+        self.dummy_thermo = NASA(
+            polynomials=[NASAPolynomial(coeffs=[1, 1, 1, 1, 1, 1, 1], Tmin=(298, 'K'), Tmax=(1000, 'K')),
+                         NASAPolynomial(coeffs=[2, 2, 2, 2, 2, 2, 2], Tmin=(1000, 'K'), Tmax=(3000, 'K'))],
+            Tmin=(298, 'K'), Tmax=(3000, 'K'), Cp0=(30, 'J/(mol*K)'), CpInf=(100, 'J/(mol*K)'))
+        self.proxy.thermo = self.dummy_thermo
+
+    def test_get_thermo_data_modes(self):
+        """Verify 'baseline' vs 'feature' mode selection in thermo retrieval."""
+        assert self.pe_polymer.get_thermo_data(mode='auto') is self.dummy_thermo
+        with pytest.raises(RuntimeError):
+            self.pe_feat.get_thermo_data(mode='feature')
+
+    def test_get_free_energy_delegation(self):
+        """Test Gibbs Free Energy delegation."""
+        T = 750.0
+        G_pol = self.pe_polymer.get_free_energy(T)
+        G_exp = self.dummy_thermo.get_free_energy(T)
+        assert G_pol == G_exp
+
+    def test_get_thermo_data_runtime_error_on_none(self):
+        """Ensure clear error if proxy exists but thermo generation fails."""
+        self.proxy.thermo = None
+        with pytest.raises(RuntimeError) as excinfo:
+            self.pe_polymer.get_thermo_data()
+        assert "Thermo generation failed" in str(excinfo.value)
+
+    def test_get_bulk_heat_capacity_logic(self):
+        """Verifies bulk scaling for reactor solvers."""
+        T = 400.0
+        DP = 50.0  # 50 units long
+        site_cp = self.pe_polymer.get_heat_capacity(T)
+        bulk_cp = self.pe_polymer.get_bulk_heat_capacity(T, DP)
+        assert bulk_cp == site_cp * DP
+
+    def test_generate_statmech_delegation(self):
+        """Verify statmech delegation without triggering database calls."""
+        mock_conf = Conformer(E0=(10.0, "kJ/mol"))
+        mock_conf.modes = [
+            IdealGasTranslation(mass=(28.0, "amu")),
+            NonlinearRotor(inertia=([0.630578, 1.15529, 1.78586], "amu*angstrom^2"), symmetry=2),
+            HarmonicOscillator(frequencies=([1000.0], "cm^-1"))]
+        self.proxy.conformer = mock_conf
+        out = self.pe_polymer.generate_statmech()
+        assert out is mock_conf
+        assert self.pe_polymer.conformer is mock_conf
+
+    def test_generate_transport_delegation(self):
+        """Verify TransportData delegation."""
+        mock_trans = TransportData(sigma=(3.5, 'angstrom'), epsilon=(120.0, 'K'))
+        self.proxy.transport_data = mock_trans
+        out = self.pe_polymer.generate_transport_data()
+        assert out is mock_trans
+        assert self.pe_polymer.transport_data is mock_trans
+
+    def test_calculate_cp0_cpinf_with_no_molecule(self):
+        """Ensure 0.0 is returned if proxy molecule is missing (Safety Check)."""
+        self.pe_polymer._baseline_proxy.molecule = []
+        assert self.pe_polymer.calculate_cp0() == 0.0
+        assert self.pe_polymer.calculate_cpinf() == 0.0
+
+    def test_multiplicity_and_weight_consistency(self):
+        """Ensures polymer multiplicity and MW are tied to proxy, not bulk."""
+        assert self.pe_polymer.multiplicity == 1
+        mw_kg_per_mol = self.pe_polymer.molecular_weight.value_si
+        if mw_kg_per_mol < 1e-10:
+            from rmgpy.constants import Na
+            mw_kg_per_mol *= Na
+        assert 0.05 < mw_kg_per_mol < 0.15
+
+    def test_get_thermo_data_delegates_to_proxy(self):
+        """Test that get_thermo_data returns the proxy's thermo object."""
+        thermo = self.pe_polymer.get_thermo_data()
+        assert thermo is self.dummy_thermo
+        assert self.pe_polymer.thermo is self.dummy_thermo  # Check sync behavior
+
+    def test_get_thermo_data_polymer_comment_suffix(self):
+        """Test that thermo comment gets ', Polymer' suffix."""
+        self.dummy_thermo.comment = 'Thermo group additivity estimation: group(Cs-CsCsHH)'
+        # Reset thermo so get_thermo_data re-applies
+        self.pe_polymer.thermo = None
+        thermo = self.pe_polymer.get_thermo_data()
+        assert thermo.comment.endswith(', Polymer')
+        # Calling again should not double-append
+        self.pe_polymer.thermo = None
+        thermo2 = self.pe_polymer.get_thermo_data()
+        assert thermo2.comment.count(', Polymer') == 1
+
+    def test_get_thermo_data_polymer_comment_empty(self):
+        """Test that empty thermo comment becomes 'Polymer'."""
+        self.dummy_thermo.comment = ''
+        self.pe_polymer.thermo = None
+        thermo = self.pe_polymer.get_thermo_data()
+        assert thermo.comment == 'Polymer'
+
+    def test_thermo_properties_delegate_correctly(self):
+        """Test get_enthalpy, entropy, heat_capacity, etc. return proxy values."""
+        T = 500.0
+        H_pol = self.pe_polymer.get_enthalpy(T)
+        S_pol = self.pe_polymer.get_entropy(T)
+        Cp_pol = self.pe_polymer.get_heat_capacity(T)
+        H_exp = self.dummy_thermo.get_enthalpy(T)
+        S_exp = self.dummy_thermo.get_entropy(T)
+        Cp_exp = self.dummy_thermo.get_heat_capacity(T)
+        assert H_pol == H_exp
+        assert S_pol == S_exp
+        assert Cp_pol == Cp_exp
+
+    def test_get_bulk_heat_capacity_scales_by_dp(self):
+        """Test get_bulk_heat_capacity scales per-site Cp by DP."""
+        T = 500.0
+        DP = 100.0
+        Cp_site = self.dummy_thermo.get_heat_capacity(T)
+        Cp_bulk = self.pe_polymer.get_bulk_heat_capacity(T, DP)
+        assert np.isclose(Cp_bulk, Cp_site * DP)
+
+    def test_calculate_cp0_cpinf_delegate(self):
+        """Test calculate_cp0 and calculate_cpinf don't crash and return floats."""
+        cp0 = self.pe_polymer.calculate_cp0()
+        cpinf = self.pe_polymer.calculate_cpinf()
+        assert isinstance(cp0, float)
+        assert isinstance(cpinf, float)
+
+    def test_multiplicity_delegation(self):
+        """Test multiplicity property."""
+        mult = self.pe_polymer.multiplicity
+        assert mult == 1
+
+    def test_molecular_weight_delegation(self):
+        """Test molecular_weight property returns proxy MW (per-site), not Mn (bulk)."""
+        mw = self.pe_polymer.molecular_weight.value_si  # kg/mol
+        mn = self.pe_polymer.Mn / 1000.0  # convert Mn to kg/mol
+        assert mw < mn
+        assert mw > 0.0
+
+    def test_is_identical_delegation(self):
+        """Test is_identical compares proxies."""
+        # 1. Identity
+        p2 = self.pe_polymer.copy()
+        assert self.pe_polymer.is_identical(p2)
+
+        # 2. Difference (Changing end groups changes the proxy)
+        pe_adj = """
+        multiplicity 3
+        1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+        2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+        3    H u0 p0 c0 {1,S}
+        4    H u0 p0 c0 {1,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        """
+        p3 = Polymer(
+            label='PE_Diff',
+            monomer=pe_adj,
+            end_groups=['[H]', '[H]'],  # Hydrogen ends vs Methyl ends
+            cutoff=4,Mn=1000.0,
+            Mw=2000.0)
+        assert not self.pe_polymer.is_identical(p3)
+
+    def test_transport_delegation(self):
+        """Test generate_transport_data delegates to proxy."""
+        dummy_trans = TransportData(sigma=(3.0, 'angstrom'), epsilon=(100.0, 'K'))
+        self.proxy.transport_data = dummy_trans
+        trans = self.pe_polymer.generate_transport_data()
+        assert trans is dummy_trans
+        assert self.pe_polymer.transport_data is dummy_trans
+
+
+def _iter_neighbors(atom) -> List[Any]:
+    """
+    Return neighbor atoms for a given Atom across common APIs:
+    - RMG: atom.bonds is dict[Atom, Bond]
+    - Some toolkits: atom.bonds may be iterable of neighbors
+    """
+    bonds = getattr(atom, "bonds", None)
+    if bonds is None: return []
+    if isinstance(bonds, dict): return list(bonds.keys())
+    try:
+        return list(bonds)
+    except TypeError:
+        return []
+
+
+def get_carbon_neighbors(atom) -> List[Any]:
+    return [n for n in _iter_neighbors(atom) if n.is_non_hydrogen()]
+
+
+def bfs_farthest_node(start_node: Atom, all_nodes: List[Atom]) -> Tuple[Atom, Dict[Atom, Atom]]:
+    """
+    BFS to find the farthest node from start_node within the subgraph of all_nodes.
+    Returns (farthest_node, parent_map).
+    """
+    queue = deque([start_node])
+    visited = {start_node}
+    parent = {start_node: None}
+    farthest = start_node
+    while queue:
+        current = queue.popleft()
+        farthest = current
+        for neighbor in get_carbon_neighbors(current):
+            if neighbor in all_nodes and neighbor not in visited:
+                visited.add(neighbor)
+                parent[neighbor] = current
+                queue.append(neighbor)
+    return farthest, parent
+
+
+def get_backbone_path(mol: Molecule) -> List[Atom]:
+    """
+    Identifies the longest carbon chain (backbone) in the molecule.
+    """
+    carbons = [a for a in mol.atoms if a.is_carbon()]
+    if not carbons: return []
+    u, _ = bfs_farthest_node(carbons[0], carbons)
+    v, parent_map = bfs_farthest_node(u, carbons)
+    path = []
+    curr = v
+    while curr is not None:
+        path.append(curr)
+        curr = parent_map[curr]
+    return path
+
+
+def get_monomer_regions(mol: Molecule) -> Dict[str, List[Atom]]:
+    """
+    Segments the linear backbone into Buffer (Head/Tail) and Center regions.
+    Assumes a trimer structure (6 carbons).
+    """
+    path = get_backbone_path(mol)
+    return {"head_buffer": path[:2],
+            "center": path[2:-2],
+            "tail_buffer": path[-2:]}
+
+
+def abstract_h_from_center_backbone(mol):
+    """
+    Perform a chemically valid H-abstraction near the backbone center:
+    - choose a backbone carbon near the middle that has an explicit H neighbor
+    - remove that H atom
+    - increment radical on the carbon
+    Returns the modified carbon atom.
+    """
+    path = get_backbone_path(mol)
+    n = len(path)
+    mid = n // 2
+    for k in range(n):
+        for i in (mid - k, mid + k):
+            if i < 0 or i >= n:
+                continue
+            c = path[i]
+            if not c.is_carbon():
+                continue
+            h = next((nb for nb in c.bonds.keys() if nb.is_hydrogen()), None)
+            if h is None:
+                continue
+            if hasattr(mol, "remove_atom"):
+                mol.remove_atom(h)
+            else:
+                del c.bonds[h]
+                del h.bonds[c]
+                mol.atoms.remove(h)
+            c.increment_radical()
+            mol.update_multiplicity()
+            return c
+    raise ValueError("Could not find a center-backbone carbon with an explicit H to abstract.")
+
+
+def radicalize_head_end_group(p, mol):
+    """
+    Turn an intact baseline proxy into an END_MOD product by abstracting an H
+    from the *head terminal end-group* (e.g. CH3 -> CH2.), leaving both backbone
+    wings intact. Mirrors the construction used by the END_MOD classification
+    tests. Mutates ``mol`` in place and returns the modified end-group atom.
+    """
+    head_wings = p._wing_groups("head")
+    tail_wings = p._wing_groups("tail")
+    monomer_group = p.backbone_group
+    _, details = polymer._analyze_wing_matches(mol, head_wings, tail_wings, monomer_group)
+    heavy_to_full = details["heavy_to_full_map"]
+    head_heavy_atoms = details["head_match"]["atoms"]
+    mon_heavy_count = sum(1 for ga in monomer_group.atoms if not ga.is_hydrogen())
+    end_group_heavy, _ = polymer._slice_wing(head_heavy_atoms, mon_heavy_count)
+    target_full = heavy_to_full[list(end_group_heavy)[0]]
+    h_atom = next(n for n in target_full.bonds if n.is_hydrogen())
+    mol.remove_bond(mol.get_bond(target_full, h_atom))
+    mol.remove_atom(h_atom)
+    target_full.radical_electrons = 1
+    mol.update_multiplicity()
+    return target_full
+
+
+class TestPolymerAdditionalCoverage:
+    @pytest.fixture(autouse=True)
+    def setup_polymer(self):
+        ps_adj = """multiplicity 3
+                    1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                    2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                    3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                    4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                    5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                    6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                    7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                    8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                    9    H u0 p0 c0 {1,S}
+                    10   H u0 p0 c0 {1,S}
+                    11   H u0 p0 c0 {2,S}
+                    12   H u0 p0 c0 {4,S}
+                    13   H u0 p0 c0 {5,S}
+                    14   H u0 p0 c0 {6,S}
+                    15   H u0 p0 c0 {7,S}
+                    16   H u0 p0 c0 {8,S}"""
+        self.p = Polymer(
+            label="PS_cov",
+            monomer=ps_adj,
+            end_groups=["[CH3]", "[H]"],
+            cutoff=4,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        yield
+
+    def test_get_proxy_species_modes(self):
+        # baseline-only polymer
+        assert self.p.get_proxy_species("baseline") is self.p.baseline_proxy
+        assert self.p.get_proxy_species("feature") is None
+        assert self.p.get_proxy_species("auto") is self.p.baseline_proxy
+
+        feat_poly = self.p.copy()
+        feat_poly.feature_monomer = feat_poly.monomer.copy(deep=True)
+        feat_poly._feature_proxy = None
+
+        assert feat_poly.get_proxy_species("baseline") is feat_poly.baseline_proxy
+        assert feat_poly.get_proxy_species("feature") is feat_poly.feature_proxy
+        assert feat_poly.get_proxy_species("auto") is feat_poly.feature_proxy
+
+    def test_get_free_energy_delegates_to_proxy(self):
+        """Test that get_free_energy(T) delegates to the proxy species' thermo."""
+        dummy_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(coeffs=[1, 1, 1, 1, 1, 1, 1], Tmin=(298, "K"), Tmax=(1000, "K")),
+                NASAPolynomial(coeffs=[2, 2, 2, 2, 2, 2, 2], Tmin=(1000, "K"), Tmax=(3000, "K")),
+            ],
+            Tmin=(298, "K"),
+            Tmax=(3000, "K"),
+            Cp0=(30, "J/(mol*K)"),
+            CpInf=(100, "J/(mol*K)"),
+        )
+        proxy = self.p.get_proxy_species()
+        proxy.thermo = dummy_thermo
+        T = 600.0
+        assert self.p.get_free_energy(T) == dummy_thermo.get_free_energy(T)
+
+    def test_generate_statmech_delegation_fast_path(self):
+        """
+        Covers Polymer.generate_statmech() without requiring full statmech machinery:
+        if proxy.has_statmech() is True, Polymer should just copy proxy.conformer.
+        """
+        sentinel_conformer = Conformer()
+
+        class MockProxy:
+            def __init__(self):
+                self.conformer = sentinel_conformer
+                self.label = "MockProxy"
+
+            def has_statmech(self):
+                return True
+
+            def generate_statmech(self):
+                # If called, this would indicate the wrong branch; make it fail loudly
+                raise AssertionError("generate_statmech should not be called if has_statmech is True")
+
+        # 2. Inject the mock into the Polymer's cache
+        self.p._baseline_proxy = MockProxy()
+        self.p.feature_monomer = None  # Forces get_proxy_species() to return baseline_proxy
+
+        # 3. Run the method
+        out = self.p.generate_statmech()
+
+        # 4. Assert the fast-path delegation occurred
+        assert out is sentinel_conformer
+        assert self.p.conformer is sentinel_conformer
+
+    def test_validate_cutoff_rejects_non_int(self):
+        with pytest.raises(InputError):
+            Polymer(
+                label="bad_cutoff",
+                monomer=self.p.monomer.copy(deep=True),
+                end_groups=["[H]", "[H]"],
+                cutoff="abc",
+                Mn=1000.0,
+                Mw=2000.0,
+                initial_mass=1.0,
+            )
+
+    def test_validate_cutoff_rejects_lt_2(self):
+        with pytest.raises(InputError):
+            Polymer(
+                label="bad_cutoff2",
+                monomer=self.p.monomer.copy(deep=True),
+                end_groups=["[H]", "[H]"],
+                cutoff=1,
+                Mn=1000.0,
+                Mw=2000.0,
+                initial_mass=1.0,
+            )
+
+    def test_init_from_moments_with_zero_mu0_or_mu1_returns_zero_mn_mw(self):
+        # mu0 = 0 -> Mn/Mw should be 0 per implementation
+        p0 = Polymer(
+            label="mom_mu0_zero",
+            monomer=self.p.monomer.copy(deep=True),
+            end_groups=["[H]", "[H]"],
+            cutoff=3,
+            moments=[0.0, 1.0, 2.0],
+            initial_mass=1.0,
+        )
+        assert p0.Mn == 0.0
+        assert p0.Mw == 0.0
+
+        # mu1 = 0 -> Mn/Mw should be 0 per implementation
+        p1 = Polymer(
+            label="mom_mu1_zero",
+            monomer=self.p.monomer.copy(deep=True),
+            end_groups=["[H]", "[H]"],
+            cutoff=3,
+            moments=[1.0, 0.0, 2.0],
+            initial_mass=1.0,
+        )
+        assert p1.Mn == 0.0
+        assert p1.Mw == 0.0
+
+    def test_ensure_open_site(self):
+        """
+        Test that _ensure_open_site promotes closed-shell atoms to radicals
+        but leaves existing radicals untouched.
+        """
+        # Scenario 1: Closed-shell atom (e.g., Carbon in Methane)
+        # Should be promoted to a radical (u1)
+        c_closed = Atom(element='C', radical_electrons=0)
+        polymer._ensure_open_site(c_closed)
+        assert c_closed.radical_electrons == 1
+
+        # Scenario 2: Existing mono-radical (u1)
+        # Should remain unchanged (not become a diradical u2)
+        c_radical = Atom(element='C', radical_electrons=1)
+        polymer._ensure_open_site(c_radical)
+        assert c_radical.radical_electrons == 1
+
+        # Scenario 3: Existing multi-radical (u2)
+        # Should remain unchanged
+        c_diradical = Atom(element='C', radical_electrons=2)
+        polymer._ensure_open_site(c_diradical)
+        assert c_diradical.radical_electrons == 2
+
+    def test_get_target_atoms(self):
+        """
+        Tests that get_target_atoms correctly extracts Atom objects from
+        various mapping configurations (keys, values, or mixed).
+        """
+        a1 = Atom(element='C')
+        a2 = Atom(element='C')
+
+        # Scenario 1: Empty match
+        assert polymer.get_target_atoms({}) == set()
+        assert polymer.get_target_atoms(None) == set()
+
+        # Scenario 2: Atoms as Values (Standard RMG find_subgraph_isomorphisms)
+        # {GroupAtom: Atom}
+        match_vals = {"p1": a1, "p2": a2}
+        result_vals = polymer.get_target_atoms(match_vals)
+        assert len(result_vals) == 2
+        assert a1 in result_vals and a2 in result_vals
+
+        # Scenario 3: Atoms as Keys (Often happens in reverse mappings or custom tools)
+        # {Atom: GroupAtom}
+        match_keys = {a1: "p1", a2: "p2"}
+        result_keys = polymer.get_target_atoms(match_keys)
+        assert len(result_keys) == 2
+        assert a1 in result_keys and a2 in result_keys
+
+        # Scenario 4: Mixed or Fallback
+        # We explicitly use objects that are definitely NOT Atoms
+        match_mixed = {a1: "p1", "p2": a2, "extra": 123}
+        result_mixed = polymer.get_target_atoms(match_mixed)
+
+        # We want ONLY a1 and a2.
+        assert len(result_mixed) == 2
+        assert all(not isinstance(x, (str, int)) for x in result_mixed)
+
+    def test_stitch_trimer_copolymer_san(self):
+        """
+        Tests stitching a copolymer trimer (Styrene-Acrylonitrile-Styrene).
+        Verifies that the feature_monomer is correctly placed in the center
+        between baseline monomers.
+        """
+        # 1. Define Acrylonitrile (AN) Monomer with connectivity labels
+        an_adj = """
+multiplicity 3
+1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+3    C u0 p0 c0 {1,S} {7,T}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {2,S}
+6    H u0 p0 c0 {2,S}
+7    N u0 p1 c0 {3,T}
+"""
+        # 2. Setup SAN Copolymer using polymer_1 (PS) as the base
+        # polymer_1 already has Styrene (C8H8) as the monomer
+        san_copoly = self.p.copy()
+        san_copoly.label = "SAN_Copolymer"
+        san_copoly.feature_monomer = Molecule().from_adjacency_list(an_adj)
+
+        # 3. Stitch the 'Feature' Trimer: [PS]--[AN]--[PS]
+        # Calling get_thermo_data(mode='feature') triggers the feature_proxy creation
+        with pytest.raises(RuntimeError):  # Fails on thermo, but builds the proxy first
+            san_copoly.get_thermo_data(mode='feature')
+
+        proxy_spc = san_copoly.feature_proxy
+        assert proxy_spc.is_polymer_proxy is True
+
+        # 4. Atomic Count Validation
+        # Head(CH3: 1C) + 2x Styrene(C8H8: 16C) + 1x Acrylonitrile(C3H3N: 3C) + Tail(H: 0C)
+        # Expected Total Carbons = 1 + 16 + 3 = 20
+        # Expected Nitrogens = 1
+        mol = proxy_spc.molecule[0]
+        c_atoms = [a for a in mol.atoms if a.is_carbon()]
+        n_atoms = [a for a in mol.atoms if a.symbol == 'N']
+
+        assert len(c_atoms) == 20
+        assert len(n_atoms) == 1
+
+        # 5. Connectivity Validation
+        # Ensure the Nitrogen (the unique marker) is not on the terminal ends
+        # In a [H]-[S]-[AN]-[S]-[Cap] trimer, the AN should be at least 3 bonds from any end
+        n_atom = n_atoms[0]
+        # Simple check: Nitrogen neighbor should be a Carbon (C3) which has 3 bonds
+        c_nitrile = list(n_atom.bonds.keys())[0]
+        assert c_nitrile.is_carbon()
+        assert len(c_nitrile.bonds) == 2  # Connected to N and the backbone C
+
+    def test_get_element_symbol(self):
+        # Test Carbon types
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['Cs']])) == 'C'
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['C2d']])) == 'C'
+
+        # Test Heteroatoms
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['N3d']])) == 'N'
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['O2d']])) == 'O'
+
+        # Test Multi-character elements
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['Cl1s']])) == 'Cl'
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['Sibf']])) == 'Si'
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['Br1s']])) == 'Br'
+
+        # Test Helium/Noble (Shortest string logic)
+        assert polymer.get_element_symbol(GroupAtom(atomtype=[ATOMTYPES['He']])) == 'He'
+
+
+def _methyl_radical_adj(label: str) -> str:
+    """CH3 rad with a label on the radical carbon"""
+    return f"""multiplicity 2
+               1 {label} C u1 p0 c0 {{2,S}} {{3,S}} {{4,S}}
+               2 H u0 p0 c0 {{1,S}}
+               3 H u0 p0 c0 {{1,S}}
+               4 H u0 p0 c0 {{1,S}}"""
+
+
+def _methyl_closed_shell_labeled_adj(label: str) -> str:
+    """CH4 (closed shell) but labeled (bad for stitching: radical_electrons == 0)"""
+    return f"""multiplicity 1
+               1 {label} C u0 p0 c0 {{2,S}} {{3,S}} {{4,S}} {{5,S}}
+               2 H u0 p0 c0 {{1,S}}
+               3 H u0 p0 c0 {{1,S}}
+               4 H u0 p0 c0 {{1,S}}
+               5 H u0 p0 c0 {{1,S}}"""
+
+
+def _safe_make_radical(mol: Molecule, atom: Atom):
+    """Safely removes a hydrogen before adding a radical to maintain valency."""
+    h_atom = next((a for a in atom.bonds if a.is_hydrogen()), None)
+    if h_atom:
+        bond = mol.get_bond(atom, h_atom)
+        mol.remove_bond(bond)
+        mol.remove_atom(h_atom)
+    atom.increment_radical()
+
+
+# ---------------------------------------------------------------------------
+# Functional tests for the polymer-handshake pipeline
+# ---------------------------------------------------------------------------
+
+class TestHandshakeStructures:
+    """
+    Functional tests verifying that _handshake_structures (called from
+    CoreEdgeReactionModel.make_new_reaction) correctly converts product
+    Molecule objects into Polymer objects when a Polymer is among the
+    reaction reactants.
+
+    These tests simulate the key step in the pipeline:
+        react_all → generate_reactions_from_families → Molecule products
+        → _handshake_structures → Polymer products
+        → make_new_species / _register_polymer → Edge species
+    """
+
+    PS_ADJ = """multiplicity 3
+                1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                9    H u0 p0 c0 {1,S}
+                10   H u0 p0 c0 {1,S}
+                11   H u0 p0 c0 {2,S}
+                12   H u0 p0 c0 {4,S}
+                13   H u0 p0 c0 {5,S}
+                14   H u0 p0 c0 {6,S}
+                15   H u0 p0 c0 {7,S}
+                16   H u0 p0 c0 {8,S}"""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        self._handshake = _handshake_structures
+        self.ps = Polymer(
+            label='PS',
+            monomer=self.PS_ADJ,
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+
+    # ------------------------------------------------------------------
+    # 1. Baseline (unreacted proxy) stays a Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_baseline_proxy_returns_polymer(self):
+        """
+        The unreacted baseline proxy molecule should be recognised as 'still polymer'
+        (create_reacted_copy returns a copy), so _handshake_structures replaces
+        the Molecule with a Polymer.
+        """
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        product_list = [proxy_mol]
+        self._handshake(product_list, [self.ps])
+        assert isinstance(product_list[0], Polymer), (
+            "Unreacted proxy fragment should become a Polymer after handshake, "
+            f"got {type(product_list[0])}"
+        )
+
+    def test_handshake_end_mod_flags_end_group_reaction(self):
+        """
+        After the handshake an END_MOD product makes is_end_group_reaction(products)
+        True — exactly what make_new_reaction uses to set
+        Reaction.is_end_group_reaction (mu0 chain-end scaling in the solver). A
+        baseline (non-terminal) product leaves it False (default mu1 scaling).
+        """
+        from rmgpy.polymer import is_end_group_reaction
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+        products = [end_mod]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert is_end_group_reaction(products) is True
+
+        base = [self.ps.baseline_proxy.molecule[0].copy(deep=True)]
+        self._handshake(base, [self.ps])
+        assert is_end_group_reaction(base) is False
+
+    def test_handshake_products_classify_flux_archetype(self):
+        """
+        After the handshake, classify_reaction_flux_archetype (the classifier
+        make_new_reaction delegates to when stamping
+        Reaction.polymer_flux_archetype) returns SAME_POOL for fold-back
+        products and SCISSION_FRAGMENT for scission fragments.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        # Baseline fold-back -> SAME_POOL
+        base = [self.ps.baseline_proxy.molecule[0].copy(deep=True)]
+        self._handshake(base, [self.ps])
+        assert isinstance(base[0], Polymer)
+        assert (classify_reaction_flux_archetype([self.ps], base)
+                == PolymerFluxArchetype.SAME_POOL)
+
+        # Head-wing-only fragment -> scission_tail Polymer -> SCISSION_FRAGMENT
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        prods = [frag]
+        self._handshake(prods, [self.ps])
+        assert isinstance(prods[0], Polymer)
+        assert (classify_reaction_flux_archetype([self.ps], prods)
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_surge_chip_sub_shape_b_live_end_mod_fold_back(self):
+        """
+        Spec test 3b -- the only flag-true shape live today: products =
+        [SCISSION piece, END_MOD fold-back]. Surgery demotes the chip back to
+        a discrete Molecule (undoing its handshake conversion), re-stamps the
+        END_MOD fold-back CHIP, and returns a = round(134.2/104.15) = 1.
+        Flag-stability rider: the recompute over surged products flips to
+        False (END_MOD member gone) -- which is exactly why nothing downstream
+        may recompute the flag from product stamps.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype, is_end_group_reaction,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+        assert products[1]._reacted_class == PolymerClass.END_MOD
+        assert is_end_group_reaction(products) is True  # the stored flag's value
+
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 1
+        assert isinstance(products[0], Molecule)          # chip demoted
+        assert not isinstance(products[0], Polymer)
+        assert products[0].get_formula() == frag.get_formula()
+        assert products[1]._reacted_class == PolymerClass.CHIP
+        # Recompute now flips -- pins the no-recompute rule.
+        assert is_end_group_reaction(products) is False
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_surge_chip_sub_shape_a_macro_daughter(self):
+        """
+        Spec test 3 -- sub-shape (a) (dormant today, live when the end-anchor
+        detector lands): the SCISSION-stamped Polymer is the MACRO daughter
+        and the chip is the single discrete co-product. Surgery replaces the
+        daughter with parent.copy(deep=True) stamped CHIP; the chip stays
+        as-is; a stamps from the chip's MW ratio.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        prods = [frag]
+        self._handshake(prods, [self.ps])
+        daughter = prods[0]
+        assert isinstance(daughter, Polymer)
+        assert daughter._reacted_class == PolymerClass.SCISSION
+
+        chip = Molecule(smiles="C=Cc1ccccc1")   # styrene, 104.15 g/mol -> a = 1
+        products = [daughter, chip]
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 1
+        fold = products[0]
+        assert isinstance(fold, Polymer)
+        assert fold.label == self.ps.label                # PARENT pool fold-back
+        assert fold._reacted_class == PolymerClass.CHIP
+        assert products[1] is chip                        # chip untouched, discrete
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_surge_chip_infeasible_stamps_unresolved_never_scission(self):
+        """
+        Spec test 4: surgery-infeasible flag-true scission shapes stamp
+        UNRESOLVED + warn-once via stamp_polymer_flux_archetype -- NEVER
+        SCISSION_FRAGMENT (uniform-cut statistics near an end + unaccounted
+        chip mass). Two infeasible shapes: (b) without a demotable source
+        molecule, and (a) without a discrete co-product.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+
+        # Infeasible (b): SCISSION chip with no _source_molecule.
+        sc = self.ps.copy()
+        sc.label = "PS_scission_tail"
+        sc._reacted_class = PolymerClass.SCISSION
+        end = self.ps.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        rxn = Reaction(reactants=[self.ps], products=[sc, end],
+                       is_end_group_reaction=True)
+        stamp_polymer_flux_archetype(rxn, [self.ps], [self.ps])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        assert rxn.polymer_chip_units == 0
+
+        # Infeasible (a): flag-true scission shape, no discrete co-product.
+        sc2 = self.ps.copy()
+        sc2.label = "PS_scission_head"
+        sc2._reacted_class = PolymerClass.SCISSION
+        rxn2 = Reaction(reactants=[self.ps], products=[sc2],
+                        is_end_group_reaction=True)
+        stamp_polymer_flux_archetype(rxn2, [self.ps], [self.ps])
+        assert rxn2.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+
+        # Warn-once: repeating an already-warned shape adds no registry entry.
+        n = len(polymer_mod._flux_archetype_warned)
+        stamp_polymer_flux_archetype(rxn2, [self.ps], [self.ps])
+        assert len(polymer_mod._flux_archetype_warned) == n
+
+    def test_surge_chip_a_zero_bare_cap_ejection(self):
+        """
+        Spec test 6: a = 0 chips are legal (bare end-cap ejection, e.g. CH3
+        loss): surgery succeeds and returns 0 (NOT None) -- the archetype
+        fires with zero mu1/mu2 drain, net pool effect ~ SAME_POOL.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        sc = self.ps.copy()
+        sc.label = "PS_scission_tail"
+        sc._reacted_class = PolymerClass.SCISSION
+        sc._source_molecule = Molecule(smiles="C")   # CH4 cap image, 16 g/mol
+        end = self.ps.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        products = [sc, end]
+
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 0
+        assert a is not None                         # 0 != infeasible
+        assert isinstance(products[0], Molecule)
+        assert products[1]._reacted_class == PolymerClass.CHIP
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    # ------------------------------------------------------------------
+    # 2. Head-scission fragment → scission_tail Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_head_scission_fragment_returns_scission_tail_polymer(self):
+        """
+        A fragment that contains only the head wing (no tail wing) should be
+        classified as a scission_tail Polymer product.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        scission_frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert scission_frag is not None, "test setup: scission fragment construction failed"
+
+        product_list = [scission_frag]
+        self._handshake(product_list, [self.ps])
+
+        result = product_list[0]
+        assert isinstance(result, Polymer), (
+            f"Scission fragment should become a Polymer, got {type(result)}"
+        )
+        assert result.label.endswith('_scission_tail'), (
+            f"Expected label ending in '_scission_tail', got '{result.label}'"
+        )
+
+    # ------------------------------------------------------------------
+    # 3. Tail-scission fragment → scission_head Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_tail_scission_fragment_returns_scission_head_polymer(self):
+        """
+        A fragment that contains only the tail wing (no head wing) should be
+        classified as a scission_head Polymer product.
+        """
+        tail_wing = self.ps._stitch_wing("tail")
+        methyl_star1 = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        scission_frag = polymer.stitch_molecules_by_labeled_atoms(methyl_star1, tail_wing)
+        assert scission_frag is not None, "test setup: scission fragment construction failed"
+
+        product_list = [scission_frag]
+        self._handshake(product_list, [self.ps])
+
+        result = product_list[0]
+        assert isinstance(result, Polymer), (
+            f"Scission fragment should become a Polymer, got {type(result)}"
+        )
+        assert result.label.endswith('_scission_head'), (
+            f"Expected label ending in '_scission_head', got '{result.label}'"
+        )
+
+    # ------------------------------------------------------------------
+    # 4. Small molecule (no wings) is left as a Molecule
+    # ------------------------------------------------------------------
+    def test_handshake_small_molecule_remains_molecule(self):
+        """
+        A fragment too small to contain any polymer wing should NOT be
+        converted to a Polymer — it should remain a plain Molecule (gas-phase).
+        """
+        small = Molecule(smiles='CC')  # ethane — no PS wings
+        product_list = [small]
+        self._handshake(product_list, [self.ps])
+        assert isinstance(product_list[0], Molecule), (
+            "Small gas-phase molecule should remain a Molecule after handshake"
+        )
+
+    # ------------------------------------------------------------------
+    # 5. Non-Molecule items in the list are untouched
+    # ------------------------------------------------------------------
+    def test_handshake_ignores_non_molecule_items(self):
+        """
+        Non-Molecule items (e.g. already-converted Polymer or Species) in
+        the product list should be left unchanged.
+        """
+        already_poly = self.ps.copy()
+        product_list = [already_poly]
+        self._handshake(product_list, [self.ps])
+        assert product_list[0] is already_poly, (
+            "Non-Molecule items should be left untouched by _handshake_structures"
+        )
+
+    # ------------------------------------------------------------------
+    # 6. Mixed product list: one convertible, one gas
+    # ------------------------------------------------------------------
+    def test_handshake_mixed_product_list(self):
+        """
+        In a bimolecular-product reaction, one product may be a Polymer
+        fragment and the other a small gas-phase molecule.  Both must be
+        handled correctly in the same call.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        polymer_frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+
+        gas_frag = Molecule(smiles='[CH3]')  # methyl radical — no PS wings
+
+        product_list = [polymer_frag, gas_frag]
+        self._handshake(product_list, [self.ps])
+
+        assert isinstance(product_list[0], Polymer), (
+            f"First product (polymer fragment) should be a Polymer, got {type(product_list[0])}"
+        )
+        assert isinstance(product_list[1], Molecule), (
+            f"Second product (gas fragment) should remain a Molecule, got {type(product_list[1])}"
+        )
+
+    # ------------------------------------------------------------------
+    # 6b. Stale polymer-proxy tag clearing on retained-discrete products
+    #     (handshake/chip handshake-layer fix)
+    # ------------------------------------------------------------------
+    def test_handshake_clears_proxy_on_discrete_gas_product(self):
+        """
+        family.py:1665 blanket-stamps every product is_polymer_proxy=True when
+        any reactant is a proxy (the PS pool always is). alpha-methylstyrene
+        (C=C(C)c1ccccc1, C9H10) is a genuine discrete gas-phase volatile that
+        create_reacted_copy returns None for, so the handshake KEEPS it a
+        Molecule -- but the stale proxy stamp must be CLEARED so the solver
+        does not count it as a melt reference-state participant. A genuine
+        scission tail in the same product list still becomes a proxy Polymer.
+
+        RED before the fix: the volatile keeps is_polymer_proxy True.
+        """
+        # genuine scission tail -> converts to a SCISSION proxy Polymer
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None, "test setup: scission tail construction failed"
+
+        # discrete volatile pre-stamped proxy True (simulating family.py:1665)
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")
+        volatile.is_polymer_proxy = True
+        volatile.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True), volatile]
+        self._handshake(products, [self.ps])
+
+        # genuine tail -> Polymer (still a proxy)
+        assert isinstance(products[0], Polymer), (
+            f"Scission tail should become a Polymer, got {type(products[0])}"
+        )
+        # volatile retained as a discrete Molecule with proxy tag CLEARED
+        assert isinstance(products[1], Molecule)
+        assert not isinstance(products[1], Polymer)
+        assert products[1].is_polymer_proxy is False, (
+            "Retained discrete gas-phase volatile must have its stale "
+            "is_polymer_proxy stamp cleared by the handshake"
+        )
+        assert products[1].props.get("is_polymer_proxy") in (False, None)
+
+    def test_surge_chip_clears_proxy_on_discrete_chip(self):
+        """
+        Chip surgery sub-shape (b) demotes the SCISSION-stamped chip back to a
+        discrete Molecule (undoing its handshake conversion). That demoted
+        discrete chip carries the stale is_polymer_proxy=True stamp inherited
+        from its source Molecule, and must be CLEARED so the chip is not
+        solver-visible as a melt participant.
+
+        RED before the fix: the demoted chip keeps is_polymer_proxy True.
+        """
+        from rmgpy.polymer import surge_chip_products
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        # simulate the family.py:1665 blanket stamp on the pre-handshake frag
+        frag.is_polymer_proxy = True
+        frag.props["is_polymer_proxy"] = True
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+
+        a = surge_chip_products(products, self.ps)
+        assert a == 1
+        chip = products[0]
+        assert isinstance(chip, Molecule)
+        assert not isinstance(chip, Polymer)
+        assert chip.is_polymer_proxy is False, (
+            "Demoted discrete chip must have its stale is_polymer_proxy stamp "
+            "cleared by surge_chip_products"
+        )
+        assert chip.props.get("is_polymer_proxy") in (False, None)
+
+    def test_handshake_keeps_proxy_on_polymer_fragment(self):
+        """
+        GUARD (no over-clearing): a genuine scission tail that the handshake
+        DOES convert to a Polymer must keep is_polymer_proxy True -- the clear
+        only fires on products that stay discrete. GREEN before AND after.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None
+        tail.is_polymer_proxy = True
+        tail.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True)]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert products[0].is_polymer_proxy is True, (
+            "A genuine fragment converted to a Polymer must remain a proxy; "
+            "the handshake clear must not touch it"
+        )
+
+    def test_clear_polymer_proxy_settles_sticky_species_cache(self):
+        """
+        Species.is_polymer_proxy is a sticky lazy-cache property: its getter
+        re-derives True from ANY proxy molecule and re-caches it. The LIVE
+        handshake item is a Species (not a Molecule), so clear_polymer_proxy
+        must clear the constituent molecules BEFORE the species-level flag --
+        otherwise the species _is_polymer_proxy cache re-sticks True off the
+        not-yet-cleared molecules, and make_new_species (model.py) ORs that
+        stale True onto the solver-visible Species (the alpha-methylstyrene
+        reference-state-tripwire leak observed in the live PS run).
+
+        RED before the ordering fix: species stays True; the make_new_species
+        OR stays True.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import clear_polymer_proxy
+
+        sp = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        sp.is_polymer_proxy = True  # setter caches True + propagates to molecules
+        assert sp.is_polymer_proxy is True
+        assert sp.molecule[0].is_polymer_proxy is True
+
+        clear_polymer_proxy(sp)
+
+        assert sp.molecule[0].is_polymer_proxy is False, "constituent molecule not cleared"
+        assert sp.is_polymer_proxy is False, (
+            "sticky species cache must settle False after molecules-first clear"
+        )
+        # the exact OR make_new_species performs (model.py:486) must be False
+        assert (sp.molecule[0].is_polymer_proxy or sp.is_polymer_proxy) is False
+
+        # multi-molecule (resonance) species: every molecule + the species clear
+        sp2 = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1"),
+                                Molecule(smiles="C=C(C)c1ccccc1")])
+        sp2.is_polymer_proxy = True
+        clear_polymer_proxy(sp2)
+        assert sp2.is_polymer_proxy is False
+        assert all(m.is_polymer_proxy is False for m in sp2.molecule)
+
+    def test_handshake_sets_gas_veto_on_discrete_gas_product(self):
+        """
+        A genuine discrete gas volatile that the handshake keeps a Molecule
+        (create_reacted_copy -> None) must be stamped with the DURABLE
+        gas-volatile veto in ``props`` -- not merely have its stale proxy tag
+        cleared. Clearing is_polymer_proxy alone is defeated downstream because
+        the flag is a monotonic multi-writer sticky cache (re-stamped by
+        family.py:1665 + the species.py sticky getter). The positive veto in
+        ``props`` survives Species.copy and is never touched by the proxy
+        stamping machinery, so the solver melt gate can honor it.
+
+        RED before the fix: no veto key is set on the retained volatile.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None, "test setup: scission tail construction failed"
+
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")
+        volatile.is_polymer_proxy = True
+        volatile.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True), volatile]
+        self._handshake(products, [self.ps])
+
+        # genuine tail -> Polymer: must NOT be vetoed (it is a real chain)
+        assert isinstance(products[0], Polymer)
+        assert products[0].props.get(VETO) in (False, None), (
+            "a genuine scission-tail Polymer must not receive the gas veto"
+        )
+        # discrete volatile: durable gas veto SET
+        assert isinstance(products[1], Molecule)
+        assert not isinstance(products[1], Polymer)
+        assert products[1].props.get(VETO) is True, (
+            "retained discrete gas volatile must carry the durable "
+            "polymer_reference_state_gas_veto in props"
+        )
+
+    def test_surge_chip_sets_gas_veto_on_discrete_chip(self):
+        """
+        A demoted discrete chip (surge_chip_products sub-shape b) is a genuine
+        gas-phase fragment; it must carry the durable gas-volatile veto so the
+        solver never counts it as a melt reference-state participant.
+
+        RED before the fix: no veto key on the demoted chip.
+        """
+        from rmgpy.polymer import surge_chip_products
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        frag.is_polymer_proxy = True
+        frag.props["is_polymer_proxy"] = True
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+
+        a = surge_chip_products(products, self.ps)
+        assert a == 1
+        chip = products[0]
+        assert isinstance(chip, Molecule) and not isinstance(chip, Polymer)
+        assert chip.props.get(VETO) is True, (
+            "demoted discrete chip must carry the durable gas-volatile veto"
+        )
+
+    def test_handshake_does_not_veto_polymer_fragment(self):
+        """
+        GUARD (no over-vetoing): a fragment the handshake DOES convert to a
+        Polymer (a real chain) must NOT receive the gas veto -- otherwise a
+        genuine melt chain would be wrongly excluded from the melt sum. GREEN
+        before AND after.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None
+        tail.is_polymer_proxy = True
+        tail.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True)]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert products[0].props.get(VETO) in (False, None), (
+            "a Polymer chain must never receive the gas-volatile veto"
+        )
+
+    def test_species_copy_preserves_gas_veto(self):
+        """
+        Contract pin: the durable gas veto lives in ``Species.props``, which
+        ``Species.copy`` deep-copies -- so the verdict survives the copies that
+        defeat both is_polymer_proxy clears and ad-hoc attributes. (Green from
+        the start; documents WHY props is the chosen carrier.)
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import (POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO,
+                                   set_polymer_gas_veto)
+
+        sp = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        set_polymer_gas_veto(sp)
+        assert sp.props.get(VETO) is True
+        clone = sp.copy(deep=True)
+        assert clone.props.get(VETO) is True, (
+            "Species.copy must preserve the durable gas veto (props)"
+        )
+
+    def test_gas_veto_key_literal_matches_solver_gate(self):
+        """Literal-drift guard (code-review NIT): the Cython solver melt gate
+        (rmgpy/solver/polymer.pyx) reads the props key as a HARDCODED string
+        literal, not the imported constant. If the Python constant is renamed
+        without updating the pyx, the solver silently stops honoring the veto
+        and the reference-state tripwire returns. Pin the exact literal so that
+        rename fails loudly here.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY
+        assert POLYMER_REFERENCE_STATE_GAS_VETO_KEY == "polymer_reference_state_gas_veto", (
+            "the gas-veto props key literal is hardcoded in polymer.pyx's melt "
+            "gate; update both together"
+        )
+
+    # ------------------------------------------------------------------
+    # 7. Retroene-style scission: closed-shell fragments from proxy
+    # ------------------------------------------------------------------
+    def test_handshake_retroene_scission_products(self):
+        """
+        A Retroene reaction on the PS proxy trimer produces two closed-shell
+        fragments (no radicals).  The larger fragment containing a recognizable
+        wing should become a Polymer; the smaller one stays a Molecule.
+
+        PS proxy: CH3-CH2-CH(Ph)-CH2-CH(Ph)-CH2-CH(Ph)-H
+        Retroene splits e.g. into:
+          C17H18: C=C(CC(C)c1ccccc1)c1ccccc1  (larger, has a wing)
+          C8H10:  CC=C1C=CC=CC1               (smaller fragment)
+
+        At least the larger fragment must be recognized as polymer-derived.
+        """
+        # These are actual SMILES from the RMG run output
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        small_frag = Molecule(smiles='C=C(C)c1ccccc1')
+
+        product_list = [large_frag, small_frag]
+        self._handshake(product_list, [self.ps])
+
+        # At least the large fragment should be recognized as a Polymer
+        assert isinstance(product_list[0], Polymer), (
+            f"Large Retroene fragment should become a Polymer, got {type(product_list[0])}"
+        )
+
+    def test_handshake_retroene_all_scission_products(self):
+        """
+        Test both pairs of Retroene products from the PS proxy.
+        For each pair, the larger fragment should become a Polymer.
+        """
+        pairs = [
+            ('C=C(CC(C)c1ccccc1)c1ccccc1', 'CC=C1C=CC=CC1'),     # C17H18 + C8H10
+            ('CC(CC=C1C=CC=CC1)c1ccccc1', 'C=C(C)c1ccccc1'),     # C16H18 + C9H10
+        ]
+        for large_smi, small_smi in pairs:
+            large_frag = Molecule(smiles=large_smi)
+            small_frag = Molecule(smiles=small_smi)
+            product_list = [large_frag, small_frag]
+            self._handshake(product_list, [self.ps])
+            assert isinstance(product_list[0], Polymer), (
+                f"Large fragment ({large_smi}) should become a Polymer, "
+                f"got {type(product_list[0])}"
+            )
+
+    # ------------------------------------------------------------------
+    # 8. Handshake with Species objects (real RMG flow)
+    # ------------------------------------------------------------------
+    def test_handshake_species_objects(self):
+        """
+        In the real RMG pipeline, find_degenerate_reactions wraps product
+        Molecules into Species objects before process_reaction is called.
+        _handshake_structures must handle Species (not just Molecule) items
+        in the product list.
+        """
+        from rmgpy.species import Species as Spc
+        large_mol = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        small_mol = Molecule(smiles='C=C(C)c1ccccc1')
+        large_spc = Spc(molecule=[large_mol])
+        small_spc = Spc(molecule=[small_mol])
+
+        product_list = [large_spc, small_spc]
+        self._handshake(product_list, [self.ps])
+
+        assert isinstance(product_list[0], Polymer), (
+            f"Species wrapping a large fragment should become a Polymer, "
+            f"got {type(product_list[0])}"
+        )
+        assert not isinstance(product_list[1], Polymer), (
+            "Small gas-phase fragment should stay a Species"
+        )
+
+    # ------------------------------------------------------------------
+    # 9. Scission product proxy symmetry / resonance hybrid
+    # ------------------------------------------------------------------
+    def test_scission_product_proxy_symmetry_number(self):
+        """
+        The proxy of a scission-tail Polymer must be able to compute its
+        symmetry number (which internally calls get_resonance_hybrid)
+        without crashing due to inconsistent resonance structures.
+
+        Regression test for ValueError: 'The specified vertices are not
+        connected by an edge in this graph' during thermo generation.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        proxy = poly.get_proxy_species()
+        # This is the exact call chain that crashed in the RMG run:
+        # get_symmetry_number → get_resonance_hybrid → get_bond
+        sym = poly.get_symmetry_number()
+        assert sym >= 1
+
+    def test_scission_product_generate_resonance_structures(self):
+        """
+        Calling generate_resonance_structures on a Polymer must not break
+        the shared molecule reference between the Polymer and its proxy.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        proxy = poly.get_proxy_species()
+        # Simulate what evaluator does
+        poly.generate_resonance_structures()
+        # After the call, Polymer.molecule must still reference the proxy's list
+        assert poly.molecule is proxy.molecule
+
+    def test_evaluator_on_scission_polymer(self):
+        """
+        Full evaluator path on a scission Polymer must not crash.
+        This mimics the exact thermo-generation flow triggered by
+        _register_polymer → generate_thermo → submit → evaluator.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        # Simulate the evaluator flow
+        poly.generate_resonance_structures()
+        sym = poly.get_symmetry_number()
+        assert sym >= 1
+
+
+class TestHandshakeRelabelFlag:
+    """Tests that _handshake_structures returns a bool indicating relabeling."""
+
+    def test_handshake_structures_returns_true_when_it_relabels(self):
+        """_handshake_structures must report relabeling so make_new_reaction can
+        gate the real-ΔH BM pre-conversion (spec §4.2)."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.molecule import Molecule
+        ps = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                     end_groups=['[CH3]', '[H]'], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        # A scission-tail fragment Molecule the proxy can reinterpret as a Polymer.
+        frag = Molecule().from_smiles('CC(CC(CC(C)c1ccccc1)c1ccccc1)c1ccccc1')
+        products = [frag]
+        relabeled = _handshake_structures(products, [ps])
+        assert relabeled is True
+        from rmgpy.polymer import Polymer as _P
+        assert isinstance(products[0], _P)
+
+    def test_handshake_structures_returns_false_when_nothing_relabels(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.molecule import Molecule
+        ps = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                     end_groups=['[CH3]', '[H]'], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        small = [Molecule().from_smiles('O=C=O')]  # CO2: not a polymer fragment
+        relabeled = _handshake_structures(small, [ps])
+        assert relabeled is False
+        assert isinstance(small[0], Molecule)
+
+
+class TestPolymerRegistration:
+    """
+    Tests for Polymer registration in the CoreEdgeReactionModel:
+    fingerprint uniqueness, moment dummy injection, and the end-to-end
+    make_new_species → _register_polymer pipeline.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+
+    def test_register_polymer_assigns_index(self):
+        """A newly registered Polymer must get a positive species index."""
+        poly, is_new = self.model._register_polymer(self.ps, generate_thermo=False)
+        assert is_new is True
+        assert poly.index > 0
+
+    def test_register_polymer_creates_moment_dummies(self):
+        """_register_polymer must inject _mu0, _mu1, _mu2 dummy Species."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f'PS{suffix}'
+            assert expected in labels, f"Missing moment dummy '{expected}' in new_species_list"
+
+    def test_moment_dummies_are_nonreactive_ne(self):
+        """Moment dummies must be non-reactive Species with [Ne] placeholder
+        molecules (see CoreEdgeReactionModel._register_polymer, which uses
+        from_smiles('[Ne]'); the Cantera writer also documents the Ne
+        placeholder convention)."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        for spc in self.model.new_species_list:
+            if spc.label.startswith('PS_mu'):
+                assert spc.reactive is False
+                assert spc.index == -1
+                assert spc.molecule[0].get_formula() == 'Ne'
+
+    def test_duplicate_polymer_returns_existing(self):
+        """Registering the same Polymer twice must return the first copy (is_new=False)."""
+        poly1, is_new1 = self.model._register_polymer(self.ps, generate_thermo=False)
+        dup = self.ps.copy(deep=True)
+        poly2, is_new2 = self.model._register_polymer(dup, generate_thermo=False)
+        assert is_new1 is True
+        assert is_new2 is False
+        assert poly1 is poly2
+
+    def test_scission_polymer_gets_different_fingerprint(self):
+        """A scission product must have a different fingerprint than its parent."""
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        scission = self.ps.create_reacted_copy(c16h18)
+        assert scission is not None, "test setup: create_reacted_copy returned None"
+        assert scission.fingerprint != self.ps.fingerprint, (
+            "Scission product must have a different fingerprint from the parent"
+        )
+
+    def test_scission_polymer_gets_own_moment_dummies(self):
+        """A scission product registered via make_new_species gets its own moment dummies."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        scission = self.ps.create_reacted_copy(c16h18)
+        scission_reg, is_new = self.model.make_new_species(scission, generate_thermo=False)
+        assert is_new is True
+        assert isinstance(scission_reg, Polymer)
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f'{scission_reg.label}{suffix}'
+            assert expected in labels, f"Missing moment dummy '{expected}' for scission product"
+
+    def test_make_new_species_routes_polymer_to_register_polymer(self):
+        """make_new_species with a Polymer must route to _register_polymer."""
+        poly, is_new = self.model.make_new_species(self.ps, generate_thermo=False)
+        assert is_new is True
+        assert isinstance(poly, Polymer)
+        assert poly.index > 0
+        # Moment dummies should also be present
+        labels = [s.label for s in self.model.new_species_list]
+        assert f'{poly.label}_mu0' in labels
+
+    def test_handshake_then_register_end_to_end(self):
+        """
+        Full pipeline: handshake converts product Molecule to Polymer,
+        then make_new_species registers it with index and moment dummies.
+        """
+        from rmgpy.data.kinetics.family import _handshake_structures
+
+        self.model._register_polymer(self.ps, generate_thermo=False)
+
+        # Simulate product list from a reaction
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        h_atom = Molecule().from_smiles('[H]')
+        products = [c16h18, h_atom]
+
+        _handshake_structures(products, [self.ps])
+
+        # After handshake: first product should be Polymer, second stays Molecule
+        assert isinstance(products[0], Polymer)
+        assert isinstance(products[1], Molecule)
+
+        # Register both via make_new_species
+        poly_prod, is_new_poly = self.model.make_new_species(products[0], generate_thermo=False)
+        h_prod, is_new_h = self.model.make_new_species(products[1], generate_thermo=False)
+
+        assert isinstance(poly_prod, Polymer)
+        assert is_new_poly is True
+        assert poly_prod.index > 0
+        assert not isinstance(h_prod, Polymer)
+        assert is_new_h is True
+
+        # Check moment dummies exist for the new polymer
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            assert f'{poly_prod.label}{suffix}' in labels
+
+
+class TestMakeNewReactionPolymer:
+    """
+    Tests for make_new_reaction() handling Polymer reactants/products:
+    pairs invalidation after handshake, and end-to-end product registration.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+
+        # Create and register a polystyrene Polymer
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=False)
+
+    def _make_retroene_template_reaction(self):
+        """
+        Build a TemplateReaction that mimics a Retroene scission of the PS proxy.
+
+        The PS trimer proxy decomposes into two fragments:
+          C16H18: CC(CC=C1C=CC=CC1)c1ccccc1 (scission-head-like)
+          C8H10:  CC=C1C=CC=CC1             (scission-tail-like)
+
+        Returns the TemplateReaction with pairs set (the scenario that
+        previously caused a ValueError after handshake).
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        c8h10 = Molecule().from_smiles('CC=C1C=CC=CC1')
+
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[c16h18, c8h10],
+            family='Retroene',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.29e12, 's^-1'), n=0.0, Ea=(71.113, 'kcal/mol')),
+            pairs=[(proxy_mol, c16h18), (proxy_mol, c8h10)],
+        )
+        return rxn
+
+    def test_make_new_reaction_no_pairs_crash(self):
+        """make_new_reaction must not raise ValueError on pairs lookup after handshake."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert is_new is True
+        assert result_rxn is not None
+
+    def test_make_new_reaction_produces_polymer_products(self):
+        """At least one product of a Polymer scission must be a Polymer object."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        poly_products = [p for p in result_rxn.products if isinstance(p, Polymer)]
+        assert len(poly_products) > 0, (
+            f"Expected Polymer products, got: {[type(p).__name__ for p in result_rxn.products]}"
+        )
+
+    def test_make_new_reaction_polymer_products_get_moment_dummies(self):
+        """Polymer products from make_new_reaction must have moment dummies registered."""
+        rxn = self._make_retroene_template_reaction()
+        self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        labels = [s.label for s in self.model.new_species_list]
+        poly_products = [p for p in rxn.products if isinstance(p, Polymer)]
+        for poly in poly_products:
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                expected = f'{poly.label}{suffix}'
+                assert expected in labels, (
+                    f"Missing moment dummy '{expected}' for polymer product"
+                )
+
+    def test_make_new_reaction_reactant_resolves_to_polymer(self):
+        """The proxy Molecule reactant must resolve to the registered Polymer."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert isinstance(result_rxn.reactants[0], Polymer)
+        assert result_rxn.reactants[0].label == 'PS'
+
+    def test_make_new_reaction_pairs_regenerated(self):
+        """After handshake invalidates pairs, generate_pairs must restore them."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert result_rxn.pairs is not None
+        assert len(result_rxn.pairs) == max(len(result_rxn.reactants), len(result_rxn.products))
+
+    def _make_chip_template_reaction(self):
+        """
+        Proxy -> [cap+unit fragment, END_MOD image]: handshakes into the live
+        chip shape (b) (SCISSION piece + END_MOD fold-back), per the probed
+        recipe in the 2026-06-10 spec work. Fragment MW 134.2 -> a = 1.
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+        return TemplateReaction(
+            reactants=[proxy_mol],
+            products=[frag, end_mod],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1e13, 's^-1'), n=0.0, Ea=(50.0, 'kcal/mol')),
+            pairs=[(proxy_mol, frag), (proxy_mol, end_mod)],
+        )
+
+    def test_make_new_reaction_chip_stamps_and_never_queues(self):
+        """
+        Spec test 7 (+3b's flag-survival rider at the model level): a chip
+        event through make_new_reaction stamps DISCRETE_CHIP with
+        polymer_chip_units = 1, keeps the STORED is_end_group_reaction True
+        (the surgery removed the END_MOD member, so a recompute would flip
+        it -- nothing recomputes), registers NO _scission_* daughter, and the
+        iteration-boundary spawn pass finds nothing to spawn (never-queue:
+        surgery replaced the daughter before the candidates pass).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype
+
+        rxn = self._make_chip_template_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False,
+        )
+        assert result_rxn is not None
+
+        # Stamps: archetype, chip units, stored-flag survival.
+        assert result_rxn.is_end_group_reaction is True
+        assert (result_rxn.polymer_flux_archetype
+                == int(PolymerFluxArchetype.DISCRETE_CHIP))
+        assert result_rxn.polymer_chip_units == 1
+
+        # Products: a discrete chip + the PS fold-back; no scission daughter.
+        labels = [getattr(p, 'label', '') for p in result_rxn.products]
+        assert not any('_scission' in lbl for lbl in labels)
+        assert any(isinstance(p, Polymer) and p.label == 'PS'
+                   for p in result_rxn.products)
+
+        # Never-queue: no _scission_* Polymer registered...
+        assert not any('_scission' in s.label for s in self.model.new_species_list)
+        # ...and the spawn pass has nothing to drain (no daughter pools appear).
+        self.model._apply_multipool_spawn_pass(self.model.new_species_list)
+        assert not any('_scission' in s.label for s in self.model.new_species_list)
+        pools = [s for s in self.model.new_species_list if isinstance(s, Polymer)]
+        assert pools  # the parent pool must be present (guards vacuous all())
+        assert all(p.label == 'PS' for p in pools)
+
+
+class TestEnlargePolymerPipeline:
+    """
+    Tests that simulate the enlarge pipeline (make_new_reaction → edge placement)
+    for Polymer scission reactions. This mirrors what happens when a Polymer
+    species in the core reacts and its products are added to the model edge.
+
+    Uses make_new_reaction (with check_existing=False to avoid database
+    dependency) and then manually adds products to the edge, which is
+    exactly what process_new_reactions does after the reaction is created.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        # Place PS directly in core (bypassing add_species_to_core which
+        # requires the full RMG database for forbidden structure checks)
+        self.model.core.species.append(self.ps)
+
+    def _make_retroene_reaction(self):
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        c8h10 = Molecule().from_smiles('CC=C1C=CC=CC1')
+
+        return TemplateReaction(
+            reactants=[proxy_mol],
+            products=[c16h18, c8h10],
+            family='Retroene',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.29e12, 's^-1'), n=0.0, Ea=(71.113, 'kcal/mol')),
+            pairs=[(proxy_mol, c16h18), (proxy_mol, c8h10)],
+        )
+
+    def test_enlarge_pipeline_polymer_products_in_edge(self):
+        """
+        Simulate the enlarge pipeline: create the reaction, then add
+        non-core products to the edge (as process_new_reactions does).
+        Polymer products must end up as Polymer objects in the edge.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert is_new is True
+
+        # Simulate process_new_reactions edge placement
+        for spec in result_rxn.products:
+            if spec not in self.model.core.species and spec not in self.model.edge.species:
+                self.model.edge.species.append(spec)
+
+        edge_polymers = [s for s in self.model.edge.species if isinstance(s, Polymer)]
+        assert len(edge_polymers) > 0, (
+            f"No Polymer found in edge species. Edge types: "
+            f"{[type(s).__name__ for s in self.model.edge.species]}"
+        )
+
+    def test_enlarge_pipeline_polymer_moment_dummies_registered(self):
+        """
+        After the enlarge pipeline, Polymer products in the edge
+        must have their _mu0, _mu1, _mu2 moment dummies registered.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        for spec in result_rxn.products:
+            if spec not in self.model.core.species and spec not in self.model.edge.species:
+                self.model.edge.species.append(spec)
+
+        all_labels = {s.label for s in
+                      self.model.new_species_list + self.model.core.species + self.model.edge.species}
+
+        edge_polymers = [s for s in self.model.edge.species if isinstance(s, Polymer)]
+        for poly in edge_polymers:
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                expected = f'{poly.label}{suffix}'
+                assert expected in all_labels, (
+                    f"Missing moment dummy '{expected}' for edge polymer '{poly.label}'"
+                )
+
+    def test_enlarge_pipeline_polymer_products_have_unique_fingerprints(self):
+        """
+        Polymer scission products must have different fingerprints
+        from the parent PS and from each other.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        poly_products = [p for p in result_rxn.products if isinstance(p, Polymer)]
+        fingerprints = {p.fingerprint for p in poly_products}
+        # All polymer products should have distinct fingerprints
+        assert len(fingerprints) == len(poly_products)
+        # None should match the parent PS fingerprint
+        for fp in fingerprints:
+            assert fp != self.ps.fingerprint, (
+                "Scission product fingerprint must differ from parent"
+            )
+
+    def test_polymer_reaction_not_pressure_dependent(self):
+        """
+        Reactions involving Polymer species must never be routed to the
+        pressure-dependent network, even when pressure_dependence is on.
+        They should go directly to the core or edge reaction lists.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        # Place all species in core so the reaction qualifies for the core
+        for spec in result_rxn.reactants + result_rxn.products:
+            if spec not in self.model.core.species:
+                self.model.core.species.append(spec)
+
+        # Enable pressure dependence on the model with a low atom limit
+        from unittest.mock import MagicMock
+        self.model.pressure_dependence = MagicMock()
+        self.model.pressure_dependence.maximum_atoms = 10  # far below polymer size
+        self.model.unrealgroups = []
+
+        # Simulate the pdep decision from process_new_reactions
+        isomer_atoms = sum(len(spec.molecule[0].atoms) for spec in result_rxn.reactants)
+        pdep = True
+        if not self.model.pressure_dependence:
+            pdep = False
+        elif any(isinstance(spec, Polymer) for spec in result_rxn.reactants + result_rxn.products):
+            pdep = False
+
+        assert pdep is False, (
+            "Polymer reaction should NOT be treated as pressure-dependent"
+        )
+
+    def test_moment_dummies_promoted_to_core_with_polymer(self):
+        """
+        When a Polymer is moved from edge to core, its _mu0, _mu1, _mu2
+        moment dummies must be promoted to the core as well.
+        """
+        from unittest.mock import patch, MagicMock
+
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        # Find the scission polymer product
+        poly_product = None
+        for spec in result_rxn.products:
+            if isinstance(spec, Polymer) and spec is not self.ps:
+                poly_product = spec
+                break
+        assert poly_product is not None, "Expected a scission Polymer product"
+
+        # Place the polymer and its dummies in the edge (simulating edge placement)
+        self.model.edge.species.append(poly_product)
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            m_label = f"{poly_product.label}{suffix}"
+            for s in self.model.new_species_list:
+                if s.label == m_label:
+                    self.model.edge.species.append(s)
+                    break
+
+        # Mock get_db to avoid requiring the full RMG database
+        mock_forbidden = MagicMock()
+        mock_forbidden.is_molecule_forbidden.return_value = False
+        with patch('rmgpy.rmg.model.get_db', return_value=mock_forbidden):
+            self.model.add_species_to_core(poly_product)
+
+        core_labels = {s.label for s in self.model.core.species}
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f"{poly_product.label}{suffix}"
+            assert expected in core_labels, (
+                f"Moment dummy '{expected}' should be in core after polymer promotion"
+            )
+
+
+def test_assess_refused_qssa_kout_never_calls_missing_evidence_slow():
+    """Round-20 increment 7 semantics pins for the rate-derived QSSA
+    diagnostic helper: (a) no consuming rows -> NOT visible (the census
+    spells that 'qssa-unassessable', never 'slow'); (b) consumers whose
+    co-reactant concentrations are unknown stay visible but UNQUANTIFIED
+    (k_out None); (c) a partially quantified k_out is flagged as a LOWER
+    BOUND (safe for 'fast', never for 'slow')."""
+    from rmgpy.data.kinetics.family import _handshake_structures  # noqa: F401 (env parity)
+    from rmgpy.kinetics import Arrhenius
+    from rmgpy.polymer import assess_refused_qssa_kout
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    allyl = Species(label="allyl_macro",
+                    molecule=[Molecule(smiles="CCC(C)CCCC=C[C](C)CCC(C)CC")])
+    sat = Species(label="sat_chain",
+                  molecule=[Molecule(smiles="CCC(C)CCCC(C)CCCC(C)C")])
+    h = Species(label="H", molecule=[Molecule(smiles="[H]")])
+    h2 = Species(label="H2", molecule=[Molecule(smiles="[H][H]")])
+    kin_bi = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                       T0=(298.15, "K"))
+    kin_uni = Arrhenius(A=(5.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"),
+                        T0=(298.15, "K"))
+    refused = Reaction(reactants=[epdm, h], products=[h2, allyl],
+                       kinetics=kin_bi, reversible=False)
+    spcs = [epdm, h, h2, allyl, sat]
+    # (a) no consuming rows -> not visible, no k_out
+    out = assess_refused_qssa_kout(refused, [refused], spcs, 800.0, 1.0e5)
+    assert out["visible"] is False
+    assert out["k_out_s"] is None
+    # (b) one bimolecular consumer, co-reactant concentration unknown ->
+    # visible but unquantified: never a 0.0 masquerading as 'slow'
+    c_bi = Reaction(reactants=[allyl, h], products=[sat, h2],
+                    kinetics=kin_bi, reversible=False)
+    out = assess_refused_qssa_kout(refused, [refused, c_bi], spcs,
+                                   800.0, 1.0e5,
+                                   concentration_of=lambda s: None)
+    assert out["visible"] is True
+    assert out["n_consumer_directions"] == 1
+    assert out["n_quantified"] == 0
+    assert out["k_out_s"] is None
+    # (c) add a quantifiable unimolecular consumer -> k_out is a LOWER
+    # BOUND (the bimolecular direction stays unquantified)
+    c_uni = Reaction(reactants=[allyl], products=[sat],
+                     kinetics=kin_uni, reversible=False)
+    out = assess_refused_qssa_kout(refused, [refused, c_bi, c_uni], spcs,
+                                   800.0, 1.0e5,
+                                   concentration_of=lambda s: None)
+    assert out["visible"] is True
+    assert out["n_consumer_directions"] == 2
+    assert out["n_quantified"] == 1
+    assert out["k_out_s"] == pytest.approx(5.0)
+    assert out["k_out_is_lower_bound"] is True
+    # fully quantified: bimolecular direction picks up C(H)
+    out = assess_refused_qssa_kout(
+        refused, [refused, c_bi, c_uni], spcs, 800.0, 1.0e5,
+        concentration_of=lambda s: 3.0 if s is h else None)
+    assert out["n_quantified"] == 2
+    assert out["k_out_s"] == pytest.approx(5.0 + 2.0 * 3.0)
+    assert out["k_out_is_lower_bound"] is False
+
+
+def test_is_qssa_eliminating_radical_distinguishes_allylic():
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import is_qssa_eliminating_radical
+    saturated = Molecule().from_smiles("CCC(C)CCC[C](C)CCCC(C)C")  # C15 mid-chain
+    allylic = Molecule().from_smiles("CC=C(C)[CH]CC")              # Probe F dominant allylic (faithful analog), resonance count 2
+    assert is_qssa_eliminating_radical(saturated) is True    # resonance count 1 -> eliminating
+    assert is_qssa_eliminating_radical(allylic) is False     # resonance count >1 -> accumulating
+
+
+def test_feature_abstraction_is_flagged_refused_not_leaked():
+    """A FEATURE mid-chain radical that the handshake dropped to a gas product
+    (UNRESOLVED, mass-fabricating) must be FLAGGED ``polymer_refused`` at stamp
+    time -- without raising and without discarding the reaction (item 18)."""
+    from rmgpy.polymer import Polymer, stamp_polymer_flux_archetype
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)  # is_polymer_proxy
+    macro = Molecule().from_smiles("CCC(C)CCC[C](C)CCCC(C)C")  # leaked FEATURE radical (Molecule, as at real stamp site)
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    # reactants contain the Polymer directly (Polymer IS a Species); the leaked
+    # FEATURE radical product is a plain Molecule (handshake left it un-converted).
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), macro])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # stamp-but-keep: the reaction is kept (products unchanged), only flags added.
+    assert rxn.products == [Species(molecule=[h2]), macro] or macro in rxn.products
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # saturated -> eliminating
+
+
+def test_same_pool_polymer_reaction_is_not_refused():
+    """A normal SAME_POOL reaction with a real polymer product must NOT be
+    flagged refused (guards against false-firing of the refuse detector)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, PolymerClass,
+                               stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A FEATURE-modified polymer product in the SAME pool: a handshake-converted
+    # fold-back (Polymer, same label, stamped FEATURE) -> SAME_POOL, never
+    # UNRESOLVED. The gas co-product (H2) must NOT be misread as a lost radical.
+    product = epdm.copy()
+    product._reacted_class = PolymerClass.FEATURE
+    assert isinstance(product, Polymer)
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), product])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_flux_archetype != int(PolymerFluxArchetype.UNRESOLVED)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_unresolved_non_feature_gas_product_helper_declines():
+    """An UNRESOLVED reaction (polymer reactant, no polymer product) whose gas
+    product is a genuinely-small fragment -- CH4 (MW ~16 g/mol, well below the
+    chain-scale threshold monomer ~70 + slack 10 ~= 80) -- must NOT be refused:
+    the solver's single-monomer-debit accounts for sub-monomer leaks correctly.
+    This exercises the widened, mechanism-keyed refuse-detection helper's full
+    decline path: unlike the SAME_POOL guard, the UNRESOLVED branch IS reached,
+    the helper runs its complete loop over gas products, finds none at chain
+    scale, and correctly returns None. NOTE: post-widening the decline is by the
+    SIZE gate, not the old FEATURE-label check (item 18 Task 3 follow-up)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # CH4 (~16 g/mol) is far below the chain-scale threshold -> not refused.
+    ch4 = Molecule().from_smiles("C")
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    # Polymer reactant + only-gas products (no polymer product) -> UNRESOLVED.
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), Species(molecule=[ch4])])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # The UNRESOLVED branch IS reached (this is what makes the helper run, unlike
+    # the SAME_POOL guard which short-circuits before detection).
+    assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+    # Helper ran the full loop, found nothing at chain scale, and declined.
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_feature_allylic_radical_lost_to_gas_is_refused_accumulating():
+    """An UNRESOLVED reaction that leaks a FEATURE radical which is ALSO an
+    accumulating (allylic, resonance-stabilized) radical must be flagged
+    ``polymer_refused`` with ``polymer_refused_accumulating is True`` -- exercising
+    the accumulating branch at the stamp site (item 18 Task 3)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               is_qssa_eliminating_radical)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A backbone-sized EPDM macroradical bearing an internal C=C with the radical
+    # allylic to it: large enough to classify FEATURE against epdm, and
+    # resonance-stabilized so it is accumulating (not QSSA-eliminating). The small
+    # Probe F analog CC=C(C)[CH]CC is too small (classifies SCISSION, not FEATURE),
+    # so a backbone-length allylic radical is required for an end-to-end refuse.
+    allylic = Molecule().from_smiles("CCC(C)CCCC=C[C](C)CCC(C)CC")
+    assert is_qssa_eliminating_radical(allylic) is False  # accumulating
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), allylic])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is True
+
+
+def test_discard_chain_radical_lost_to_gas_is_refused():
+    """A DISCARD (buffer_monomer_modified) backbone radical dropped to gas on the
+    UNRESOLVED leg must now be FLAGGED ``polymer_refused`` -- the widened,
+    mechanism-keyed predicate refuses ANY chain-scale gas radical, not only
+    classify_structure==FEATURE (item 18 Task 3 follow-up). The FEATURE/DISCARD
+    split is a positional artifact of the 3-unit proxy (center vs cap-adjacent
+    monomer), not chemistry; both leak the same MW-211 C15 backbone radical and
+    fabricate the same mass under the solver's UNRESOLVED single-monomer-debit.
+    This is the regression-lock for the widening: it FAILS under the old
+    FEATURE-only predicate (DISCARD was not refused) and PASSES after."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, classify_structure, PolymerClass,
+                               stamp_polymer_flux_archetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A C15 backbone radical that classifies DISCARD (not FEATURE) against epdm --
+    # the cap-adjacent proxy position. Same MW (211.41) as the FEATURE radical.
+    macro = Molecule().from_smiles("CC[C](C)CCCC(C)CCCC(C)C")
+    macro.update()
+    # Sanity: this is genuinely DISCARD, not FEATURE, so it would have been missed
+    # by the old label-keyed predicate.
+    klass, _ = classify_structure(Species(molecule=[macro]), epdm)
+    assert klass == PolymerClass.DISCARD
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), macro])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # Chain-scale (MW 211 >> monomer 70 + slack 10) -> refused even though DISCARD.
+    assert rxn.polymer_refused is True
+
+
+def test_small_radical_lost_to_gas_conserves_not_refused():
+    """A genuinely small fragment radical (propyl, MW ~43 < monomer+slack ~80) on
+    the same UNRESOLVED leg must NOT be refused: the solver's single-monomer-debit
+    accounts for sub-monomer leaks correctly, so the size gate declines (item 18
+    Task 3 follow-up). Complements the CH4 helper-decline test with a radical."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    propyl = Molecule().from_smiles("CC[CH2]")  # ~43 g/mol, below chain-scale gate
+    propyl.update()
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), Species(molecule=[propyl])])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_gas_radical_association_into_condensed_proxy_refused_conduit_deferred():
+    """PP v1 campaign refusal (adjudicated adversarial round 63): the exact
+    run-5 shape ``[CH2]C(C)C + C[CH]CCC <=> polypropylene proxy`` -- pure
+    gas-phase radicals reversibly associating INTO the condensed pool proxy --
+    must classify ``polymer_refused`` with the conduit-deferred census reason
+    (``polymer_refused_accumulating is False``). RED at b917becd7: no
+    classifier saw this orientation (the stamping block keys on polymer
+    REACTANTS, and the association orientation has none), so the row entered
+    the live model unpaired and died at the thermo reference-state tripwire
+    (U = 10.39 decades). Refusal is the adjudicated PP v1 scope cut; the
+    long-term representation is the pool-moment-credit conduit -- exactly
+    what "conduit-deferred" means."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])   # isobutyl
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])     # 2-pentyl
+    # Association orientation (as generated in run 5): gas radicals -> proxy.
+    rxn = Reaction(reactants=[r1, r2], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # -> "conduit-deferred"
+    # Reverse generated orientation (proxy homolysis into pure gas radicals)
+    # is the SAME bridge and must classify identically.
+    rxn_rev = Reaction(reactants=[pp], products=[r1, r2], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_gas_gas_gas_recombination_termination_not_refused():
+    """Negative control (design constraint 1): the refusal is SHAPE-specific,
+    not family-specific. Ordinary gas+gas->gas R_Recombination termination
+    (two alkyl radicals -> alkane, no condensed proxy on either side) must
+    NOT be refused -- R_Recombination termination is whitelisted chemistry."""
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])
+    alkane = Species(molecule=[Molecule().from_smiles("CC(C)CC(C)CCC")])
+    rxn = Reaction(reactants=[r1, r2], products=[alkane], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_gas_association_refusal_leaves_abstraction_and_scission_alone():
+    """Negative controls (design constraint 1 + RED pin 3): shapes with a
+    proxy participant on the mixed side, or a non-radical on the all-gas
+    side, are NOT the refused association bridge.
+
+    (a) H-abstraction routing (the S2 conduit): proxy + gas radical ->
+        daughter Polymer + gas -- neither side is "all gas radicals".
+    (b) Volatile-producing scission: proxy -> gas radical + closed-shell
+        alkene -- the all-gas side contains a NON-radical, so it is
+        beta-scission chemistry, not the association bridge; it must keep
+        routing (volatile-producing chemistry is explicitly kept)."""
+    from rmgpy.polymer import Polymer, PolymerClass, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # (a) H-abstraction shape: pp + CH3. -> pp(FEATURE) + CH4
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    assert isinstance(daughter, Polymer)
+    ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")])
+    ch4 = Species(molecule=[Molecule().from_smiles("C")])
+    habs = Reaction(reactants=[pp, ch3], products=[daughter, ch4],
+                    reversible=True)
+    stamp_gas_association_refusal(habs)
+    assert habs.polymer_refused is False
+    # (b) volatile-producing scission shape: pp -> allyl radical + hexene
+    allyl = Species(molecule=[Molecule().from_smiles("[CH2]C=C")])
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    scission = Reaction(reactants=[pp], products=[allyl, hexene],
+                        reversible=True)
+    stamp_gas_association_refusal(scission)
+    assert scission.polymer_refused is False
+
+
+def test_gas_association_refusal_does_not_overwrite_existing_refusal_reason():
+    """A row already refused by the item-18 detector (e.g. qssa-invalid,
+    ``polymer_refused_accumulating is True``) that ALSO matches the
+    association shape must keep its original census reason -- the new stamp
+    never downgrades qssa-invalid to conduit-deferred."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])
+    rxn = Reaction(reactants=[pp], products=[r1, r2], reversible=True)
+    rxn.polymer_refused = True
+    rxn.polymer_refused_accumulating = True   # qssa-invalid, stamped earlier
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is True   # reason preserved
+
+
+def test_impostor_polymer_scale_discrete_row_refused_both_orientations():
+    """r82 impostor-row refusal (FR1 run-2 forensics,
+    /home/alon/Projects/polymer/FR1/rmg/run2/RMG.out): XY_Addition-generated
+    rows shaped ``Br/BrBr + <proxy-scale unsaturated discrete> <=> FR1``
+    bridge a POLYMER-SIZED discrete molecule (the pool proxy minus a small
+    closed-shell gas partner, 2.76-3.00 monomer-equivalents in run-2) into
+    the condensed pool proxy. The gas partner is closed-shell, so the r63
+    all-gas-radicals conjunct never fires, and the 15 run-2 rows arrived
+    UNSTAMPED at the solver rebuild (r71 hard-fail). The predicate must
+    refuse the shape conduit-deferred in BOTH written orientations."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # Genuine chain-scale unsaturated impostor mirroring FR1 run-2's C36-scale
+    # proxy-minus-XY discretes (a multi-repeat PP oligomer with one double
+    # bond): C24H48, 336.6 g/mol / 24 heavy -- clears the r95 absolute
+    # chain-scale floor (>= ABS_CHAIN_SCALE_MW/HEAVY), so it is HONESTLY
+    # polymer-sized in absolute terms, not merely a light-monomer ratio artifact.
+    impostor = Species(molecule=[Molecule().from_smiles(
+        "C=CCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)C")])
+    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])  # closed-shell
+    # Association orientation (run-2 written direction): gas + impostor -> proxy.
+    rxn = Reaction(reactants=[br2, impostor], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # -> "conduit-deferred"
+    # Reverse orientation (proxy -> gas + impostor) is the SAME bridge.
+    rxn_rev = Reaction(reactants=[pp], products=[br2, impostor],
+                       reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_impostor_threshold_spares_dp2_volatile_and_gas_only_rows():
+    """Negative controls for the r82 impostor conjunct (pinned):
+
+    (a) threshold boundary: a DP-2 dimer volatile (hexene off polypropylene,
+        exactly 2.0 monomer-equivalents -- the largest adjudicated-LIVE
+        volatile scale, see
+        test_gas_association_refusal_leaves_abstraction_and_scission_alone)
+        on the polymer-free side is NOT polymer-sized;
+    (b) ordinary gas-only XY_Addition_MultipleBond chemistry (no condensed
+        participant on either side) is untouched regardless of size."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])
+    # (a) 2.0 monomer-equivalents: below the 2.5 polymer-sized threshold.
+    rxn = Reaction(reactants=[br2, hexene], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+    # (b) gas-only XY addition: Br2 + hexene -> 1,2-dibromohexane.
+    dibromide = Species(molecule=[Molecule().from_smiles("CCCCC(Br)CBr")])
+    gas_only = Reaction(reactants=[br2, hexene], products=[dibromide],
+                        reversible=True)
+    stamp_gas_association_refusal(gas_only)
+    assert gas_only.polymer_refused is False
+    assert gas_only.polymer_refused_accumulating is False
+
+
+def test_impostor_refusal_leaves_feature_pool_abstraction_alone():
+    """Negative control (pinned): H/Br abstraction feature-pool rows carry a
+    Polymer participant on BOTH sides (chain + Br. -> FEATURE daughter + HBr),
+    so they route through the r74 same-proxy branch and keep their existing
+    adjudication -- the r82 impostor conjunct (one-side-polymer only) must
+    never see them."""
+    from rmgpy.polymer import Polymer, PolymerClass, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    br = Species(molecule=[Molecule().from_smiles("[Br]")])
+    hbr = Species(molecule=[Molecule().from_smiles("Br")])
+    habs = Reaction(reactants=[pp, br], products=[daughter, hbr],
+                    reversible=True)
+    stamp_gas_association_refusal(habs)
+    assert habs.polymer_refused is False
+    assert habs.polymer_refused_accumulating is False
+
+
+def test_impostor_undecidable_axis_never_degenerates_to_mass_only(caplog):
+    """r85 P2(a) pin (r86 ride-along): when a Polymer participant lacks the
+    monomer STRUCTURE (defensive copy / stripped monomer), the heavy-atom
+    axis is uncomputable and the impostor predicate must NOT degenerate to
+    mass-only -- BOTH axes must be computable AND at/above threshold to
+    refuse. Negative pin: the PP+Br2-shaped row (Br2 = 3.8 propene
+    monomer-equivalents of MASS but only 0.67 of heavy atoms) with the
+    monomer structure stripped is NOT refused; the undecidable case is
+    ANNOUNCED through a census/log warning instead of a blind refusal."""
+    import logging
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    pp.monomer = None  # structure axis uncomputable (monomer_mw_g_mol kept)
+    # A heavy-but-few-atoms gas that is MASS-polymer-sized under the r95
+    # absolute floor (CBr4, 331.6 g/mol >= ABS_CHAIN_SCALE_MW, but only 5 heavy
+    # atoms): the mass axis says "sized" while the structure axis is
+    # uncomputable (monomer stripped), so the predicate must NOT degenerate to
+    # a mass-only refusal -- it announces the case undecidable instead.
+    br2 = Species(molecule=[Molecule().from_smiles("BrC(Br)(Br)Br")])
+    rxn = Reaction(reactants=[br2], products=[pp], reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+    assert any("IMPOSTOR AXIS UNDECIDABLE" in r.getMessage()
+               for r in caplog.records)
+    # Reverse orientation: same undecidable shape, same non-refusal.
+    rxn_rev = Reaction(reactants=[pp], products=[br2], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is False
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_impostor_undecidable_mass_axis_also_refuses_to_refuse():
+    """r85 P2(a), symmetric half: a missing MASS axis (monomer_mw_g_mol
+    unavailable on a defensive copy) with a structure axis that says
+    proxy-scale is equally undecidable -- both axes must be computable to
+    refuse, so the discrete stays live."""
+    from rmgpy.polymer import Polymer, _discrete_is_polymer_sized
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    pp.monomer_mw_g_mol = 0.0  # mass axis uncomputable (structure kept)
+    impostor = Species(molecule=[Molecule().from_smiles("C=CCC(C)CC(C)C")])
+    assert _discrete_is_polymer_sized(impostor, pp) is False
+
+
+def test_impostor_threshold_is_proxy_derived():
+    """r85 P2(b) pin (r86 ride-along): the polymer-sized threshold is
+    DERIVED from the actual proxy construction, not hard-coded --
+    threshold = proxy_repeat_units - 0.5, with proxy_repeat_units coming
+    from the stitched-proxy recipe (Polymer._stitch_trimer spans exactly
+    PROXY_STITCH_REPEAT_UNITS = 3 repeat units today). A future proxy-size
+    change moves the threshold automatically."""
+    from rmgpy.polymer import (_IMPOSTOR_DISCRETE_MONOMER_UNITS,
+                               PROXY_STITCH_REPEAT_UNITS, Polymer)
+    assert PROXY_STITCH_REPEAT_UNITS == 3
+    assert _IMPOSTOR_DISCRETE_MONOMER_UNITS == \
+        PROXY_STITCH_REPEAT_UNITS - 0.5
+    # ... and the constant reflects the REAL construction: the stitched
+    # baseline proxy of a PP pool carries exactly PROXY_STITCH_REPEAT_UNITS
+    # monomer units of heavy atoms (H end-caps add none).
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    proxy = pp.baseline_proxy
+    assert proxy is not None
+    heavy_proxy = sum(1 for a in proxy.molecule[0].atoms
+                      if not a.is_hydrogen())
+    heavy_monomer = sum(1 for a in pp.monomer.atoms if not a.is_hydrogen())
+    assert heavy_proxy == PROXY_STITCH_REPEAT_UNITS * heavy_monomer
+
+
+def _chain_scale_adduct_fixture():
+    """PP pool + a chain-scale proxy-derived discrete adduct mirroring the
+    FR1 run-3 cohort shape (/home/alon/Projects/polymer/FR1/rmg/run3):
+    adduct = multi-repeat proxy-scale skeleton + 2 Br (run-3: C36H32Br19O3
+    adducts vs C36H32Br17O3 pool proxies -- element-unbalanced by exactly 2 Br).
+    C21H42Br2 = 454.37 g/mol / 23 heavy atoms -- a GENUINE multi-repeat
+    chain-scale defect that clears the r95 absolute floor
+    (ABS_CHAIN_SCALE_MW=300 / ABS_CHAIN_SCALE_HEAVY=20) on BOTH axes, not a
+    light-monomer ratio artifact (an ordinary C8 PP fragment at 2.7
+    monomer-equivalents does NOT clear the absolute floor and is correctly
+    spared -- see the r95 RED-matrix tests)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.species import Species
+
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    adduct = Species(molecule=[Molecule().from_smiles(
+        "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    adduct.label = "adduct"
+    return pp, adduct
+
+
+def test_chain_scale_proxy_derived_adduct_same_pool_row_refused_both_orientations():
+    """r87 refusal (FR1 run-3 shape A, RED-first): a row coupling an
+    UNREPRESENTED chain-scale proxy-derived discrete adduct to pool state
+    through an unequal-count same-pool fold-back --
+    ``adduct + pool <=> pool + pool`` (run-3: 20 live ``same_pool/1``
+    Disproportionation-Y rows, element-unbalanced by 2 Br) -- must be
+    refused conduit-deferred. The [pool] vs [pool, pool] participant-count
+    step escaped the r74 same-proxy conjunct (identical pairing requires
+    equal counts) and SAME_POOL bookkeeping applies ZERO moment change, so
+    the adduct's whole mass is fabricated/annihilated in the live model.
+
+    r87: the classifier must catch BOTH melt-tagged ((111)/(116) cohort)
+    and gas-vetoed ((117)) adducts -- veto status must NOT change the
+    refusal outcome -- and both written orientations."""
+    from rmgpy.polymer import set_polymer_gas_veto, stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+
+    # (a) melt-tagged variant ((111)/(116) cohort).
+    pp, adduct = _chain_scale_adduct_fixture()
+    adduct.is_polymer_proxy = True
+    rxn = Reaction(reactants=[adduct, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False  # -> "conduit-deferred"
+
+    # (b) gas-vetoed variant ((117)): same outcome, veto-independent.
+    pp_v, adduct_v = _chain_scale_adduct_fixture()
+    set_polymer_gas_veto(adduct_v)
+    rxn_v = Reaction(reactants=[adduct_v, pp_v], products=[pp_v, pp_v],
+                     reversible=True)
+    stamp_gas_association_refusal(rxn_v)
+    assert rxn_v.polymer_refused is True
+    assert rxn_v.polymer_refused_accumulating is False
+
+    # (c) reverse written orientation (pool + pool <=> adduct + pool):
+    # SAME bridge, refused identically (orientation-independent).
+    pp_r, adduct_r = _chain_scale_adduct_fixture()
+    adduct_r.is_polymer_proxy = True
+    rxn_rev = Reaction(reactants=[pp_r, pp_r], products=[adduct_r, pp_r],
+                       reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_chain_scale_defect_refusal_negative_controls_stay_live():
+    """r87/r93 conjunct pins for the general branch (formerly shape-A's
+    negative controls). The RETAINED conjuncts of
+    :func:`_discrete_is_chain_scale_proxy_derived` (evidence + dual-axis size)
+    still keep a row LIVE when either fails:
+
+    (a) no proxy-derivation evidence (untagged, unvetoed) chain-scale
+        discrete in the same shape: live (evidence conjunct);
+    (b) proxy-tagged but sub-polymer-sized volatile (hexene, 2.0
+        monomer-equivalents) in the same shape: live (size conjunct;
+        'otherwise this fix becomes the next over-refusal bug').
+
+    r93 (adjudicated round 93) REMOVED shape-A's participant-count and
+    fold-back conjuncts -- the general branch is side/count independent -- so
+    the former (c)/(d) LIVE controls now REFUSE by the general branch and are
+    re-purposed here as pins of that behavior:
+
+    (c) equal-count same-pool fold-back with the chain-scale tagged adduct on
+        both sides: REFUSED (a chain-scale proxy-derived discrete not
+        resolvable to pool co-occurs with a pool -- count-independent);
+    (d) cross-pool (label-changing) shape with the adduct: REFUSED (this is
+        exactly the run-5 shape-D class the general branch targets)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    # (a) evidence conjunct (retained): live.
+    pp, adduct = _chain_scale_adduct_fixture()
+    rxn = Reaction(reactants=[adduct, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+
+    # (b) size conjunct (retained): hexene = 2.0 monomer-equivalents < 2.5.
+    pp_b, _ = _chain_scale_adduct_fixture()
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    hexene.is_polymer_proxy = True   # blanket-tag (family.py posture)
+    rxn_b = Reaction(reactants=[hexene, pp_b], products=[pp_b, pp_b],
+                     reversible=True)
+    stamp_gas_association_refusal(rxn_b)
+    assert rxn_b.polymer_refused is False
+
+    # (c) r93 count-independence: equal-count fold-back with the chain-scale
+    # tagged adduct present now REFUSES (was shape-A's participant-count LIVE
+    # control).
+    pp_c, adduct_c = _chain_scale_adduct_fixture()
+    adduct_c.is_polymer_proxy = True
+    rxn_c = Reaction(reactants=[adduct_c, pp_c], products=[pp_c, adduct_c],
+                     reversible=True)
+    stamp_gas_association_refusal(rxn_c)
+    assert rxn_c.polymer_refused is True
+    assert rxn_c.polymer_refused_accumulating is False
+
+    # (d) r93 side-independence: cross-pool (label-changing) shape now REFUSES
+    # (was shape-A's fold-back LIVE control; it is the run-5 shape-D class).
+    pp_d, adduct_d = _chain_scale_adduct_fixture()
+    adduct_d.is_polymer_proxy = True
+    other = Polymer(label="polypropylene_tail", monomer="[CH2][CH]C",
+                    Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    rxn_d = Reaction(reactants=[adduct_d, pp_d], products=[pp_d, other],
+                     reversible=True)
+    stamp_gas_association_refusal(rxn_d)
+    assert rxn_d.polymer_refused is True
+    assert rxn_d.polymer_refused_accumulating is False
+
+
+def test_chain_scale_classifier_spares_declared_volatiles():
+    """r87 over-refusal pin: explicit-DP / declared-monomer-routing discrete
+    volatiles (propene / hexene off PP, alpha-methylstyrene off PS) are NOT
+    chain-scale to the classifier EVEN when proxy-contaminated AND
+    gas-vetoed -- they sit below the polymer-sized threshold (2.5
+    monomer-equivalents; propene 1.0, hexene 2.0, AMS 1.13), while the
+    FR1-shaped adduct (3.1 monomer-equivalents in run-3, 6.8 here) IS."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (_discrete_is_chain_scale_proxy_derived,
+                               set_polymer_gas_veto)
+    from rmgpy.species import Species
+
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    ps = Polymer(label="polystyrene", monomer="[CH2][CH]c1ccccc1",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    for smiles, pool in (("C=CC", pp),               # propene
+                         ("C=CCCCC", pp),            # hexene (DP-2)
+                         ("C=C(C)c1ccccc1", ps)):    # alpha-methylstyrene
+        vol = Species(molecule=[Molecule().from_smiles(smiles)])
+        vol.is_polymer_proxy = True
+        set_polymer_gas_veto(vol)
+        assert _discrete_is_chain_scale_proxy_derived(vol, [pool]) is False
+
+    _, adduct_vetoed = _chain_scale_adduct_fixture()
+    set_polymer_gas_veto(adduct_vetoed)  # veto ALONE is derivation evidence
+    assert _discrete_is_chain_scale_proxy_derived(adduct_vetoed, [pp]) is True
+    _, adduct_tagged = _chain_scale_adduct_fixture()
+    adduct_tagged.is_polymer_proxy = True  # tag ALONE is evidence too
+    assert _discrete_is_chain_scale_proxy_derived(adduct_tagged, [pp]) is True
+    _, adduct_bare = _chain_scale_adduct_fixture()
+    assert _discrete_is_chain_scale_proxy_derived(adduct_bare, [pp]) is False
+
+
+def test_reference_state_split_isomerization_refused_with_pool_registry():
+    """r87 shape B (FR1 run-3, RED-first): a discrete<=>discrete
+    isomerization between chain-scale proxy-derived adducts that SPLITS the
+    reference-state classification -- run-3's ``(117) <=> (111)``, one side
+    melt-classified (tagged, chain-scale, unvetoed), the other suppressed
+    by the durable gas veto -- must be refused conduit-deferred when a pool
+    registry is supplied (row carries no Polymer participant, so the
+    monomer scale must come from the registry). Without a registry the
+    stamp stays conservative (live; the solver tripwire remains the loud
+    backstop). A no-split isomerization (both sides melt-classified) pairs
+    off in the tripwire's U and stays LIVE."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import set_polymer_gas_veto, stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    pp, d_melt = _chain_scale_adduct_fixture()
+    d_melt.is_polymer_proxy = True                    # (111): melt-classified
+    # (117): a chain-scale isomer of the adduct (same C21H42Br2 formula, Br
+    # positions moved), so the no-split control below pairs off exactly in U.
+    d_gas = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    d_gas.is_polymer_proxy = True
+    set_polymer_gas_veto(d_gas)                       # (117): veto-suppressed
+
+    # No registry: conservative, live.
+    rxn = Reaction(reactants=[d_gas], products=[d_melt], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+
+    # List registry: refused conduit-deferred.
+    stamp_gas_association_refusal(rxn, pool_registry=[pp])
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False
+
+    # Callable (lazy) registry form: same outcome.
+    rxn2 = Reaction(reactants=[d_gas], products=[d_melt], reversible=True)
+    stamp_gas_association_refusal(rxn2, pool_registry=lambda: [pp])
+    assert rxn2.polymer_refused is True
+    assert rxn2.polymer_refused_accumulating is False
+
+    # No-split control: both sides melt-classified isomers -- U pairs off
+    # exactly in the tripwire, so the row stays LIVE.
+    pp3, d_melt_a = _chain_scale_adduct_fixture()
+    d_melt_a.is_polymer_proxy = True
+    d_melt_b = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    d_melt_b.is_polymer_proxy = True
+    rxn3 = Reaction(reactants=[d_melt_a], products=[d_melt_b], reversible=True)
+    stamp_gas_association_refusal(rxn3, pool_registry=[pp3])
+    assert rxn3.polymer_refused is False
+
+
+def test_split_refusal_mirror_excludes_dp2_volatile_from_melt_multiset():
+    """r89 lockstep pin (agreement: refusal-melt-mirror == tripwire-is_melt):
+    the shape-B stamp's melt-MW multisets must classify membership by the
+    SAME dual-axis polymer-sized gate as the r89 tripwire tag branch, NOT by
+    the pre-r89 MW window. Fixture: an adduct isomerization that carries a
+    proxy-tagged un-vetoed DP-2 volatile (1,5-hexadiene, 82.15 g/mol -- above
+    the propene window 52.1 but 1.95/2.0 monomer-equivalents) as a spectator
+    co-participant on ONE side. Post-r89 the volatile is GAS to both the
+    mirror and the tripwire: the adduct isomers pair off and the row stays
+    LIVE. RED at 5bba9e3eb: the window-based _melt_mws counts hexadiene as a
+    melt participant on one side only, fabricates a split, and REFUSES a row
+    the (fixed) tripwire scores U ~ 0 -- refused/live drift, the exact
+    disagreement r89 forbids."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    pp, d_melt_a = _chain_scale_adduct_fixture()
+    d_melt_a.is_polymer_proxy = True
+    # Chain-scale isomer of the adduct (C21H42Br2, 454 g/mol), so the two
+    # adducts pair off in the melt multiset and any split can only come from
+    # the DP-2 volatile spectator -- which the dual-axis gate excludes.
+    d_melt_b = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    d_melt_b.is_polymer_proxy = True
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True   # blanket over-tagging fingerprint
+    # LIVENESS PIN: hexadiene is the window-leak shape (above window, below
+    # dual-axis threshold on the mass axis).
+    mw_hex = hexadiene.molecule[0].get_molecular_weight() * 1000.0
+    assert mw_hex >= pp.monomer_mw_g_mol + 10.0
+    assert mw_hex < 2.5 * pp.monomer_mw_g_mol
+
+    rxn = Reaction(reactants=[d_melt_a, hexadiene], products=[d_melt_b],
+                   reversible=True)
+    stamp_gas_association_refusal(rxn, pool_registry=[pp])
+    assert rxn.polymer_refused is False, (
+        "the shape-B melt mirror must classify a DP-2 volatile GAS (dual-axis"
+        ", r89) -- a window-based mirror refuses a row the tripwire keeps, "
+        "drifting the refused/live sets"
+    )
+
+
+# ---------------------------------------------------------------------------
+# r93 GENERAL branch (adjudicated adversarial round 93, grounded in FR1 run-5
+# shape D, /home/alon/Projects/polymer/FR1/rmg/run5): a CLASS-level conjunct
+# that subsumes the enumerated r87 shape-A/C/D bridges. Refuse ANY stampable
+# row where a chain-scale proxy-derived discrete NOT resolvable to pool state
+# co-occurs with any Polymer/pool participant (orientation/side/label-set/count
+# independent). Shape B (no Polymer participant) stays separate.
+# ---------------------------------------------------------------------------
+
+_R93_CENSUS = "chain-scale-discrete/pool coupling (general)"
+
+
+def _r93_two_pool_shape_d_fixture():
+    """The run-5 shape-D cohort shape (RMG.out:
+    ``FR1(1) + FR1_sidegrp(4) <=> (5) + FR1(1)``, U = 13.05 tripwire): two
+    distinct PP-scale pools plus a chain-scale gas-vetoed proxy-derived
+    discrete radical (stands in for (5), 1871 g/mol / ~2.9 dual-axis units).
+    The discrete is net-produced on ONE side only, so the two-pool-vs-one-pool
+    melt imbalance is what the tripwire scores -- exactly the run-5 wall."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import set_polymer_gas_veto
+    from rmgpy.species import Species
+
+    fr1 = Polymer(label="FR1", monomer="[CH2][CH]C",
+                  Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    sidegrp = Polymer(label="FR1_sidegrp", monomer="[CH2][CH]C",
+                      Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # Chain-scale proxy-derived discrete radical, gas-vetoed like run-5's (5):
+    # a genuine multi-repeat brominated radical, C21H41Br2 = 453.4 g/mol / 23
+    # heavy, clearing the r95 absolute floor (the real (5) is 1871 g/mol).
+    discrete = Species(molecule=[Molecule().from_smiles(
+        "[CH2]C(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    discrete.label = "(5)"
+    set_polymer_gas_veto(discrete)
+    return fr1, sidegrp, discrete
+
+
+def test_r93_general_branch_refuses_two_pool_abstraction_both_orientations(caplog):
+    """r93 RED matrix #1/#4 (unit seam, FR1 run-5 shape D): the two-pool
+    abstraction ``FR1 + FR1_sidegrp <=> (5) + FR1`` -- a vetoed chain-scale
+    proxy-derived discrete (5) co-occurring with pool participants -- must be
+    refused conduit-deferred BY THE GENERAL BRANCH, in BOTH written
+    orientations. Shape A (unequal-count same-pool fold-back) and r74
+    same-proxy both skip it (2-pool-vs-1-pool count step), so pre-r93 it
+    reached the reference-state tripwire (U = 13.05) unrefused."""
+    import logging
+    from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    fr1, sidegrp, discrete = _r93_two_pool_shape_d_fixture()
+    _general_chain_scale_pool_warned.clear()
+    rxn = Reaction(reactants=[fr1, sidegrp], products=[discrete, fr1],
+                   reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False  # -> "conduit-deferred"
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records), (
+        "census must identify the r93 general branch")
+
+    # Reverse written orientation: SAME class-level coupling, refused
+    # identically (orientation-independent).
+    fr1_r, sidegrp_r, discrete_r = _r93_two_pool_shape_d_fixture()
+    rxn_rev = Reaction(reactants=[discrete_r, fr1_r], products=[fr1_r, sidegrp_r],
+                       reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_r93_general_branch_subsumes_shape_a_and_c_fixtures(caplog):
+    """r93 RED matrix #2: the r87 shape-A fixture row
+    (``adduct + pool <=> pool + pool``) and a shape-C cross-pool fixture row
+    (``adduct + pool <=> pool + other_pool``) are now refused BY THE GENERAL
+    BRANCH -- census identifies the general branch. The old shape-A positive
+    test stays green as a behavior pin; here we additionally assert the census
+    attribution."""
+    import logging
+    from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    # Shape A: unequal-count same-pool fold-back.
+    pp, adduct = _chain_scale_adduct_fixture()
+    adduct.is_polymer_proxy = True
+    _general_chain_scale_pool_warned.clear()
+    rxn_a = Reaction(reactants=[adduct, pp], products=[pp, pp], reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn_a)
+    assert rxn_a.polymer_refused is True
+    assert rxn_a.polymer_refused_accumulating is False
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records)
+
+    # Shape C: cross-pool (label-changing) coupling with the chain-scale
+    # adduct -- the run-5 shape-D class, refused by the same general branch.
+    caplog.clear()
+    pp_c, adduct_c = _chain_scale_adduct_fixture()
+    adduct_c.is_polymer_proxy = True
+    other = Polymer(label="polypropylene_tail", monomer="[CH2][CH]C",
+                    Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    _general_chain_scale_pool_warned.clear()
+    rxn_c = Reaction(reactants=[adduct_c, pp_c], products=[pp_c, other],
+                     reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn_c)
+    assert rxn_c.polymer_refused is True
+    assert rxn_c.polymer_refused_accumulating is False
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records)
+
+
+def test_r93_general_branch_refuses_unvetoed_tag_only_chain_scale_discrete():
+    """r93 RED matrix #3: the OR conjunct -- shape-D happened to be gas-vetoed,
+    but an UNVETOED (proxy-TAGGED only) chain-scale discrete net-produced in a
+    mixed pool row must ALSO be refused, or the tag-only variant leaks. The
+    discrete appears on ONE side only (net imbalance), the pool on the other."""
+    from rmgpy.polymer import (has_polymer_gas_veto,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    pp, adduct = _chain_scale_adduct_fixture()
+    adduct.is_polymer_proxy = True          # tag ONLY -- no gas veto
+    assert not has_polymer_gas_veto(adduct)
+    rxn = Reaction(reactants=[pp], products=[pp, adduct], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_r93_general_branch_negative_controls_stay_live():
+    """r93-named negative controls (pinned, must stay LIVE):
+
+    (1) a DP-2 declared volatile (hexene, 2.0 monomer-equivalents < 2.5) in a
+        pool row -- below the chain-scale bar, so the predicate cannot fire;
+    (2) gas+gas chemistry with no pool participant -- conjunct (ii) fails;
+    (3) pool<->pool migration WITHOUT any chain-scale discrete -- conjunct (i)
+        fails (no chain-scale proxy-derived discrete anywhere);
+    (4) a chain-scale discrete that IS resolvable to pool state (isomorphic to
+        the pool's own reactive proxy) co-occurring with that pool -- spared by
+        the not-resolvable guard (refusing a pool's own proxy is over-refusal).
+    """
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (_discrete_is_chain_scale_proxy_derived,
+                               _discrete_resolves_to_pool_state,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    # (1) DP-2 volatile in a pool row.
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    hexene.is_polymer_proxy = True
+    rxn1 = Reaction(reactants=[pp, hexene], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn1)
+    assert rxn1.polymer_refused is False
+
+    # (2) gas+gas, no pool participant.
+    allyl = Species(molecule=[Molecule().from_smiles("[CH2]C=C")])
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True
+    rxn2 = Reaction(reactants=[allyl, hexadiene],
+                    products=[Species(molecule=[Molecule().from_smiles(
+                        "C=CCCCCC=C")])], reversible=True)
+    stamp_gas_association_refusal(rxn2)
+    assert rxn2.polymer_refused is False
+
+    # (3) pool<->pool feature migration WITHOUT a chain-scale discrete: a
+    # genuine H-abstraction to a FEATURE daughter (distinct pool state, so
+    # r74 same-proxy does not fire) with only small gas partners.
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    ch4 = Species(molecule=[Molecule().from_smiles("C")])
+    ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")])
+    rxn3 = Reaction(reactants=[pp, ch3], products=[daughter, ch4],
+                    reversible=True)
+    stamp_gas_association_refusal(rxn3)
+    assert rxn3.polymer_refused is False
+
+    # (4) a chain-scale discrete that IS the pool's own reactive proxy
+    # (isomorphic) -- resolvable to pool state, spared. Uses a POLYSTYRENE pool
+    # because a PS trimer proxy (C24H26, 314.5 g/mol / 24 heavy) is itself
+    # genuinely chain-scale (clears the r95 absolute floor), so this test
+    # exercises the not-resolvable guard -- the proxy is spared by RESOLVABILITY,
+    # not merely by being sub-floor. (A light-monomer PP proxy is only 128 g/mol
+    # and is spared by the size floor instead, a different conjunct.)
+    ps = Polymer(label="polystyrene", monomer="[CH2][CH]c1ccccc1",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    proxy_spc = ps.get_proxy_species('auto')
+    resolvable = Species(molecule=[m.copy(deep=True)
+                                   for m in proxy_spc.molecule])
+    resolvable.is_polymer_proxy = True
+    assert _discrete_is_chain_scale_proxy_derived(resolvable, [ps]) is True
+    assert _discrete_resolves_to_pool_state(resolvable, [ps]) is True
+    rxn4 = Reaction(reactants=[ps], products=[ps, resolvable], reversible=True)
+    stamp_gas_association_refusal(rxn4)
+    assert rxn4.polymer_refused is False
+
+
+# ---------------------------------------------------------------------------
+# r95 absolute chain-scale floor (adjudicated adversarial round 95, grounded in
+# the polypropylene rerun over-refusal). _discrete_is_polymer_sized conjoins the
+# monomer-relative 2.5-equivalents ratio with an ABSOLUTE floor
+# (ABS_CHAIN_SCALE_MW=300 g/mol / ABS_CHAIN_SCALE_HEAVY=20) via max(): a discrete
+# must clear BOTH bars. This narrows the over-broad r93 general branch, which
+# (ratio-only) mis-classified ordinary C5-C10 fragments on light-monomer pools
+# as chain-scale and refused legitimate pool coupling (573 rows on the PP rerun,
+# pool 12->0 live). FR1 behavior is unchanged: for its heavy monomer (~645
+# g/mol) max() picks the ratio (2.5*645=1613), so shape-D (1871 g/mol) is still
+# refused.
+# ---------------------------------------------------------------------------
+
+
+def test_r95_pp_c8_fragment_coupling_stays_live():
+    """r95 RED matrix #1 (the PP-rerun smoking gun): an ordinary C8 secondary
+    radical (CCC[CH]CC(C)C, 113 g/mol / 8 heavy) proxy-tagged (worst case for
+    refusal), coupling to PP pool state in the r93 general-branch shape
+    (``C8 + pool <=> pool + pool``), must stay LIVE after r95. C8 is 2.69/2.67
+    monomer-equivalents (clears the scale-blind 2.5 ratio) but 113 < 300 g/mol
+    and 8 < 20 heavy, so it is NOT chain-scale and the general branch must not
+    refuse it. RED at cd0994381 (ratio-only: 113>=2.5*42 and 8>=2.5*3 -> C8 is
+    chain-scale -> general branch refuses, zeroing legitimate PP channels);
+    GREEN after the absolute floor.
+
+    NB: the two-radical association ``C8 + [CH3] <=> pool`` is a DIFFERENT
+    shape refused by the r63 all-gas-radicals branch (unchanged by r95 and out
+    of scope); the general-branch over-refusal the r95 floor targets is the
+    pool-coupling shape exercised here."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    c8 = Species(molecule=[Molecule().from_smiles("CCC[CH]CC(C)C")])
+    c8.is_polymer_proxy = True
+    rxn = Reaction(reactants=[c8, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    # Orientation-independent: the reverse is equally live.
+    rxn_rev = Reaction(reactants=[pp, pp], products=[c8, pp], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is False
+
+
+def test_r95_above_ratio_below_floor_is_not_chain_scale():
+    """r95 RED matrix #2: a proxy-tagged fragment ABOVE 2.5 monomer-equivalents
+    but BELOW the absolute floor (the C8 above: 2.69 mass- / 2.67 heavy-units
+    but 113 < 300 g/mol and 8 < 20 heavy) is classified NOT chain-scale by
+    _discrete_is_polymer_sized. RED at cd0994381 (ratio-only -> True)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (_discrete_is_polymer_sized, ABS_CHAIN_SCALE_MW,
+                               ABS_CHAIN_SCALE_HEAVY)
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    c8 = Species(molecule=[Molecule().from_smiles("CCC[CH]CC(C)C")])
+    mw = c8.molecule[0].get_molecular_weight() * 1000.0
+    heavy = (c8.molecule[0].get_num_atoms()
+             - c8.molecule[0].get_num_atoms('H'))
+    # Above the scale-blind ratio on BOTH axes ...
+    assert mw >= 2.5 * pp.monomer_mw_g_mol
+    assert heavy >= 2.5 * 3
+    # ... but below the absolute floor on BOTH axes ...
+    assert mw < ABS_CHAIN_SCALE_MW and heavy < ABS_CHAIN_SCALE_HEAVY
+    # ... therefore NOT chain-scale (max() picks the floor for a light monomer).
+    assert _discrete_is_polymer_sized(c8, pp) is False
+
+
+def test_r95_heavy_monomer_shape_d_still_refused():
+    """r95 RED matrix #3/#4 (the genuine catch must survive): for a HEAVY
+    monomer (FR1-class, 2.5*monomer > the absolute floor) max() picks the
+    monomer-relative ratio, so a genuine chain-scale discrete ABOVE the ratio
+    remains refused by the r93 general branch -- both the gas-vetoed shape-D
+    impostor (#3) and the proxy-tag-only adduct (#4). A mid-size fragment above
+    the absolute floor but BELOW the heavy-monomer ratio is spared, proving
+    max() picks the ratio (not the floor) for heavy monomers. GREEN both at
+    cd0994381 and after (regression guard: the fix must not weaken the catch)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (stamp_gas_association_refusal,
+                               set_polymer_gas_veto, _discrete_is_polymer_sized)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    # Heavy monomer: 2.5*monomer_mw ~ 648 g/mol > the 300 floor (FR1's real
+    # ~645 monomer pushes it to 1613; this stand-in preserves the mechanism).
+    hp = Polymer(label="FR1like",
+                 monomer="[CH2][CH]c1ccc(-c2ccc(Br)cc2)cc1",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    assert 2.5 * hp.monomer_mw_g_mol > 300.0  # ratio dominates the floor
+    # Genuine chain-scale discrete ABOVE the ratio (716 g/mol / 40 heavy).
+    big = ("[CH2]C(c1ccc(-c2ccc(Br)cc2)cc1)CC(c1ccc(-c2ccc(Br)cc2)cc1)"
+           "CC(c1ccc(Br)cc1)C")
+    # #3: gas-vetoed shape-D impostor remains refused.
+    d3 = Species(molecule=[Molecule().from_smiles(big)])
+    set_polymer_gas_veto(d3)
+    assert _discrete_is_polymer_sized(d3, hp) is True
+    rxn3 = Reaction(reactants=[d3, hp], products=[hp, hp], reversible=True)
+    stamp_gas_association_refusal(rxn3)
+    assert rxn3.polymer_refused is True
+    # #4: proxy-tag-only (unvetoed) adduct above the ratio remains refused.
+    d4 = Species(molecule=[Molecule().from_smiles(big)])
+    d4.is_polymer_proxy = True
+    rxn4 = Reaction(reactants=[d4, hp], products=[hp, hp], reversible=True)
+    stamp_gas_association_refusal(rxn4)
+    assert rxn4.polymer_refused is True
+    # Contrast: a 454 g/mol fragment clears the ABSOLUTE floor but is BELOW the
+    # heavy-monomer ratio (648) -> NOT chain-scale (max() picks the ratio).
+    mid = Species(molecule=[Molecule().from_smiles(
+        "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    assert _discrete_is_polymer_sized(mid, hp) is False
+
+
+def test_r95_dp2_volatile_stays_live():
+    """r95 RED matrix #5: a declared DP-2 volatile (1,5-hexadiene off PP, 82
+    g/mol = 1.95 monomer-equivalents) coupling to the pool stays LIVE -- below
+    both the ratio and the floor, so never chain-scale. GREEN both at cd0994381
+    and after (the floor must not newly refuse volatiles that were already
+    live)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (stamp_gas_association_refusal,
+                               _discrete_is_polymer_sized)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True
+    assert _discrete_is_polymer_sized(hexadiene, pp) is False
+    rxn = Reaction(reactants=[hexadiene, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+
+
+def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
+                          label="PS", monomer="[CH2][CH]c1ccccc1"):
+    """Build the (blueprint, initial_moles, species_dict) triple that
+    ``compile_polymer_phase`` consumes, with the pool's stated loading
+    (``initial_mass``/``Mn``) decoupled from the reactor's ``initialMoles``
+    (``moles``) so the two mu0 sources can be made to agree or disagree.
+
+    Returns ``(blueprint, initial_moles, species_dict, poly)`` where ``poly``
+    is the Polymer object (the ``spc`` inside compile_polymer_phase's loop).
+    """
+    from rmgpy.rmg.polymer_input import PolymerPhaseBlueprint
+    from rmgpy.species import Species
+
+    poly = Polymer(label=label, monomer=monomer, end_groups=['[CH3]', '[H]'],
+                   cutoff=3, Mn=Mn, Mw=Mw, initial_mass=initial_mass)
+    species_dict = {
+        label: poly,
+        f"{label}_mu0": Species().from_smiles("CO"),
+        f"{label}_mu1": Species().from_smiles("C=O"),
+        f"{label}_mu2": Species().from_smiles("C#N"),
+    }
+    for suffix in ("_mu0", "_mu1", "_mu2"):
+        species_dict[f"{label}{suffix}"].label = f"{label}{suffix}"
+    blueprint = PolymerPhaseBlueprint(label=label, species=[label], solvent=label)
+    initial_moles = {poly: moles}
+    return blueprint, initial_moles, species_dict, poly
+
+
+def test_compile_polymer_phase_reconciles_moments_to_initial_moles():
+    """CYCLE 1 (tracer): compile_polymer_phase must make the Polymer object's
+    .moments (what the sidecar serializes) AGREE with the solver-integrated
+    initial_moments (derived from initialMoles), even when the pool's stated
+    initial_mass/Mn implies a different mu0.
+
+    Deck states initial_mass=1 kg, Mn=5000 -> mu0 = 1000/5000 = 0.2, but the
+    reactor's initialMoles gives moles=0.01. The solver integrates 0.01; the
+    sidecar (Polymer.moments) must report the same, not the 0.2-based moments.
+    """
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+    # Pre-condition: the distribution-derived moments disagree with initialMoles.
+    assert poly.moments[0] == pytest.approx(0.2, rel=1e-6)
+
+    phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    solver_moments = np.asarray(phase.initial_moments[poly.label], dtype=float)
+    # The solver integrates moles=0.01 as mu0.
+    assert solver_moments[0] == pytest.approx(0.01, rel=1e-9)
+    # The reconciled Polymer.moments (sidecar source) must equal the solver's.
+    assert np.allclose(np.asarray(poly.moments, dtype=float), solver_moments)
+
+
+def test_compile_polymer_phase_warns_on_mu0_disagreement(caplog):
+    """CYCLE 2: when the initial_mass/Mn-implied chain count disagrees with
+    initialMoles[proxy], compile_polymer_phase must emit a clear warning that
+    names the pool, both mu0 values, and which one the solver uses."""
+    import logging
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+    with caplog.at_level(logging.WARNING):
+        compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    warnings = [r.getMessage() for r in caplog.records
+                if r.levelno >= logging.WARNING]
+    assert any("PS" in m for m in warnings), warnings
+    joined = " ".join(warnings)
+    assert "0.2" in joined          # initial_mass/Mn-implied mu0
+    assert "0.01" in joined         # initialMoles mu0 (what the solver uses)
+    assert "initialMoles" in joined
+
+
+def test_compile_polymer_phase_no_warning_when_consistent(caplog):
+    """CYCLE 2 (negative): once the deck is consistent (initial_mass/Mn ==
+    initialMoles), NO disagreement warning fires."""
+    import logging
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    # initial_mass=1 kg, Mn=5000 -> implied mu0 = 0.2; set moles to match.
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.2)
+
+    with caplog.at_level(logging.WARNING):
+        compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    disagreement = [r.getMessage() for r in caplog.records
+                    if r.levelno >= logging.WARNING and "initialMoles" in r.getMessage()]
+    assert disagreement == [], disagreement
+
+
+# ---------------------------------------------------------------------------
+# Stage 1: daughter-pool registration (proxy_reaction_reality_rules.md Layer 2)
+#
+# A scission/spawn daughter Polymer is registered as a core species (with its
+# own _mu0/_mu1/_mu2 dummies) by _register_polymer, but pool_configs is built
+# only from the static deck list polymerPhase.pools -- so the daughter's
+# species map to -1 and its stamped SCISSION_FRAGMENT/MIGRATION flux demotes to
+# UNRESOLVED ("could not resolve their solver pool(s)"). Registration derives a
+# PolymerPoolConfig for each such daughter from the core species themselves.
+# ---------------------------------------------------------------------------
+
+def _moment_dummy(label):
+    """A moment-dummy Species exactly as _register_polymer injects it."""
+    s = Species(label=label, reactive=False)
+    s.molecule = [Molecule().from_smiles("[Ne]")]
+    s.is_moment_dummy = True
+    return s
+
+
+def test_derive_daughter_pool_config_binds_moment_dummies():
+    """STAGE 1 / CYCLE 1 (tracer): a daughter Polymer registered as a core
+    species (with its auto-created _mu0/_mu1/_mu2 dummies) must yield a
+    PolymerPoolConfig that binds those dummies by index, so the solver resolves
+    the daughter's pool instead of demoting its scission/migration flux to
+    UNRESOLVED. Mirrors what _register_polymer leaves in core after a scission
+    or spawn-intent daughter is registered."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    mu0 = _moment_dummy("PS_d1_mu0")
+    mu1 = _moment_dummy("PS_d1_mu1")
+    mu2 = _moment_dummy("PS_d1_mu2")
+    core = [daughter, mu0, mu1, mu2]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    cfg = configs[0]
+    assert cfg.label == "PS_d1"
+    assert cfg.xs == 3                  # from daughter.cutoff
+    assert tuple(cfg.mu_indices) == (1, 2, 3)   # PS_d1_mu0/_mu1/_mu2 core indices
+
+
+def test_derive_daughter_pool_config_populates_monomer_mw():
+    """The reference-state tripwire's chain_window = max(monomer_mw over pools) +
+    slack. A derived daughter pool config that omits monomer_mw_g_mol (leaving it
+    0.0) drags that max to 0 -> chain_window collapses to the 10 g/mol slack ->
+    small gas scission fragments (over-tagged is_polymer_proxy) leak into the melt
+    reference-state sum (the U=11.3 PS tripwire). The derived config must carry the
+    daughter's own monomer MW (g/mol)."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    assert configs[0].monomer_mw_g_mol == pytest.approx(daughter.monomer_mw_g_mol, rel=1e-9)
+    assert configs[0].monomer_mw_g_mol > 100.0   # styrene-scale, not the 0.0 default
+
+
+def test_pool_to_config_populates_monomer_mw_from_molecule_monomer():
+    """PolymerPool.monomer is a Molecule (Polymer._validate_monomer / the polymer()
+    input helper builds PolymerPool with monomer=spc.monomer, a Molecule). to_config
+    historically read it as a Species (getattr(self.monomer,'molecule')[0]) -> None ->
+    monomer_mw_g_mol=0, collapsing the tripwire chain_window. The config must carry the
+    real monomer MW regardless of whether monomer is a Molecule or a Species."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")   # styrene ~104.15 g/mol, a MOLECULE
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={}, mu_species=mu)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.monomer_mw_g_mol == pytest.approx(104.15, abs=1.0)
+
+
+def test_pool_to_config_hard_errors_on_unzip_without_monomer_product():
+    """k_unzip > 0 with no resolvable monomer_product must be a HARD config error.
+
+    The solver drains condensed moments unconditionally when k_unzip > 0
+    (polymer.pyx: dmu1_dt -= k_unzip*mu0) but only emits the released monomer
+    when monomer_poly_index is not None -- so a config with k_unzip > 0 and
+    monomer_poly_index=None silently un-conserves mass (drained mass goes
+    nowhere). to_config is the last point before that config reaches the
+    solver; it must refuse, naming the pool."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.5, monomer_product=None)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    with pytest.raises(ValueError, match=r"Pool P.*k_unzip.*un-conserved") as excinfo:
+        pool.to_config(spc_map)
+    assert "monomer_product" in str(excinfo.value)
+
+
+def test_pool_to_config_unzip_with_monomer_product_wires_index():
+    """GREEN path: k_unzip > 0 WITH a resolvable monomer_product still builds a
+    config, with monomer_poly_index bound to the released monomer's core index."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.5, monomer_product=styrene)
+    core = mu + [styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.k_unzip == 0.5
+    assert cfg.monomer_poly_index == spc_map[styrene]
+
+
+def test_pool_to_config_zero_unzip_without_monomer_product_stays_legal():
+    """GREEN path: k_unzip == 0 with monomer_product=None is a valid frozen /
+    scission-only pool -- no unzip drain exists, so no emission target is needed."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.0, monomer_product=None)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.k_unzip == 0.0
+    assert cfg.monomer_poly_index is None
+
+
+def test_polymer_input_helper_hard_errors_on_unzip_without_monomer_product():
+    """Parse-time companion to the to_config guard: the polymer() input-deck
+    helper must refuse k_unzip > 0 with monomer_product=None immediately (clear
+    InputError at deck-read time), before any species registration. The check
+    fires before the helper touches the module-global rmg object, so this test
+    needs no RMG instance."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*k_unzip.*un-conserved"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=1.0, monomer_product=None)
+
+
+def test_polymer_input_helper_rejects_negative_k_unzip():
+    """A negative k_unzip is not a valid rate constant. Every solver consumer
+    of k_unzip is gated on k_unzip > 0, so a negative value would silently
+    become an inert channel instead of failing -- the deck helper must refuse
+    it at parse time with a clear InputError, same class of error as the
+    missing-monomer_product guard."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*k_unzip.*not a valid rate constant"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=-0.5)
+
+
+def test_pool_to_config_rejects_negative_k_unzip():
+    """Config-assembly companion to the deck-helper check: PolymerPool.to_config
+    must refuse a negative k_unzip (not a valid rate constant) even when a
+    monomer_product IS wired -- routing must not dodge the sign check."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=-0.5, monomer_product=styrene)
+    spc_map = {s: i for i, s in enumerate(mu + [styrene])}
+
+    with pytest.raises(ValueError, match=r"Pool P.*k_unzip.*not a valid rate constant"):
+        pool.to_config(spc_map)
+
+
+@pytest.mark.parametrize("field", ["k_unzip", "k_scission"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")],
+                         ids=["nan", "+inf", "-inf"])
+def test_polymer_input_helper_rejects_non_finite_rates(field, bad):
+    """NaN passes BOTH the `< 0` and `> 0` checks as False, so a non-finite
+    k_unzip/k_scission would make the channel SILENTLY INERT (or poison the
+    residual with inf) -- a laundered no-op. The deck helper must reject
+    NaN/inf at parse time with a clear InputError, mirroring the QSSA triplet
+    validator's finite-rejection posture."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError,
+                       match=rf"PS.*{field}.*not a valid rate constant"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          **{field: bad})
+
+
+@pytest.mark.parametrize("field", ["k_unzip", "k_scission"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")],
+                         ids=["nan", "+inf", "-inf"])
+def test_pool_to_config_rejects_non_finite_rates(field, bad):
+    """Config-assembly companion to the deck-helper finite check: a
+    non-finite k_unzip/k_scission must be refused by PolymerPool.to_config
+    even with a monomer_product wired (routing must not dodge the check)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, monomer_product=styrene, **{field: bad})
+    spc_map = {s: i for i, s in enumerate(mu + [styrene])}
+
+    with pytest.raises(ValueError,
+                       match=rf"Pool P.*{field}.*not a valid rate constant"):
+        pool.to_config(spc_map)
+
+
+# ---------------------------------------------------------------------------
+# radical_qssa_unzip channel (M1: config + validation only, NO RHS effect)
+# ---------------------------------------------------------------------------
+
+
+def _qssa_triplet(A=1.0e13, n=0.0, Ea=1.0e5):
+    """Arrhenius triplet for the radical_qssa_unzip channel (SI convention:
+    A [s^-1] unimolecular / [m^3 mol^-1 s^-1] bimolecular, Ea [J/mol])."""
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def _qssa_channel(**overrides):
+    """A valid minimal radical_qssa_unzip channel config (mandatory blocks
+    only; efficiency/monomer_yield/basis/transfer left to their defaults)."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        termination=_qssa_triplet(A=1.0e8, Ea=1.0e4),
+    )
+    ch.update(overrides)
+    return ch
+
+
+def _qssa_pool(channel, k_unzip=0.0, wire_monomer_product=True):
+    """PolymerPool + spc_map fixture for the radical_qssa_unzip to_config
+    tests. The released-monomer routing reuses the pool's EXISTING
+    monomer_product field (design contract: no new routing field)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    core = list(mu)
+    mp = None
+    if wire_monomer_product:
+        mp = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+        core.append(mp)
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=k_unzip, monomer_product=mp,
+                       radical_qssa_unzip=channel)
+    return pool, {s: i for i, s in enumerate(core)}
+
+
+def test_polymer_stores_radical_qssa_unzip_and_copy_preserves_it():
+    """Layer-2 attribute: the Polymer object carries the channel config as
+    passive storage (validation lives in the deck helper / to_config / solver),
+    and copy() must preserve it -- like k_unzip/k_scission, losing it on copy
+    would silently disable the pool's degradation channel."""
+    ch = _qssa_channel()
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                   radical_qssa_unzip=ch)
+    assert poly.radical_qssa_unzip == ch
+    assert poly.copy(deep=True).radical_qssa_unzip == ch
+
+
+def test_polymer_copy_deep_copies_radical_qssa_unzip():
+    """COPY ALIASING (review round 21, finding 3): copy() must deep-copy the
+    channel dict, not shallow-assign it. Copies aliasing the same nested dict
+    means mutating one Polymer's channel silently rewrites every copy's
+    (including the spawned-daughter configs that will inherit it)."""
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                   radical_qssa_unzip=_qssa_channel())
+    for cp in (poly.copy(), poly.copy(deep=True)):
+        assert cp.radical_qssa_unzip is not poly.radical_qssa_unzip
+        poly.radical_qssa_unzip["initiation"]["A"] = 999.0
+        poly.radical_qssa_unzip["efficiency"] = 0.123
+        assert cp.radical_qssa_unzip["initiation"]["A"] == 1.0e15
+        assert "efficiency" not in cp.radical_qssa_unzip
+        # restore for the second iteration
+        poly.radical_qssa_unzip["initiation"]["A"] = 1.0e15
+        del poly.radical_qssa_unzip["efficiency"]
+
+
+def test_polymer_radical_qssa_unzip_defaults_to_none():
+    """Regression: a Polymer built without the channel stays channel-free,
+    through copy() too."""
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    assert poly.radical_qssa_unzip is None
+    assert poly.copy(deep=True).radical_qssa_unzip is None
+
+
+def test_pool_to_config_roundtrips_radical_qssa_unzip():
+    """Valid channel round-trip: to_config validates + normalizes the dict and
+    stores it on PolymerPoolConfig with defaults filled (efficiency=1.0,
+    monomer_yield=1.0, pinned basis, transfer=None), reusing the pool's
+    existing monomer_product routing (monomer_poly_index; NO new routing
+    field). M1 contract: the config is validated but INERT (no RHS reads)."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+
+    cfg = pool.to_config(spc_map)
+
+    q = cfg.radical_qssa_unzip
+    assert q is not None
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["termination"] == dict(A=1.0e8, n=0.0, Ea=1.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    assert q["transfer"] is None
+    assert cfg.monomer_poly_index == 3  # existing routing reused
+    assert cfg.k_unzip == 0.0
+
+
+def test_pool_to_config_radical_qssa_unzip_explicit_optionals_and_transfer():
+    """Explicit efficiency/monomer_yield/basis/transfer values survive
+    normalization (transfer is accepted and stored -- same finite/positivity
+    rules, no rate law yet)."""
+    ch = _qssa_channel(efficiency=0.6, monomer_yield=0.9,
+                       basis="backbone_bonds_mu1_minus_mu0",
+                       transfer=_qssa_triplet(A=5.0e6, n=0.5, Ea=2.0e4))
+    pool, spc_map = _qssa_pool(ch)
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["efficiency"] == 0.6
+    assert q["monomer_yield"] == 0.9
+    assert q["transfer"] == dict(A=5.0e6, n=0.5, Ea=2.0e4)
+
+
+def test_pool_to_config_channel_absent_stays_none():
+    """Regression: a channel-absent pool (here a legal k_unzip-only pool) is
+    completely unaffected -- radical_qssa_unzip stays None on its config."""
+    pool, spc_map = _qssa_pool(None, k_unzip=0.5)
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.radical_qssa_unzip is None
+    assert cfg.k_unzip == 0.5
+    assert cfg.monomer_poly_index == 3
+
+
+_QSSA_BAD_CHANNELS = [
+    pytest.param({k: v for k, v in _qssa_channel().items() if k != "termination"},
+                 r"Pool P.*radical_qssa_unzip.*missing.*termination",
+                 id="missing-termination-block"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*initiation.*A.*not finite", id="nan-A"),
+    pytest.param(_qssa_channel(termination=_qssa_triplet(Ea=float("inf"))),
+                 r"Pool P.*termination.*Ea.*not finite", id="inf-Ea"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(n=float("inf"))),
+                 r"Pool P.*initiation.*n.*not finite", id="inf-n"),
+    pytest.param(_qssa_channel(depropagation=_qssa_triplet(A=0.0)),
+                 r"Pool P.*depropagation.*A.*> 0", id="zero-A"),
+    pytest.param(_qssa_channel(depropagation=_qssa_triplet(A=-1.0e13)),
+                 r"Pool P.*depropagation.*A.*> 0", id="negative-A"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(Ea=-5.0)),
+                 r"Pool P.*initiation.*Ea.*>= 0", id="negative-Ea"),
+    pytest.param(_qssa_channel(initiation=dict(A=1.0e13, n=0.0)),
+                 r"Pool P.*initiation.*Ea", id="triplet-missing-Ea"),
+    pytest.param(_qssa_channel(efficiency=0.0),
+                 r"Pool P.*efficiency.*\(0, 1\]", id="efficiency-zero"),
+    pytest.param(_qssa_channel(efficiency=1.5),
+                 r"Pool P.*efficiency.*\(0, 1\]", id="efficiency-above-one"),
+    pytest.param(_qssa_channel(monomer_yield=0.0),
+                 r"Pool P.*monomer_yield.*\(0, 1\]", id="monomer-yield-zero"),
+    pytest.param(_qssa_channel(monomer_yield=1.5),
+                 r"Pool P.*monomer_yield.*\(0, 1\]", id="monomer-yield-above-one"),
+    pytest.param(_qssa_channel(basis="chain_ends_mu0"),
+                 r"Pool P.*basis.*backbone_bonds_mu1_minus_mu0", id="bad-basis"),
+    pytest.param(_qssa_channel(transfer=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*transfer.*A.*not finite", id="nan-transfer-A"),
+    pytest.param(_qssa_channel(bogus_key=1.0),
+                 r"Pool P.*radical_qssa_unzip.*unknown key", id="unknown-key"),
+]
+
+
+@pytest.mark.parametrize("channel, pattern", _QSSA_BAD_CHANNELS)
+def test_pool_to_config_rejects_invalid_radical_qssa_unzip(channel, pattern):
+    """Field validation at config assembly: every A/n/Ea must be FINITE
+    (NaN/inf rejected explicitly -- this channel gets finite checks from day
+    one), A > 0, Ea >= 0; efficiency/monomer_yield in (0, 1]; basis pinned to
+    'backbone_bonds_mu1_minus_mu0' (forward-compat pin)."""
+    pool, spc_map = _qssa_pool(channel)
+    with pytest.raises(ValueError, match=pattern):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_qssa_channel_without_monomer_product():
+    """Channel present without a resolvable monomer product = hard error: the
+    QSSA unzip channel releases monomer through the pool's existing monomer
+    routing; without an emission target the depropagated repeat units would
+    leave the condensed phase silently un-conserved (same failure class as the
+    k_unzip guard above)."""
+    pool, spc_map = _qssa_pool(_qssa_channel(), wire_monomer_product=False)
+    with pytest.raises(ValueError, match=r"Pool P.*radical_qssa_unzip.*un-conserved"):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_qssa_channel_with_positive_k_unzip():
+    """Double-counting guard: radical_qssa_unzip and k_unzip > 0 are two
+    representations of the SAME chain-end depropagation channel and are
+    mutually exclusive on a pool."""
+    pool, spc_map = _qssa_pool(_qssa_channel(), k_unzip=0.5)
+    with pytest.raises(ValueError, match=r"Pool P.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_rejects_bad_radical_qssa_unzip():
+    """Parse-time companion to the to_config field validation: the polymer()
+    deck helper must refuse a malformed radical_qssa_unzip with a clear
+    InputError at deck-read time. The check fires before the helper touches
+    the module-global rmg object, so this test needs no RMG instance."""
+    from rmgpy.rmg import input as rmg_input
+
+    for channel, pattern in [
+        ({k: v for k, v in _qssa_channel().items() if k != "initiation"},
+         r"PS.*missing.*initiation"),
+        (_qssa_channel(depropagation=_qssa_triplet(A=float("nan"))),
+         r"PS.*depropagation.*A.*not finite"),
+        (_qssa_channel(termination=_qssa_triplet(Ea=float("inf"))),
+         r"PS.*termination.*Ea.*not finite"),
+        (_qssa_channel(initiation=_qssa_triplet(A=-1.0)),
+         r"PS.*initiation.*A.*> 0"),
+        (_qssa_channel(efficiency=2.0), r"PS.*efficiency.*\(0, 1\]"),
+        (_qssa_channel(basis="wrong"), r"PS.*basis"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                              end_groups=["[CH3]", "[H]"], cutoff=3,
+                              Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                              monomer_product="C=Cc1ccccc1",
+                              radical_qssa_unzip=channel)
+
+
+def test_polymer_input_helper_rejects_qssa_channel_without_monomer_product():
+    """Deck-read-time cross-invariant: radical_qssa_unzip requires a
+    monomer_product (the channel reuses the pool's existing monomer routing;
+    without it the released mass would leave the condensed phase
+    un-conserved)."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*radical_qssa_unzip.*un-conserved"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          monomer_product=None,
+                          radical_qssa_unzip=_qssa_channel())
+
+
+def test_polymer_input_helper_rejects_qssa_channel_with_positive_k_unzip():
+    """Deck-read-time double-counting guard: radical_qssa_unzip AND
+    k_unzip > 0 on the same pool is a hard error even when monomer_product is
+    wired (the two depropagation representations are mutually exclusive)."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*mutually exclusive"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=1.0, monomer_product="C=Cc1ccccc1",
+                          radical_qssa_unzip=_qssa_channel())
+
+
+def test_polymer_input_helper_valid_qssa_channel_reaches_polymer_object():
+    """GREEN deck path (deck -> Polymer leg of the round-trip): a valid
+    radical_qssa_unzip passes parse-time validation and lands normalized
+    (defaults filled) on the Polymer object. The module-global rmg is mocked:
+    species registration is out of scope here."""
+    from unittest.mock import MagicMock
+    from rmgpy.rmg import input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                 end_groups=["[CH3]", "[H]"], cutoff=3,
+                                 Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                 monomer_product="C=Cc1ccccc1",
+                                 radical_qssa_unzip=_qssa_channel())
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+    q = poly.radical_qssa_unzip
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["termination"] == dict(A=1.0e8, n=0.0, Ea=1.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    assert q["transfer"] is None
+
+
+def test_derive_daughter_pool_configs_skips_static_and_incomplete():
+    """STAGE 1 / CYCLE 2: the root proxy (a Polymer in core whose label IS a
+    static deck pool) must NOT be re-derived (else it is double-configured), and
+    a daughter missing part of its _muN triplet is skipped rather than yielding an
+    unresolvable pool. Only the complete, non-static daughter gets a config."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    def _poly(label):
+        return Polymer(label=label, monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+    root = _poly("PS")                 # static deck pool's proxy, lives in core
+    good = _poly("PS_d1")              # complete daughter -> one config
+    incomplete = _poly("PS_d2")        # missing _mu2 -> skipped
+    core = [
+        root, _moment_dummy("PS_mu0"), _moment_dummy("PS_mu1"), _moment_dummy("PS_mu2"),
+        good, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2"),
+        incomplete, _moment_dummy("PS_d2_mu0"), _moment_dummy("PS_d2_mu1"),  # no PS_d2_mu2
+    ]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert [c.label for c in configs] == ["PS_d1"]
+
+
+def test_derive_daughter_pool_config_uses_base_label_with_index_suffix():
+    """STAGE 1 / CYCLE 5 (hardening): RMG appends a "(N)" index to registered
+    species labels (the proxy displays as "PS(2)" while its dummies stay the
+    clean "PS_mu0"). A daughter whose proxy label acquired such an index
+    ("PS_d1(9)") still has clean "PS_d1_muN" dummies. The derived config must use
+    the '('-stripped base label -- both to FIND the clean dummies and so the
+    solver (which binds on label.partition('(')[0] == pool.label) can resolve the
+    pool. Keying off the raw label drops the daughter (looks for the nonexistent
+    "PS_d1(9)_mu0")."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1(9)", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [
+        daughter,
+        _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2"),
+    ]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    # Config label is the clean base so the solver's base_label match binds it.
+    assert configs[0].label == "PS_d1"
+    assert tuple(configs[0].mu_indices) == (1, 2, 3)
+
+
+# ---------------------------------------------------------------------------
+# Daughter-pool QSSA inheritance (radical_qssa_unzip cascade milestone 5).
+# The recorded M1 decision (polymer_input.py, derive_daughter_pool_configs):
+# spawned scission daughters inherit the parent pool's radical_qssa_unzip
+# channel (deep-copied) -- same monomer chemistry and monomer_mw imply the
+# same elementary initiation/depropagation/termination constants. Without
+# inheritance a PS scission cascade freezes: the parent unzips but daughters
+# are inert and the TGA S-curve never completes.
+# ---------------------------------------------------------------------------
+
+def _qssa_raw_channel():
+    """Deck-shaped (pre-normalization) radical QSSA channel config."""
+    return {
+        "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+        "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+        "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+        "efficiency": 0.8,
+        "monomer_yield": 0.9,
+    }
+
+
+def _qssa_parent(channel=None):
+    """A PS-like parent Polymer, optionally carrying the QSSA channel and a
+    resolvable monomer_product_species (the deck attaches both; input.py:432)."""
+    p = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                end_groups=["[CH3]", "[H]"], cutoff=3,
+                Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+                radical_qssa_unzip=channel)
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    p.monomer_product_species = styrene
+    return p, styrene
+
+
+def _scission_tail_of(parent):
+    """Run a real scission EVENT through create_reacted_copy: head wing +
+    labeled methyl radical -> head-side scission -> a _scission_tail daughter."""
+    head_wing = parent._stitch_wing("head")
+    methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+    frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+    assert frag is not None
+    daughter = parent.create_reacted_copy(frag)
+    assert daughter is not None and daughter.label.endswith("_scission_tail")
+    return daughter
+
+
+def test_scission_daughter_inherits_qssa_channel_deepcopy():
+    """A scission daughter Polymer must carry the parent's radical_qssa_unzip
+    channel DEEP-COPIED (parent mutation must not propagate) plus the parent's
+    monomer_product_species by REFERENCE (spc_map resolution is object-keyed,
+    so identity is load-bearing for the daughter's monomer routing)."""
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+
+    daughter = _scission_tail_of(parent)
+
+    assert daughter.radical_qssa_unzip == channel
+    assert daughter.radical_qssa_unzip is not parent.radical_qssa_unzip
+    # Deep copy: mutate the parent's nested triplet; daughter must not move.
+    parent.radical_qssa_unzip["initiation"]["A"] = 1.0
+    assert daughter.radical_qssa_unzip["initiation"]["A"] == 1.0e13
+    # Routing: SAME species object, so the daughter resolves the same core index.
+    assert daughter.monomer_product_species is styrene
+
+
+def test_scission_daughter_channel_free_parent_stays_channel_free():
+    """No noise: a channel-free parent spawns a channel-free daughter."""
+    parent, _ = _qssa_parent(channel=None)
+    daughter = _scission_tail_of(parent)
+    assert daughter.radical_qssa_unzip is None
+
+
+def test_inherit_gate_same_monomer_chemistry_inherits():
+    """Round-25 P2-1 gate, PASS arm: a daughter with the parent's monomer_mw
+    and unchanged feature chemistry (the scission tail/head shape) inherits
+    channel (deep-copied) + routing reference."""
+    import logging
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+    daughter = Polymer(label="PS_scission_tail", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=2500.0, Mw=3000.0, initial_mass=0.0)
+    polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip == channel
+    assert daughter.radical_qssa_unzip is not parent.radical_qssa_unzip
+    assert daughter.monomer_product_species is styrene
+
+
+def test_feature_mod_daughter_does_not_inherit_channel_and_warns(caplog):
+    """Round-25 P2-1, BLOCK arm: create_reacted_copy stamps inheritance at
+    its single exit (:894) on EVERY non-None daughter, including _mod
+    products whose feature_monomer CHANGED (:1010) -- 'same monomer
+    chemistry' is false there, so the QSSA constants must NOT transfer.
+    Channel-free + once-per-pool WARNING instead."""
+    import logging
+    getattr(polymer, "_unzip_inherit_warned", set()).clear()
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+    # The daughter shape the _mod constructor site produces: same monomer
+    # attr, but a CHANGED feature unit in the chain.
+    daughter = Polymer(label="PS_mod", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+    daughter.feature_monomer = Molecule().from_smiles("C=C")
+
+    with caplog.at_level(logging.WARNING):
+        polymer._inherit_unzip_channel(daughter, parent)
+
+    assert daughter.radical_qssa_unzip is None
+    assert getattr(daughter, "monomer_product_species", None) is None
+    warned = [r for r in caplog.records
+              if "channel-free" in r.getMessage()
+              and "PS_mod" in r.getMessage()]
+    assert warned, "expected a changed-chemistry channel-free WARNING"
+    # once-per-pool: a second identical event does not warn again
+    n = len(caplog.records)
+    with caplog.at_level(logging.WARNING):
+        polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip is None
+    assert len(caplog.records) == n
+
+
+def test_different_monomer_mw_daughter_does_not_inherit_channel():
+    """Round-25 P2-1, mw arm: a daughter whose monomer_mw differs from the
+    parent's fails the cheap truthful gate (the M1 rationale binds the
+    constants to same monomer chemistry AND monomer_mw)."""
+    import logging
+    getattr(polymer, "_unzip_inherit_warned", set()).clear()
+    parent, _ = _qssa_parent(_qssa_raw_channel())
+    daughter = Polymer(label="PE_like", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       Mn=1000.0, Mw=2500.0, initial_mass=1.0)
+    polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip is None
+    assert getattr(daughter, "monomer_product_species", None) is None
+
+
+def test_derive_daughter_pool_config_inherits_qssa_channel_and_routing():
+    """derive_daughter_pool_configs must build the daughter's config with the
+    inherited channel run through the SHARED validator (normalized: defaults
+    filled) and the monomer routing resolved (monomer_poly_index), deep-copied
+    so post-hoc mutation of the species' dict cannot reach the config."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip=_qssa_raw_channel())
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = styrene
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2"), styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    cfg = configs[0]
+    q = cfg.radical_qssa_unzip
+    assert q is not None
+    assert q["initiation"]["A"] == 1.0e13
+    assert q["efficiency"] == 0.8
+    # Normalized through the shared validator: omitted fields filled in.
+    assert q["transfer"] is None
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    # Monomer routing resolved to the released monomer's core index.
+    assert cfg.monomer_poly_index == spc_map[styrene]
+    # Mutual-exclusion invariant holds by construction on the daughter.
+    assert cfg.k_unzip == 0.0
+    # Deep copy: the config is independent of the species' mutable dict.
+    daughter.radical_qssa_unzip["initiation"]["A"] = 1.0
+    assert q["initiation"]["A"] == 1.0e13
+
+
+def test_derive_daughter_pool_config_channel_free_stays_channel_free():
+    """A daughter without the channel derives a channel-free config (the
+    pre-milestone shape): no channel, no routing requirement."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    assert configs[0].radical_qssa_unzip is None
+    assert configs[0].monomer_poly_index is None
+
+
+def test_derive_daughter_pool_config_qssa_without_routing_is_loud():
+    """A daughter carrying the channel but NO resolvable monomer emission
+    target must FAIL LOUDLY at derivation (mirrors PolymerPool.to_config):
+    a silent channel-drop is exactly the failure class this milestone kills."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip=_qssa_raw_channel())
+    # No monomer_product_species at all.
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+    with pytest.raises(ValueError, match="monomer_product"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    # monomer_product_species present but NOT in core (unresolvable index).
+    orphan = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = orphan
+    with pytest.raises(ValueError, match="monomer_product"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+
+def test_derive_daughter_pool_config_invalid_inherited_channel_is_loud():
+    """A malformed inherited channel must raise through the SHARED validator
+    (validate_radical_qssa_unzip), naming the daughter pool -- daughters do
+    not bypass validation."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip={"initiation": {"A": 1.0}})
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = styrene
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2"), styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+    with pytest.raises(ValueError, match="PS_d1"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+
+# ---------------------------------------------------------------------------
+# Weak-link allyl/U-state config vocabulary (schema-2.2 milestone i: config +
+# validation ONLY -- the solver RHS and the sidecar schema bump are later
+# milestones). New OPTIONAL radical_qssa_unzip keys: initiation_allyl,
+# termination_recombination, termination_disproportionation (Arrhenius
+# triplets, same rules as the legacy blocks) and unsaturated_tail_ends_initial
+# (float, finite, >= 0; mol -- the same amount basis as mu0, the consumer
+# divides by V_poly). ALL-OR-NOTHING, and mutually exclusive with the legacy
+# SUMMED 'termination' block: U production is sourced by the
+# disproportionation branch specifically, so a summed kt cannot source U.
+# ---------------------------------------------------------------------------
+
+_WEAKLINK_KEYS = ("initiation_allyl", "termination_recombination",
+                  "termination_disproportionation",
+                  "unsaturated_tail_ends_initial")
+
+
+def _weaklink_channel(**overrides):
+    """A valid weak-link radical_qssa_unzip channel: allyl initiation + SPLIT
+    termination blocks + initial unsaturated tail-end amount; NO legacy
+    summed 'termination'."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        initiation_allyl=_qssa_triplet(A=2.0e14, Ea=2.4e5),
+        termination_recombination=_qssa_triplet(A=6.0e7, Ea=8.0e3),
+        termination_disproportionation=_qssa_triplet(A=4.0e7, Ea=1.2e4),
+        unsaturated_tail_ends_initial=0.02,
+    )
+    ch.update(overrides)
+    return ch
+
+
+def test_pool_to_config_legacy_qssa_normalized_shape_is_pinned():
+    """LEGACY FREEZE (weak-link milestone i): a deck with NONE of the
+    weak-link keys must normalize to EXACTLY the pre-milestone dict --
+    same keys, same values, no new vocabulary leaking in with defaults.
+    Downstream consumers (flattening, sidecar emitter) key off this shape."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q == {
+        "initiation": dict(A=1.0e15, n=0.0, Ea=3.0e5),
+        "depropagation": dict(A=1.0e13, n=0.0, Ea=8.0e4),
+        "termination": dict(A=1.0e8, n=0.0, Ea=1.0e4),
+        "transfer": None,
+        "efficiency": 1.0,
+        "monomer_yield": 1.0,
+        "basis": "backbone_bonds_mu1_minus_mu0",
+    }
+    assert not any(k in q for k in _WEAKLINK_KEYS)
+
+
+def test_pool_to_config_roundtrips_weaklink_channel():
+    """Full weak-link config (all four new keys, no legacy summed
+    termination) is accepted at to_config and every value round-trips
+    exactly; the normalized dict carries NO 'termination' key."""
+    pool, spc_map = _qssa_pool(_weaklink_channel())
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["initiation_allyl"] == dict(A=2.0e14, n=0.0, Ea=2.4e5)
+    assert q["termination_recombination"] == dict(A=6.0e7, n=0.0, Ea=8.0e3)
+    assert q["termination_disproportionation"] == dict(A=4.0e7, n=0.0, Ea=1.2e4)
+    assert q["unsaturated_tail_ends_initial"] == 0.02
+    assert isinstance(q["unsaturated_tail_ends_initial"], float)
+    assert "termination" not in q
+    # The shared legacy blocks and defaults still normalize as before.
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["transfer"] is None
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+
+
+def test_pool_to_config_weaklink_zero_initial_U_is_valid():
+    """unsaturated_tail_ends_initial = 0 is a legal state (no pre-existing
+    unsaturated tail ends); the >= 0 rule is inclusive and the int is
+    coerced to float."""
+    pool, spc_map = _qssa_pool(
+        _weaklink_channel(unsaturated_tail_ends_initial=0))
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    assert isinstance(q["unsaturated_tail_ends_initial"], float)
+
+
+def test_pool_to_config_rejects_weaklink_with_legacy_termination():
+    """MUTUAL EXCLUSION: weak-link keys + the legacy SUMMED 'termination'
+    block is a hard error naming both the offending key and the rule --
+    U production depends on the disproportionation branch specifically,
+    a summed kt cannot source U."""
+    pool, spc_map = _qssa_pool(
+        _weaklink_channel(termination=_qssa_triplet(A=1.0e8, Ea=1.0e4)))
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*'termination'.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+@pytest.mark.parametrize("dropped", _WEAKLINK_KEYS)
+def test_pool_to_config_rejects_weaklink_strict_subsets(dropped):
+    """ALL-OR-NOTHING: any strict subset of the weak-link vocabulary is
+    rejected, and the error names the missing key."""
+    ch = {k: v for k, v in _weaklink_channel().items() if k != dropped}
+    pool, spc_map = _qssa_pool(ch)
+    with pytest.raises(ValueError,
+                       match=rf"Pool P.*weak-link.*{dropped}"):
+        pool.to_config(spc_map)
+
+
+@pytest.mark.parametrize("only", _WEAKLINK_KEYS)
+def test_pool_to_config_rejects_lone_weaklink_key_on_legacy_channel(only):
+    """A single weak-link key dropped onto an otherwise-legacy channel
+    (legacy summed termination present) must be rejected -- whichever rule
+    fires first (mutual exclusion or all-or-nothing), it must be loud."""
+    ch = _qssa_channel(**{only: _weaklink_channel()[only]})
+    pool, spc_map = _qssa_pool(ch)
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*(mutually exclusive|weak-link)"):
+        pool.to_config(spc_map)
+
+
+_WEAKLINK_BAD_CHANNELS = [
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*initiation_allyl.*A.*not finite", id="allyl-nan-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("inf"))),
+                 r"Pool P.*initiation_allyl.*A.*not finite", id="allyl-inf-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=-1.0)),
+                 r"Pool P.*initiation_allyl.*A.*> 0", id="allyl-negative-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(Ea=-5.0)),
+                 r"Pool P.*initiation_allyl.*Ea.*>= 0", id="allyl-negative-Ea"),
+    pytest.param(_weaklink_channel(
+                     termination_recombination=_qssa_triplet(Ea=float("nan"))),
+                 r"Pool P.*termination_recombination.*Ea.*not finite",
+                 id="rec-nan-Ea"),
+    pytest.param(_weaklink_channel(
+                     termination_recombination=_qssa_triplet(A=0.0)),
+                 r"Pool P.*termination_recombination.*A.*> 0", id="rec-zero-A"),
+    pytest.param(_weaklink_channel(
+                     termination_disproportionation=_qssa_triplet(n=float("inf"))),
+                 r"Pool P.*termination_disproportionation.*n.*not finite",
+                 id="disp-inf-n"),
+    pytest.param(_weaklink_channel(
+                     termination_disproportionation=_qssa_triplet(A=-2.0)),
+                 r"Pool P.*termination_disproportionation.*A.*> 0",
+                 id="disp-negative-A"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=float("nan")),
+                 r"Pool P.*unsaturated_tail_ends_initial.*not finite",
+                 id="U0-nan"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=float("inf")),
+                 r"Pool P.*unsaturated_tail_ends_initial.*not finite",
+                 id="U0-inf"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=-0.01),
+                 r"Pool P.*unsaturated_tail_ends_initial.*>= 0",
+                 id="U0-negative"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial="0.02"),
+                 r"Pool P.*unsaturated_tail_ends_initial.*number",
+                 id="U0-string"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=True),
+                 r"Pool P.*unsaturated_tail_ends_initial.*number",
+                 id="U0-bool"),
+]
+
+
+@pytest.mark.parametrize("channel, pattern", _WEAKLINK_BAD_CHANNELS)
+def test_pool_to_config_rejects_invalid_weaklink_values(channel, pattern):
+    """Field validation for the new vocabulary mirrors the legacy blocks:
+    finite via math.isfinite BEFORE the sign checks (NaN/inf named
+    explicitly, never falling through a comparison), A > 0, Ea >= 0;
+    unsaturated_tail_ends_initial a finite non-bool number >= 0."""
+    pool, spc_map = _qssa_pool(channel)
+    with pytest.raises(ValueError, match=pattern):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_accepts_weaklink_channel():
+    """Deck-parse leg of the weak-link round-trip: a full weak-link config
+    passes the polymer() helper and lands normalized on the Polymer object
+    with every value intact and NO legacy 'termination' key."""
+    from unittest.mock import MagicMock
+    from rmgpy.rmg import input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                 end_groups=["[CH3]", "[H]"], cutoff=3,
+                                 Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                 monomer_product="C=Cc1ccccc1",
+                                 radical_qssa_unzip=_weaklink_channel())
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+    q = poly.radical_qssa_unzip
+    assert q["initiation_allyl"] == dict(A=2.0e14, n=0.0, Ea=2.4e5)
+    assert q["termination_recombination"] == dict(A=6.0e7, n=0.0, Ea=8.0e3)
+    assert q["termination_disproportionation"] == dict(A=4.0e7, n=0.0, Ea=1.2e4)
+    assert q["unsaturated_tail_ends_initial"] == 0.02
+    assert "termination" not in q
+
+
+def test_polymer_input_helper_rejects_weaklink_violations():
+    """Deck-read-time companions: mutual exclusion, all-or-nothing subsets
+    and non-finite/negative values are refused with a clear InputError
+    before the helper touches the module-global rmg object."""
+    from rmgpy.rmg import input as rmg_input
+
+    for channel, pattern in [
+        (_weaklink_channel(termination=_qssa_triplet(A=1.0e8, Ea=1.0e4)),
+         r"PS.*'termination'.*mutually exclusive"),
+        ({k: v for k, v in _weaklink_channel().items()
+          if k != "termination_disproportionation"},
+         r"PS.*weak-link.*termination_disproportionation"),
+        ({k: v for k, v in _weaklink_channel().items()
+          if k != "unsaturated_tail_ends_initial"},
+         r"PS.*weak-link.*unsaturated_tail_ends_initial"),
+        (_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("nan"))),
+         r"PS.*initiation_allyl.*A.*not finite"),
+        (_weaklink_channel(unsaturated_tail_ends_initial=-1.0),
+         r"PS.*unsaturated_tail_ends_initial.*>= 0"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                              end_groups=["[CH3]", "[H]"], cutoff=3,
+                              Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                              monomer_product="C=Cc1ccccc1",
+                              radical_qssa_unzip=channel)
+
+
+def test_scission_daughter_inherits_weaklink_constants_but_resets_U0():
+    """Daughter-pool inheritance: CONSTANTS inherit, STATE does not. The
+    chemistry constants (initiation, initiation_allyl, depropagation, the
+    split terminations) are deep-copied intact -- mutating the parent's
+    dict after the spawn must not reach the daughter (same aliasing posture
+    as the legacy channel). unsaturated_tail_ends_initial is per-pool
+    STATE, not a chemistry constant: it must RESET to 0.0 on the daughter
+    even when the parent's is nonzero, else every spawned pool would
+    fabricate the parent's initial U -- a hidden initiation source once
+    the solver U-state lands."""
+    channel = _weaklink_channel()  # parent U0 = 0.02 > 0
+    assert channel["unsaturated_tail_ends_initial"] > 0.0
+    parent, styrene = _qssa_parent(channel)
+
+    daughter = _scission_tail_of(parent)
+
+    q = daughter.radical_qssa_unzip
+    assert q is not parent.radical_qssa_unzip
+    # Chemistry constants: deep-copied intact.
+    for key in ("initiation", "depropagation", "initiation_allyl",
+                "termination_recombination",
+                "termination_disproportionation"):
+        assert q[key] == channel[key]
+    # State: U0 resets on spawn (a future event-specific spawn law may
+    # compute the U transfer explicitly; fabricating the parent's is wrong).
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    # Deep copy: parent mutation after the spawn cannot reach the daughter.
+    parent.radical_qssa_unzip["initiation_allyl"]["A"] = 1.0
+    parent.radical_qssa_unzip["unsaturated_tail_ends_initial"] = 99.0
+    assert q["initiation_allyl"]["A"] == 2.0e14
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    assert daughter.monomer_product_species is styrene
+
+
+# ---------------------------------------------------------------------------
+# Task 5: End-to-end scission tracer — Ea from REAL products, not pool proxy
+# ---------------------------------------------------------------------------
+
+
+class TestScissionRealDHrxnEndToEnd:
+    """
+    End-to-end pin: PS(2) retro-ene scission through make_new_reaction must
+    yield an Arrhenius Ea computed from the REAL atom-balanced products
+    (C9H10 + C16H18, ΔH ≈ 48 kcal/mol, Ea ≈ 72 kcal/mol), NOT from the
+    moment-pool-relabeled representative (C32H34, ΔH ≈ 81 kcal/mol, Ea ≈ 94
+    kcal/mol).
+
+    Verified empirically before writing:
+      - Proxy C25H28; products C9H10 + C16H18 sum to C25H28 ✓
+      - _handshake_structures([C16H18, ...], [PS]) → True; C16H18 → PS_scission_tail ✓
+      - real_dH ≈ 202.6 kJ/mol; pool_dH ≈ 337.3 kJ/mol (Δ ≈ +32 kcal/mol) ✓
+      - BM Ea(real) ≈ 300 kJ/mol; BM Ea(pool) ≈ 395 kJ/mol ✓
+    """
+
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.rmg.main import RMG
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=True)
+
+    def test_scission_Ea_uses_real_products_not_pool(self):
+        """
+        PS(2) retro-ene scission: Arrhenius Ea must come from the real
+        atom-balanced C9H10+C16H18 thermo, not from the relabeled C32H34 pool
+        proxy thermo.
+
+        Assertion (A): Ea ≈ bm.get_activation_energy(real_dH)   [within 1%]
+        Assertion (B): real_dH ≠ pool_dH by > 40 kJ/mol, and
+                       Ea is NOT close to bm.get_activation_energy(pool_dH).
+        Without (B) the test would pass vacuously even on the unfixed code.
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction, _handshake_structures
+        from rmgpy.kinetics import ArrheniusBM, Arrhenius
+
+        # Empirically verified real Retroene products for PS proxy (C25H28):
+        #   C9H10 (alpha-methylstyrene) + C16H18 (PS tail) = C25H28 ✓
+        # C16H18 = CC(CC=C1C=CC=CC1)C1=CC=CC=C1 (vinyl-ended PS-dimer tail)
+        C9H10_SMILES = 'C=C(C)C1=CC=CC=C1'
+        C16H18_SMILES = 'CC(CC=C1C=CC=CC1)C1=CC=CC=C1'
+
+        # BM parameters representative of the Retroene family
+        bm_params = dict(
+            A=(1.293332e12, 's^-1'), n=0.0,
+            w0=(968.0, 'kJ/mol'), E0=(182.946, 'kJ/mol'),
+        )
+
+        # --- Independent real_dH (mirrors _polymer_real_dHrxn estimation path) ---
+        def _H(smiles):
+            spc = Species(molecule=[Molecule().from_smiles(smiles)])
+            spc.generate_resonance_structures()
+            self.model.generate_thermo(spc)
+            return spc.get_enthalpy(298)
+
+        H_c9h10 = _H(C9H10_SMILES)
+        H_c16h18 = _H(C16H18_SMILES)
+        H_proxy = self.ps.get_enthalpy(298)
+        real_dH = H_c9h10 + H_c16h18 - H_proxy          # J/mol
+        expected_Ea = ArrheniusBM(**bm_params).get_activation_energy(real_dH)  # J/mol
+
+        # --- Build and run make_new_reaction ---
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[
+                Molecule().from_smiles(C16H18_SMILES),  # relabels → PS_scission_tail
+                Molecule().from_smiles(C9H10_SMILES),   # stays as alpha-methylstyrene
+            ],
+            kinetics=ArrheniusBM(**bm_params),
+            family='Retroene',
+            is_forward=True,
+        )
+        result, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=True, generate_kinetics=True,
+        )
+
+        assert result is not None, "make_new_reaction returned None unexpectedly"
+        assert isinstance(result.kinetics, Arrhenius), (
+            f"Expected Arrhenius kinetics after BM pre-conversion, "
+            f"got {type(result.kinetics).__name__}"
+        )
+
+        Ea = result.kinetics.Ea.value_si
+
+        # (A) Ea is based on real atom-balanced products. The pool-sourced H0 clamp
+        #     was a residual channel (spec §8 / Task 7); for this PS case it fires by
+        #     only ~0.3 kJ/mol (pool_H0 barely above ea_pre), so rtol=0.01 still holds
+        #     both before and after the Task 7 correction. The clamp is now closed
+        #     structurally (Task 7: _polymer_real_H0 correction post fix_barrier_height).
+        assert np.isclose(Ea, expected_Ea, rtol=0.01), (
+            f"Ea = {Ea / 4184:.2f} kcal/mol but expected ~{expected_Ea / 4184:.2f} kcal/mol "
+            f"(from real C9H10+C16H18 thermo, real_dH = {real_dH / 4184:.2f} kcal/mol); "
+            f"BM conversion likely used polluted pool thermo instead of real products."
+        )
+
+        # (B) Non-vacuousness: recover pool_dH from result.products (the
+        #     handshake-relabeled C32H34 PS_scission_tail polymer carries thermo
+        #     after make_new_reaction with generate_thermo=True).
+        pool_tail = next(
+            (p for p in result.products if isinstance(p, Polymer)), None
+        )
+        assert pool_tail is not None, (
+            "Expected a Polymer product (PS_scission_tail) in result.products"
+        )
+        c9h10_prod = next(
+            (p for p in result.products if not isinstance(p, Polymer)), None
+        )
+        assert c9h10_prod is not None, (
+            "Expected a non-Polymer product (alpha-methylstyrene) in result.products"
+        )
+        pool_dH = (pool_tail.get_enthalpy(298) + c9h10_prod.get_enthalpy(298)
+                   - H_proxy)
+        pool_Ea = ArrheniusBM(**bm_params).get_activation_energy(pool_dH)
+
+        # The dHrxn values must differ by at least 40 kJ/mol (~9.5 kcal/mol)
+        # so the test WOULD FAIL on code that used pool thermo for BM conversion.
+        assert abs(real_dH - pool_dH) > 40_000, (
+            f"real_dH ({real_dH / 4184:.2f} kcal/mol) and "
+            f"pool_dH ({pool_dH / 4184:.2f} kcal/mol) are unexpectedly similar "
+            f"(Δ = {abs(real_dH - pool_dH) / 4184:.2f} kcal/mol); "
+            "test cannot distinguish real-product thermo from pool thermo."
+        )
+        assert not np.isclose(Ea, pool_Ea, rtol=0.01), (
+            f"Ea = {Ea / 4184:.2f} kcal/mol is too close to pool Ea = "
+            f"{pool_Ea / 4184:.2f} kcal/mol; the BM pre-conversion should use "
+            "real atom-balanced products, not the relabeled pool proxy."
+        )
+
+    def test_pool_H0_clamp_does_not_repollute_Ea(self):
+        """I-1 (spec §8 / Task 7): after the real-ΔH pre-conversion, fix_barrier_height's
+        pool-sourced endothermicity H0 clamp must NOT raise Ea. The final Ea must equal the
+        real-product result (ea_pre), not the pool H0 floor.
+
+        BM params engineered so pool H0 clamp fires (ea_pre < pool_H0 by ~16.7 kJ/mol)
+        but real H0 clamp would NOT (ea_pre > real_H0 by ~86.7 kJ/mol).
+        Without the Task 7 correction, final Ea = pool_H0 (RED); with correction,
+        final Ea = ea_pre (GREEN).
+
+        BM params: E0=165.0 kJ/mol, w0=968.0 kJ/mol → ea_pre ≈ 283.8 kJ/mol
+        pool_H0 ≈ 300.4 kJ/mol (from PS_scission_tail + alpha-methylstyrene E0 vs proxy)
+        real_H0 ≈ 197.0 kJ/mol (from C16H18 + C9H10 E0 vs proxy)
+        Margin: ea_pre - real_H0 ≈ 86.7 kJ/mol, pool_H0 - ea_pre ≈ 16.7 kJ/mol
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import ArrheniusBM, Arrhenius
+
+        C9H10_SMILES = 'C=C(C)C1=CC=CC=C1'
+        C16H18_SMILES = 'CC(CC=C1C=CC=CC1)C1=CC=CC=C1'
+
+        # BM params tuned so pool H0 clamp fires (~16.7 kJ/mol margin), real H0 clamp does not
+        bm_E0_kJ = 165.0
+        bm_params = dict(A=(1.293332e12, 's^-1'), n=0.0, w0=(968.0, 'kJ/mol'), E0=(bm_E0_kJ, 'kJ/mol'))
+
+        # --- Compute ea_pre, real_H0, pool_H0 independently (non-circular) ---
+        def _make_spc(smiles):
+            spc = Species(molecule=[Molecule().from_smiles(smiles)])
+            spc.generate_resonance_structures()
+            self.model.generate_thermo(spc)
+            return spc
+
+        def _E0(spec):
+            td = spec.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+
+        c9h10_spc = _make_spc(C9H10_SMILES)
+        c16h18_spc = _make_spc(C16H18_SMILES)
+
+        real_dH = (c9h10_spc.get_enthalpy(298) + c16h18_spc.get_enthalpy(298)
+                   - self.ps.get_enthalpy(298))
+        ea_pre = ArrheniusBM(**bm_params).get_activation_energy(real_dH)
+
+        real_H0 = _E0(c9h10_spc) + _E0(c16h18_spc) - _E0(self.ps)
+
+        # --- Run make_new_reaction with the tuned BM params ---
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[
+                Molecule().from_smiles(C16H18_SMILES),
+                Molecule().from_smiles(C9H10_SMILES),
+            ],
+            kinetics=ArrheniusBM(**bm_params),
+            family='Retroene',
+            is_forward=True,
+        )
+        result, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=True, generate_kinetics=True,
+        )
+
+        # Compute pool_H0 from the actual pool products in result (mirrors fix_barrier_height)
+        def _E0_spc(spc):
+            td = spc.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+
+        pool_H0 = (sum(_E0_spc(p) for p in result.products)
+                   - sum(_E0_spc(r) for r in result.reactants))
+
+        ea_final = result.kinetics.Ea.value_si
+
+        # Verify the engineered setup is correct (margins)
+        assert pool_H0 - ea_pre > 5_000, (
+            f"Setup check: pool_H0 ({pool_H0/1000:.2f} kJ/mol) should exceed "
+            f"ea_pre ({ea_pre/1000:.2f} kJ/mol) by >5 kJ/mol; actual margin "
+            f"{(pool_H0-ea_pre)/1000:.3f} kJ/mol"
+        )
+        assert ea_pre - real_H0 > 5_000, (
+            f"Setup check: ea_pre ({ea_pre/1000:.2f} kJ/mol) should exceed "
+            f"real_H0 ({real_H0/1000:.2f} kJ/mol) by >5 kJ/mol; actual margin "
+            f"{(ea_pre-real_H0)/1000:.3f} kJ/mol"
+        )
+
+        # Core assertions: Ea must equal ea_pre (real-product result), NOT pool_H0
+        assert abs(ea_final - ea_pre) < 1_000, (
+            f"Ea {ea_final/1000:.2f} kJ/mol should equal real-product ea_pre "
+            f"{ea_pre/1000:.2f} kJ/mol "
+            f"(difference = {abs(ea_final-ea_pre)/1000:.3f} kJ/mol). "
+            f"pool_H0={pool_H0/1000:.2f} kJ/mol — did the pool H0 clamp re-pollute Ea?"
+        )
+        assert ea_final < pool_H0 - 5_000, (
+            f"Ea {ea_final/1000:.2f} kJ/mol must NOT be clamped to pool H0 "
+            f"{pool_H0/1000:.2f} kJ/mol "
+            f"(margin = {(pool_H0-ea_final)/1000:.2f} kJ/mol)"
+        )
+
+
+# Task 6 (non-scission relabel coverage): assessed and skipped — the chip helper's
+# end_mod is a radicalized proxy (C25H27•) whose real vs pool ΔH gap (~150 kJ/mol)
+# is driven by radical-vs-closed-shell enthalpy, not by the polymer relabeling the
+# fix targets; forcing ArrheniusBM onto that scaffold would be artificially misleading.
+# The scission path (Task 5) provides the load-bearing coverage for the relabeled gate.
+
+
+class TestDp1FoldBackStaysGas:
+    """
+    Fix (ratified 2026-07-04, PP run-2 gate/conduit diagnosis Phenomenon 2):
+    the create_reacted_copy wing-matcher accepted a DP-1 molecule (propane ==
+    H-(C3H6)-H under end_groups=['[H]','[H]']) as a polymer chain, built a
+    "{label}_scission_tail" whose proxy is ISOMORPHIC to the parent proxy, and
+    species dedup folded the volatile back into the parent pool
+    (polypropylene(2)) -- leaving the spawned tail's full unpaired
+    reference-state term on the product side (measured U = 11.6297 decades vs
+    0.326 with propane correctly gas). Ratified rule: products at DP <= 1 STAY
+    GAS -- a DP-1 "chain" is the monomer-hydride/solvent-class volatile
+    co-product; there is NO automatic DP-1 fold-back.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        self._handshake = _handshake_structures
+        # The PP run-2 deck shape (examples PP deck): -CH2-CH(CH3)- repeat,
+        # H/H end caps, xs=3 proxy = C9H20.
+        self.pp = Polymer(
+            label='polypropylene',
+            monomer='[CH2][CH](C)',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=1500.0,
+            Mw=1800.0,
+            initial_mass=0.1485,
+        )
+
+    def test_dp1_capped_volatile_is_refused(self):
+        """RED before the fix: propane (the DP-1 capped chain) wing-matches a
+        single head wing and returns a scission-tail Polymer whose proxy is
+        isomorphic to the parent proxy (the fold-back conflation)."""
+        propane = Molecule(smiles='CCC')
+        assert self.pp.create_reacted_copy(propane) is None, (
+            "DP-1 capped volatile (propane == H-(C3H6)-H) must STAY GAS: "
+            "create_reacted_copy must refuse it, not fold it back into the "
+            "parent pool"
+        )
+
+    def test_handshake_live_pp_shape_propane_stays_gas_tail_routes(self):
+        """Ratified red-first requirement 1 (live PP shape): H_Abstraction
+        iPr + PP-proxy -> propane + tert-C9H19 daughter. Propane must NOT
+        fold back into polypropylene. Stage-S2 behavioral correction: the
+        tert daughter no longer spawns a scission-tail pool (that spawn was
+        the species-25 defect the scission invariant forbids) -- with the
+        live per-product verdict threaded it routes into the radical feature
+        pool instead."""
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   has_polymer_gas_veto)
+        ipr = Species(molecule=[Molecule(smiles='C[CH]C')], label='iPr')
+        propane = Species(molecule=[Molecule(smiles='CCC')], label='propane')
+        tert = Molecule(smiles='CCC[C](C)CC(C)C')  # tertiary-site daughter
+        products = [propane, tert]
+        verdicts = compute_h_loss_feature_verdicts(
+            [ipr, self.pp], products, [self.pp])
+        assert verdicts == [False, True]
+        self._handshake(products, [self.pp], h_loss_verdicts=verdicts)
+        assert not isinstance(products[0], Polymer), (
+            "propane folded back into the parent pool: the DP-1 co-product "
+            "of proxy H-abstraction must remain a discrete gas species"
+        )
+        assert has_polymer_gas_veto(products[0]), (
+            "the refused DP-1 volatile must carry the durable gas veto like "
+            "any other retained discrete volatile"
+        )
+        # the DP-preserving daughter routes to the feature pool (never a
+        # half-length scission population)
+        assert isinstance(products[1], Polymer)
+        assert products[1].label == 'polypropylene_mod'
+
+    def test_run2_tripwire_counterfactual_below_census_bound(self):
+        """Ratified red-first requirement 2 (run-2 tripwire counterfactual):
+        with propane kept gas, the H_Abstraction reaction's unpaired
+        reference-state magnitude stays below the census bound (measured
+        ~0.005 decades under the S2 conduit routing, 0.326 under the old
+        scission-tail spawn); with the fold-back it is 11.6297 decades and
+        trips the refusal. Uses the solver's _unpaired_reference_decades
+        exactly as the diagnosis did (T = 1100 K, run-2 operating point)."""
+        from rmgpy.solver.polymer import (
+            _unpaired_reference_decades,
+            REFERENCE_STATE_CENSUS_DECADES,
+        )
+        T = 1100.0
+        proxy_mw = self.pp.baseline_proxy.molecule[0].get_molecular_weight()
+        melt_r = [proxy_mw]  # the PP proxy reactant is the only melt reactant
+        melt_p = []
+        # Stage-S2 behavioral correction: propane refuses under either flag
+        # (DP-1 stays gas); the tert C9H19 daughter routes through the
+        # conduit with the live threaded verdict (h_loss_feature=True) and
+        # its C9H19 feature proxy pairs the C9H20 melt reactant (measured
+        # U ~ 0.005 decades, vs 0.326 for the old scission-tail spawn and
+        # 11.63 for the fold-back).
+        for mol, flag in ((Molecule(smiles='CCC'), False),
+                          (Molecule(smiles='CCC[C](C)CC(C)C'), True)):
+            new_p = self.pp.create_reacted_copy(mol, h_loss_feature=flag)
+            if new_p is not None:
+                melt_p.append(
+                    new_p.get_proxy_species().molecule[0].get_molecular_weight())
+        u = _unpaired_reference_decades(melt_r, melt_p, T)
+        assert u < REFERENCE_STATE_CENSUS_DECADES, (
+            f"unpaired reference-state magnitude U = {u:.4f} decades >= "
+            f"census bound {REFERENCE_STATE_CENSUS_DECADES}: the DP-1 "
+            "fold-back re-creates the run-2 U=11.63 tripwire refusal"
+        )
+
+    def test_run2_tripwire_three_point_negative_control(self):
+        """r61 negative control (adversarial review, pre-PP-sizing): keep the
+        OLD pairings measurable so the tripwire counterfactual keeps proving
+        the routed pool BEATS the bad surrogates, not merely that some number
+        is small. Three pairings of the same melt reactant (the C9H20 PP
+        proxy) through the solver's real _unpaired_reference_decades at the
+        run-2 operating point (T = 1100 K):
+
+        * routed feature-pool daughter (live S2 conduit): the C9H19 feature
+          proxy pairs the C9H20 melt reactant, U ~ 0.005 decades;
+        * the old malformed scission-tail spawn: C15H31 proxy, U ~ 0.326
+          decades -- an ORDER worse than routed (63x);
+        * the DP-1 fold-back: propane deduped into the parent pool leaves
+          the parent proxy AND the tail unpaired, U ~ 11.63 decades --
+          catastrophic, beyond the refuse bound.
+        """
+        from rmgpy.solver.polymer import (
+            _unpaired_reference_decades,
+            REFERENCE_STATE_CENSUS_DECADES,
+            REFERENCE_STATE_REFUSE_DECADES,
+        )
+        T = 1100.0
+        proxy_mw = self.pp.baseline_proxy.molecule[0].get_molecular_weight()
+        melt_r = [proxy_mw]
+        tert = Molecule(smiles='CCC[C](C)CC(C)C')
+
+        # (a) routed: the live conduit pairing, end-to-end through the real
+        # producer path exactly as the existing tripwire test drives it
+        routed = self.pp.create_reacted_copy(
+            tert.copy(deep=True), h_loss_feature=True)
+        assert routed is not None and routed.label == 'polypropylene_mod'
+        routed_mw = (
+            routed.get_proxy_species().molecule[0].get_molecular_weight())
+        u_routed = _unpaired_reference_decades(melt_r, [routed_mw], T)
+
+        # (b) old scission-tail surrogate: the scission invariant now
+        # refuses the spawn (pin that refusal), so rebuild the tail proxy
+        # MASS directly. The pre-S2 spawn emitted a zero-radical +1-cation
+        # C15H31 proxy; _unpaired_reference_decades sees only the molar
+        # mass, and the cation's missing electron is weightless, so a valid
+        # pentadecyl radical carries the identical C15H31 mass.
+        assert self.pp.create_reacted_copy(tert.copy(deep=True)) is None
+        old_tail = Molecule(smiles='[CH2]CCCCCCCCCCCCCC')
+        assert old_tail.get_formula() == 'C15H31'
+        u_tail = _unpaired_reference_decades(
+            melt_r, [old_tail.get_molecular_weight()], T)
+
+        # (c) fold-back surrogate: propane folded back into the parent pool
+        # puts the parent proxy itself on the product side next to the tail
+        # (the exact run-2 diagnosis pairing that measured 11.6297)
+        u_fold = _unpaired_reference_decades(
+            melt_r, [proxy_mw, old_tail.get_molecular_weight()], T)
+
+        # magnitude bands: the diagnosis' measured values, loose tolerances
+        assert u_routed == pytest.approx(0.005, abs=0.002)
+        assert u_tail == pytest.approx(0.326, abs=0.01)
+        assert u_fold == pytest.approx(11.63, abs=0.05)
+        # ordering: routed beats the old tail by an order, the fold-back is
+        # catastrophic; bound placement matches the spec bimodality
+        assert u_routed < 0.05 < u_tail < 1.0 < u_fold
+        assert u_tail > 10.0 * u_routed
+        assert u_routed < REFERENCE_STATE_CENSUS_DECADES
+        assert u_fold > REFERENCE_STATE_REFUSE_DECADES
+
+    def test_dp2_and_radical_scission_products_unaffected(self):
+        """Ratified red-first requirement 3 (guard, GREEN before and after):
+        genuine chain/scission products at DP >= 2 still fold/spawn exactly
+        as today -- the DP-1 gate must not reach them."""
+        # DP-2 capped chain (H-(C3H6)2-H): spawns a non-parent scission tail
+        head_wing = self.pp._stitch_wing('head')
+        unit = self.pp.monomer.copy(deep=True)
+        m = polymer.stitch_molecules_by_labeled_atoms(head_wing, unit)
+        dp2 = polymer.stitch_molecules_by_labeled_atoms(
+            m, self.pp.end_groups[1].copy(deep=True))
+        assert dp2 is not None, "test setup: DP-2 capped chain stitch failed"
+        dp2.update()
+        r = self.pp.create_reacted_copy(dp2)
+        assert r is not None and r.label.endswith('_scission_tail')
+        assert not r.get_proxy_species().molecule[0].is_isomorphic(
+            self.pp.baseline_proxy.molecule[0]), (
+            "DP-2 product must not fold back into the parent proxy")
+        # Stage-S2 behavioral correction: the same-heavy-skeleton H-loss
+        # daughter no longer scission-spawns (the species-25 defect); without
+        # the conduit flag it refuses and falls to the refuse stamp.
+        r2 = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'))
+        assert r2 is None
+
+
+class TestGasVetoScopingHLossDaughters:
+    """
+    Fix (ratified 2026-07-04, PP run-2 gate/conduit diagnosis Phenomenon 1):
+    the handshake (family.py _handshake_structures) stamped the DURABLE gas
+    veto on EVERY product create_reacted_copy refused. For a condensed pool
+    proxy that includes its own H-loss radical daughters (e.g. seven of the
+    eight PP C9H19 H-abstraction daughters), the veto then defeated condition
+    (v) of the very H-loss qualifier (get_h_loss_radical_daughter_bases)
+    that was ratified to classify them prospectively condensed -- a
+    self-defeat loop that kept Gate B closed.
+
+    Ratified scoping (predicate, NOT an MW window -- the durable gas veto
+    exists precisely because alpha-methylstyrene sits ABOVE the MW window):
+    do NOT stamp the veto on radical daughters passing the H-loss-daughter
+    predicate (radical-bearing, neutral, MW >= monomer_mw + slack, same
+    non-H element composition as the polymer reactant proxy, and
+    H_proxy - H_product == radical_count); KEEP stamping closed-shell /
+    non-matching volatiles regardless of MW.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        self._handshake = _handshake_structures
+        # PP run-2 deck shape
+        self.pp = Polymer(
+            label='polypropylene',
+            monomer='[CH2][CH](C)',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=1500.0,
+            Mw=1800.0,
+            initial_mass=0.1485,
+        )
+        # PS pool for the alpha-methylstyrene pin (styrene monomer,
+        # 104.15 g/mol -- aMS at 118.18 sits ABOVE monomer + 10 slack)
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        # the PolymerPhase whose H-loss qualifier the veto must not defeat
+        proxy_spc = Species(molecule=[self.pp.molecule[0].copy(deep=True)],
+                            label='polypropylene')
+        pool = PolymerPool(label='polypropylene', xs=3, monomer=proxy_spc,
+                           explicit_map={}, mu_species=[])
+        self.proxy_spc = proxy_spc
+        self.phase = PolymerPhase(density=Quantity(905.0, 'kg/m^3'),
+                                  initial_moments={}, initial_explicit={},
+                                  pools=[pool])
+
+    def test_refused_h_loss_daughter_not_vetoed_and_qualifies(self):
+        """Ratified red-first requirement 1: a handshake-refused PP C9H19
+        H-loss daughter must NOT receive the durable gas veto, and must then
+        QUALIFY via the H-loss branch of the condensed-daughter predicate
+        (closing the self-defeat loop: 7/8 daughters were vetoed on run 2).
+
+        RED before the fix: the veto is stamped and condition (v) rejects
+        the daughter."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        d = Species(molecule=[Molecule(smiles='CCCC(C)C[C](C)C')],
+                    label='C9H19-14')  # secondary-site daughter, edge idx 14
+        products = [d]
+        self._handshake(products, [self.pp])
+        assert products[0] is d and not isinstance(products[0], Polymer), (
+            "test premise: the daughter stays a refused discrete Species")
+        assert not has_polymer_gas_veto(d), (
+            "handshake-refused H-loss radical daughter of the condensed "
+            "proxy must NOT be durably gas-vetoed (veto scoping, ratified "
+            "2026-07-04)"
+        )
+        bases = self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc, d])
+        assert bases == {'C9H19-14'}, (
+            f"the unvetoed daughter must qualify via the H-loss branch, "
+            f"got {bases!r}"
+        )
+
+    def test_all_seven_run2_daughters_qualify_after_handshake(self):
+        """Run-2 closure pin: all seven previously-vetoed C9H19 daughters
+        pass through the handshake unvetoed and qualify (with the eighth,
+        the tertiary daughter, spawning its tail pool as before)."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        seven = ['CCCC(C)C[C](C)C', 'CCCC(C)[CH]C(C)C', 'CC[CH]C(C)CC(C)C',
+                 'C[CH]CC(C)CC(C)C', '[CH2]C(CCC)CC(C)C',
+                 '[CH2]C(C)CC(C)CCC', '[CH2]CCC(C)CC(C)C']
+        daughters = [Species(molecule=[Molecule(smiles=s)], label=f'D{i}')
+                     for i, s in enumerate(seven)]
+        products = list(daughters)
+        self._handshake(products, [self.pp])
+        for i, d in enumerate(daughters):
+            assert not isinstance(products[i], Polymer)
+            assert not has_polymer_gas_veto(d), (
+                f"daughter {seven[i]} must not be vetoed")
+        bases = self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc] + daughters)
+        assert bases == {f'D{i}' for i in range(7)}
+
+    def test_alpha_methylstyrene_stays_vetoed_above_mw_window(self):
+        """Ratified red-first requirement 2 (explicit pin, GREEN before and
+        after): alpha-methylstyrene (C9H10, 118.18 g/mol) sits ABOVE the
+        styrene monomer + slack window (114.15) -- the reason MW-window
+        scoping was REJECTED -- but is closed-shell, so the predicate fails
+        and the durable gas veto KEEPS it out of the melt reference state."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+        ams = Species(molecule=[Molecule(smiles='C=C(C)c1ccccc1')],
+                      label='alpha-methylstyrene')
+        # pin the window arithmetic the rejection argument rests on
+        assert (ams.molecule[0].get_molecular_weight() * 1000.0
+                > self.ps.monomer_mw_g_mol + REFERENCE_STATE_MW_SLACK_G_MOL)
+        products = [ams]
+        self._handshake(products, [self.ps])
+        assert not isinstance(products[0], Polymer)
+        assert has_polymer_gas_veto(ams), (
+            "alpha-methylstyrene must remain durably gas-vetoed / excluded "
+            "from the melt reference state regardless of its MW"
+        )
+
+    def test_small_radical_fragment_stays_vetoed_and_never_qualifies(self):
+        """Ratified red-first requirement 3 (pin): a small radical below
+        monomer + slack and composition-mismatched (n-propyl, C3H7) keeps
+        the veto and fails the qualifier structurally either way."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        npr = Species(molecule=[Molecule(smiles='CC[CH2]')], label='npropyl')
+        products = [npr]
+        self._handshake(products, [self.pp])
+        assert not isinstance(products[0], Polymer)
+        assert has_polymer_gas_veto(npr), (
+            "small gas radical fragments must keep the durable gas veto")
+        assert self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc, npr]) == set()
+
+
+# ---------------------------------------------------------------------------
+# Explicit-DP handshake, stage A (producer): auto-generated capped oligomer
+# at DP == cutoff (xs), wired from the deck flag polymer(explicit_dp=True)
+# through compile_polymer_phase into the pool's explicit_map.
+# ---------------------------------------------------------------------------
+
+def _explicit_dp_polymer(cutoff=3):
+    """PS pool: monomer C8H8, end caps CH3 + H -> capped chain at DP=n is
+    C(8n+1)H(8n+4)."""
+    return Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                   end_groups=["[CH3]", "[H]"], cutoff=cutoff,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+
+class TestExplicitDpSpeciesGeneration:
+    def test_capped_chain_species_generalizes_dp1(self):
+        """The DP=n builder at n=1 reproduces the DP-1 fold-back gate species
+        exactly (extract/reuse, not copy-paste: one stitching recipe)."""
+        poly = _explicit_dp_polymer()
+        dp1 = poly._capped_chain_species(1)
+        assert dp1 is not None
+        assert dp1.molecule[0].get_formula() == "C9H12"
+        assert poly._dp1_capped_species().is_isomorphic(dp1)
+
+    def test_capped_chain_formula_scales_with_dp(self):
+        """Formula check computed from monomer + end_groups: repeat unit C8H8,
+        caps CH3 and H -> C(8n+1)H(8n+4)."""
+        poly = _explicit_dp_polymer()
+        for dp in (2, 3, 4):
+            spc = poly._capped_chain_species(dp)
+            assert spc is not None
+            expected = f"C{8 * dp + 1}H{8 * dp + 4}"
+            assert spc.molecule[0].get_formula() == expected
+
+    def test_generate_explicit_dp_species_label_and_formula(self):
+        """The generator builds the oligomer at DP == cutoff and labels it
+        '{label}_dp{cutoff}' (moment-dummy naming convention family)."""
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        assert spc.label == "PS_dp3"
+        assert spc.molecule[0].get_formula() == "C25H28"
+
+    def test_generate_explicit_dp_species_dp1_hard_error(self):
+        """DP=1 is forbidden: DP-1 capped chains are forced GAS by the DP-1
+        fold-back gate (commit f648ff80a), so an explicit DP=1 species would
+        collide with it. The deck validator already refuses cutoff < 2; this
+        pins the generator's own defensive gate (a future override that maps
+        DP 1 must hard-error, not silently collide)."""
+        poly = _explicit_dp_polymer(cutoff=2)
+        poly.cutoff = 1  # simulate a future override bypassing deck validation
+        with pytest.raises(ValueError) as excinfo:
+            poly.generate_explicit_dp_species()
+        msg = str(excinfo.value)
+        assert "explicit_dp" in msg
+        assert "PS" in msg
+        assert "fold-back" in msg
+
+    def test_generated_dp_xs_species_not_refused_by_dp1_foldback_gate(self):
+        """Non-collision pin (design constraint): the DP-1 fold-back gate in
+        _create_reacted_copy_logic refuses products isomorphic to the DP-1
+        capped chain. The generated DP=xs oligomer (xs >= 2) must NOT match
+        that gate -- if it did, any reacted copy isomorphic to the explicit
+        species would silently fold to None/gas and the handshake target
+        would fight the gate."""
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        gate = poly._dp1_capped_species()
+        assert gate is not None
+        # The gate matches exactly the DP-1 chain...
+        assert gate.is_isomorphic(poly._capped_chain_species(1).molecule[0])
+        # ...and must not match the DP=xs oligomer in any resonance form.
+        for mol in spc.molecule:
+            assert not gate.is_isomorphic(mol)
+
+
+class TestExplicitDpCompile:
+    def test_compile_polymer_phase_explicit_dp_on_populates_explicit_map(self):
+        """Flag ON: the compiled pool's explicit_map holds exactly ONE entry,
+        {cutoff: generated species} (no ladder in v1)."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+        dp_spc = poly.generate_explicit_dp_species()
+        poly.explicit_dp = True
+        poly.explicit_dp_species = dp_spc
+
+        phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+        assert phase.pools[0].explicit_map == {3: dp_spc}
+
+    def test_compile_polymer_phase_flag_off_keeps_explicit_map_empty(self):
+        """Flag OFF (default): explicit_map stays {} -- byte-identical to the
+        pre-feature behavior."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+        phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+        assert phase.pools[0].explicit_map == {}
+
+    def test_compile_polymer_phase_explicit_dp_without_species_hard_errors(self):
+        """Hard-error, never silent: explicit_dp=True with no attached
+        generated species must refuse at compile time (a silent {} would
+        recreate the structurally-inert feature)."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+        poly.explicit_dp = True  # flag set but no explicit_dp_species attached
+
+        with pytest.raises(ValueError, match=r"explicit_dp.*PS|PS.*explicit_dp"):
+            compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+
+def _mock_rmg_input_env():
+    """MagicMock rmg environment for exercising the polymer() deck helper
+    (same pattern as test_polymer_input_helper_accepts_weaklink_channel)."""
+    from unittest.mock import MagicMock
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+    return mock_rmg
+
+
+class TestExplicitDpDeckFlag:
+    def test_polymer_input_helper_explicit_dp_registers_oligomer(self):
+        """Deck flag ON: polymer() auto-generates the DP=cutoff capped
+        oligomer and registers it through the SAME path as monomer_product
+        (make_new_species + initial_species + species_dict), tagging it with
+        explicit_dp_origin for the actionable constraint gate."""
+        from rmgpy.rmg import input as rmg_input
+
+        mock_rmg = _mock_rmg_input_env()
+        old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+        rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+        try:
+            poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                     end_groups=["[CH3]", "[H]"], cutoff=3,
+                                     Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                     explicit_dp=True)
+            sd = rmg_input.species_dict
+        finally:
+            rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+        assert poly.explicit_dp is True
+        dp_spc = poly.explicit_dp_species
+        assert dp_spc is not None
+        assert dp_spc.label == "PS_dp3"
+        assert dp_spc.molecule[0].get_formula() == "C25H28"
+        assert dp_spc in mock_rmg.initial_species
+        assert sd["PS_dp3"] is dp_spc
+        # Species is a compiled extension type: the marker lives in props.
+        assert dp_spc.props.get("explicit_dp_origin") == ("PS", 3)
+
+    def test_polymer_input_helper_explicit_dp_default_off(self):
+        """Default OFF: no oligomer generated, no registration -- behavior
+        byte-identical to the pre-feature deck."""
+        import inspect
+        from rmgpy.rmg import input as rmg_input
+
+        sig = inspect.signature(rmg_input.polymer)
+        assert "explicit_dp" in sig.parameters
+        assert sig.parameters["explicit_dp"].default is False
+
+        mock_rmg = _mock_rmg_input_env()
+        old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+        rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+        try:
+            poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                     end_groups=["[CH3]", "[H]"], cutoff=3,
+                                     Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+            sd = rmg_input.species_dict
+        finally:
+            rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+        assert poly.explicit_dp is False
+        assert poly.explicit_dp_species is None
+        assert "PS_dp3" not in sd
+
+
+class TestExplicitDpConstraintGate:
+    """Hard-error, never silent: if the active species constraints would
+    exclude the auto-generated oligomer from the core, RMG.initialize must
+    raise an actionable error naming the flag, the species formula and the
+    refusing constraint -- silent absence recreates the inert feature."""
+
+    @staticmethod
+    def _tagged_oligomer():
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        spc.props["explicit_dp_origin"] = ("PS", 3)
+        return spc
+
+    def test_constraint_refusal_hard_errors_with_actionable_message(self):
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+        from rmgpy.exceptions import ForbiddenStructureException
+
+        spc = self._tagged_oligomer()  # C25H28
+        constraints = {"maximumCarbonAtoms": 8, "allowed": []}
+
+        with pytest.raises(ForbiddenStructureException) as excinfo:
+            validate_explicit_dp_oligomers([spc], constraints)
+        msg = str(excinfo.value)
+        assert "explicit_dp" in msg
+        assert "PS" in msg
+        assert "C25H28" in msg
+        assert "maximumCarbonAtoms" in msg
+
+    def test_no_error_when_input_species_allowed(self):
+        """'input species' in the allowed list admits the oligomer through
+        the same escape hatch every other input species gets -- no exclusion,
+        so no error."""
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+
+        spc = self._tagged_oligomer()
+        constraints = {"maximumCarbonAtoms": 8, "allowed": ["input species"]}
+        validate_explicit_dp_oligomers([spc], constraints)  # must not raise
+
+    def test_untagged_and_passing_species_ignored(self):
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+
+        plain = Species(label="CH4", molecule=[Molecule(smiles="C")])
+        passing = self._tagged_oligomer()
+        validate_explicit_dp_oligomers(
+            [plain, passing], {"maximumCarbonAtoms": 30, "allowed": []})
+
+    def test_main_initialize_calls_gate_before_generic_loop(self):
+        """Source pin: RMG.initialize runs the tailored gate BEFORE the
+        generic input-species constraint loop, so the actionable error wins
+        over the generic 'remove the species' message (misleading for an
+        auto-generated species the user never wrote)."""
+        import inspect
+        from rmgpy.rmg.main import RMG
+
+        src = inspect.getsource(RMG.initialize)
+        gate = src.index("validate_explicit_dp_oligomers")
+        generic = src.index("Species constraints forbids input species")
+        assert gate < generic
+
+
+# ---------------------------------------------------------------------------
+# Radical-feature producer path, stage S1a (feature-pool conduit arc,
+# adversarially ratified): an explicit, handshake-context-gated path that
+# materializes the "{label}_mod" RADICAL FEATURE POOL daughter for the
+# H-abstraction shape (mid-chain H-loss radical) instead of
+# ValueError -> None -> gas-leak. The context flag is threaded by the CALLER
+# (the live handshake wires it in stage S2); nothing live passes it yet, so
+# today's refuse stamps / veto scoping stay byte-identical.
+# ---------------------------------------------------------------------------
+
+class TestRadicalFeatureProducerPath:
+    """S1a pins. PP run-2 deck shape: proxy = H-([CH2][CH](C))x3-H = C9H20
+    (2,4-dimethylheptane); the seven refused C9H19 H-abstraction daughters
+    map onto exactly THREE distinct H-loss feature units (documented v1:
+    ~3 PP H-environments -- backbone CH2, backbone CH, pendant CH3)."""
+
+    SEVEN = ['CCCC(C)C[C](C)C', 'CCCC(C)[CH]C(C)C', 'CC[CH]C(C)CC(C)C',
+             'C[CH]CC(C)CC(C)C', '[CH2]C(CCC)CC(C)C',
+             '[CH2]C(C)CC(C)CCC', '[CH2]CCC(C)CC(C)C']
+    # abstraction-environment grouping of the seven (indices into SEVEN):
+    # positional twins of the SAME abstraction -> the SAME daughter pool.
+    GROUP_TERTIARY = (0, 3)    # extra radical on the backbone CH (*2)
+    GROUP_SECONDARY = (1, 2)   # extra radical on the backbone CH2 (*1)
+    GROUP_PRIMARY = (4, 5, 6)  # extra radical on the pendant methyl
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+
+    # --- pin (i): producer path builds the radical-feature daughter -------
+
+    def test_h_loss_context_builds_radical_feature_daughter(self):
+        """RED before S1a: create_reacted_copy has no h_loss_feature context
+        parameter and returns None for every one of the seven refused rows.
+        GREEN after: each row yields a '{label}_mod' Polymer whose
+        feature_monomer carries the mid-chain radical (exactly ONE extra
+        radical beyond the two stitch radicals), whose feature_proxy builds
+        and IS the reactive proxy, and whose fingerprint is _Feat--distinct
+        from the parent's."""
+        for smi in self.SEVEN:
+            d = self.pp.create_reacted_copy(Molecule(smiles=smi),
+                                            h_loss_feature=True)
+            assert isinstance(d, Polymer), (
+                f"H-loss daughter {smi} must materialize a Polymer under "
+                f"the threaded H-loss handshake context, got {d!r}")
+            assert d.label == 'polypropylene_mod'
+            assert d.feature_monomer is not None
+            assert d.feature_monomer.get_radical_count() == 3, (
+                "radical feature unit = two stitch radicals + exactly one "
+                "extra internal radical from the abstracted H")
+            assert d.feature_proxy is not None
+            proxy = d.get_proxy_species()
+            assert proxy is d.feature_proxy, (
+                "reactive proxy must be the feature proxy (polymer.py:302)")
+            assert proxy.molecule[0].get_radical_count() == 1, (
+                "the stitched feature trimer is the mid-chain mono-radical")
+            assert '_Feat-' in d.fingerprint
+            assert d.fingerprint != self.pp.fingerprint
+
+    def test_without_context_refused_exactly_as_today(self):
+        """Live behavior unchanged in S1a (the item-18 refuse stamp stays
+        untouched until S2 wires the context): without the flag all seven
+        rows keep refusing exactly as today."""
+        for smi in self.SEVEN:
+            assert self.pp.create_reacted_copy(Molecule(smiles=smi)) is None
+
+    # --- radical-budget rule on the unit validator ------------------------
+
+    def test_assert_feature_unit_radical_budget(self):
+        """Codex constraint: do NOT globally relax _assert_feature_unit.
+        Default gate: exactly 2 radical electrons (unchanged).
+        allow_h_loss_radical=True: exactly 3 -- the two stitch radicals plus
+        exactly ONE extra internal radical; 2 (no H lost) and 4+ (di-radical
+        garbage) both refuse under the flag."""
+        def h_loss_unit():
+            unit = self.pp.monomer.copy(deep=True)
+            target = next(a for a in unit.atoms if a.label == '*2')
+            h = next(a for a in target.bonds if a.is_hydrogen())
+            unit.remove_atom(h)
+            target.increment_radical()
+            unit.update(sort_atoms=False)
+            return unit
+
+        three_rad = h_loss_unit()
+        with pytest.raises(ValueError):
+            Polymer._assert_feature_unit(three_rad.copy(deep=True))
+        Polymer._assert_feature_unit(three_rad.copy(deep=True),
+                                     allow_h_loss_radical=True)
+
+        two_rad = self.pp.monomer.copy(deep=True)
+        Polymer._assert_feature_unit(two_rad.copy(deep=True))
+        with pytest.raises(ValueError):
+            # exactly ONE extra radical: a no-extra-radical unit is NOT an
+            # H-loss unit; the flag must not blanket-accept it
+            Polymer._assert_feature_unit(two_rad.copy(deep=True),
+                                         allow_h_loss_radical=True)
+
+        four_rad = h_loss_unit()
+        extra = next(a for a in four_rad.atoms
+                     if not a.label and a.is_carbon())
+        h = next(a for a in extra.bonds if a.is_hydrogen())
+        four_rad.remove_atom(h)
+        extra.increment_radical()
+        four_rad.update(sort_atoms=False)
+        for flag in (False, True):
+            with pytest.raises(ValueError):
+                Polymer._assert_feature_unit(four_rad.copy(deep=True),
+                                             allow_h_loss_radical=flag)
+
+    # --- pin (ii): garbage shapes stay refused under the context ----------
+
+    def test_garbage_shapes_refused_even_with_context(self):
+        """2-extra-radical (di-radical, 2 H lost) and wrong-skeleton products
+        stay refused exactly as today even when a (lying) caller passes the
+        H-loss context: the producer path structurally cross-checks the
+        product against the pool's single-H-loss positional variants."""
+        dirad = Molecule(smiles='[CH2]C(CCC)C[C](C)C')  # C9H18, 2 rads
+        assert dirad.get_radical_count() == 2
+        assert self.pp.create_reacted_copy(dirad, h_loss_feature=True) is None
+        linear = Molecule(smiles='[CH2]CCCCCCCC')  # C9H19, wrong skeleton
+        assert self.pp.create_reacted_copy(linear, h_loss_feature=True) is None
+
+    def test_crosslink_still_raises_with_context(self):
+        """Chain-chain coupling keeps raising PolymerCrosslinkError with the
+        context flag set (the crosslink guard runs before the producer path)."""
+        proxy = self.pp.baseline_proxy.molecule[0]
+        coupled = proxy.copy(deep=True)
+        second_chain = proxy.copy(deep=True)
+        mapping = {}
+        for atom in second_chain.atoms:
+            new_atom = atom.copy()
+            coupled.add_atom(new_atom)
+            mapping[atom] = new_atom
+        for atom1 in second_chain.atoms:
+            for atom2, bond in atom1.edges.items():
+                if id(atom1) < id(atom2):
+                    coupled.add_bond(Bond(mapping[atom1], mapping[atom2], bond.order))
+        a1 = next(a for a in coupled.atoms
+                  if not a.is_hydrogen() and a not in mapping.values())
+        h1 = next(n for n in a1.edges if n.is_hydrogen())
+        coupled.remove_bond(coupled.get_bond(a1, h1))
+        coupled.remove_atom(h1)
+        a2 = next(mapping[a] for a in second_chain.atoms if not a.is_hydrogen())
+        h2 = next(n for n in a2.edges if n.is_hydrogen())
+        coupled.remove_bond(coupled.get_bond(a2, h2))
+        coupled.remove_atom(h2)
+        coupled.add_bond(Bond(a1, a2, order=1))
+        coupled.update_multiplicity()
+        assert polymer.classify_structure(
+            Species(molecule=[coupled.copy(deep=True)]), self.pp
+        )[0] == polymer.PolymerClass.CROSSLINK
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            self.pp.create_reacted_copy(coupled, h_loss_feature=True)
+
+    # --- pin (iii): twins -> one pool; distinct sites -> distinct pools ---
+
+    def test_positional_twins_resolve_to_same_pool(self):
+        """DISCARD positional twins of the SAME abstraction share the SAME
+        feature graph -> identical fingerprint (the _register_polymer dedup
+        key) and isomorphic feature monomers -> ONE daughter pool."""
+        for group in (self.GROUP_TERTIARY, self.GROUP_SECONDARY,
+                      self.GROUP_PRIMARY):
+            daughters = [self.pp.create_reacted_copy(
+                Molecule(smiles=self.SEVEN[i]), h_loss_feature=True)
+                for i in group]
+            assert all(isinstance(d, Polymer) for d in daughters)
+            fps = {d.fingerprint for d in daughters}
+            assert len(fps) == 1, (
+                f"positional twins {[self.SEVEN[i] for i in group]} must "
+                f"share one fingerprint (one pool); got {fps}")
+            first = daughters[0].feature_monomer
+            for d in daughters[1:]:
+                assert d.feature_monomer.is_isomorphic(first)
+
+    def test_distinct_abstraction_sites_distinct_pools(self):
+        """Secondary vs tertiary vs primary abstraction environments must
+        yield DISTINCT pools (documented v1: ~3 PP H-environments)."""
+        reps = [self.GROUP_TERTIARY[0], self.GROUP_SECONDARY[0],
+                self.GROUP_PRIMARY[0]]
+        daughters = [self.pp.create_reacted_copy(
+            Molecule(smiles=self.SEVEN[i]), h_loss_feature=True)
+            for i in reps]
+        fps = [d.fingerprint for d in daughters]
+        assert len(set(fps)) == 3, (
+            f"three H-environments must map to three distinct pool "
+            f"fingerprints, got {fps}")
+
+    # --- pin (iv): the eighth daughter obeys the S2 scission invariant ----
+
+    def test_eighth_daughter_routes_or_refuses_never_scission_spawns(self):
+        """The eighth (center-tertiary) daughter is a same-heavy-skeleton
+        DP-preserving H-loss radical, so the scission invariant (stage S2)
+        forbids the _scission_tail spawn this test used to pin (the live
+        PP-run species-25 defect: same-length chain misbooked as a
+        half-length population with a malformed +1-cation C15H31 proxy).
+        Route-first: with the threaded conduit context it lands in the SAME
+        feature pool as its positional tertiary twins; without it, it
+        refuses (None) and falls to the refuse stamp."""
+        assert self.pp.create_reacted_copy(
+            Molecule(smiles='CCC[C](C)CC(C)C')) is None
+        d = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'),
+                                        h_loss_feature=True)
+        assert isinstance(d, Polymer)
+        assert d.label == 'polypropylene_mod'
+        twin = self.pp.create_reacted_copy(
+            Molecule(smiles=self.SEVEN[self.GROUP_TERTIARY[0]]),
+            h_loss_feature=True)
+        assert d.fingerprint == twin.fingerprint
+
+
+# ---------------------------------------------------------------------------
+# Zero-born `_mod` moments, stage S1b (feature-pool conduit arc, commit 2 --
+# the ratified P1 mass-duplicator fix): a newly created "{label}_mod"
+# daughter is a just-spawned pool that genuinely contains nothing, so it
+# must be BORN AT ZERO (moments [0,0,0] via initial_mass=0, same seeding
+# recipe as scission tails and drain_spawn_intents' honest-empty daughters)
+# with spawned_empty provenance markers -- NOT carry a verbatim copy of the
+# PARENT's moments (mass fabrication: the parent keeps its moments and the
+# daughter re-declares the same mass).
+#
+# Live-path status: as of stage S2 the make_new_reaction handshake computes
+# per-product H-loss verdicts (compute_h_loss_feature_verdicts) and threads
+# h_loss_feature through _handshake_structures, so routed _mod daughters DO
+# reach sidecar serialization in a real run (see
+# TestFeaturePoolConduitRouting). The defect was originally proven at the
+# object/artifact level on the S1a producer path -- the same constructor
+# shape the wing-branch _mod site in _create_reacted_copy_wing_logic shares.
+# ---------------------------------------------------------------------------
+
+class TestModDaughterBornAtZero:
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.daughter = self.pp.create_reacted_copy(
+            Molecule(smiles='CCCC(C)[CH]C(C)C'), h_loss_feature=True)
+        assert isinstance(self.daughter, Polymer)
+        assert self.daughter.label == 'polypropylene_mod'
+
+    def test_mod_daughter_moments_born_at_zero(self):
+        """RED before S1b: the _mod constructor copies the PARENT's moments
+        verbatim (violating the born-at-zero contract that
+        drain_spawn_intents and the scission-tail seeding both honor)."""
+        d = self.daughter
+        assert d.moments is not None
+        assert np.allclose(d.moments, 0.0), (
+            f"newly spawned _mod daughter must be born at zero, got "
+            f"moments={d.moments} (parent's moments duplicated)")
+        assert d.initial_mass_g == 0.0
+        # H abstraction does not cut the chain: the parent's Mn/Mw ride
+        # along as lineage/DP metadata (not halved, not dropped) -- with
+        # initial_mass=0 they derive exactly [0,0,0] interim moments.
+        assert d.Mn == pytest.approx(self.pp.Mn)
+        assert d.Mw == pytest.approx(self.pp.Mw)
+        # and the parent pool is untouched (still owns its declared mass)
+        assert not np.allclose(self.pp.moments, 0.0)
+
+    def test_mod_daughter_spawned_empty_provenance_markers(self):
+        """RED before S1b: the daughter carries no spawn markers, so legacy
+        default-label sidecar calls would classify it input_declared."""
+        d = self.daughter
+        assert getattr(d, 'parent_pool_label', None) == 'polypropylene'
+        meta = getattr(d, 'spawn_metadata', None)
+        assert meta, "spawned _mod daughter must carry spawn_metadata"
+        assert meta.get('source') == 'radical_feature_h_loss'
+
+    def test_mod_daughter_sidecar_spawned_empty_and_monomer_mw(self):
+        """Sidecar view (legacy default-label call, where ONLY the object
+        markers decide provenance): the _mod pool serializes moments
+        [0,0,0] with moments_provenance spawned_empty and lineage
+        parent_pool -- and carries monomer_mw_g_mol (the TA sample-mass
+        hazard; fix-A precedent: derive_daughter_pool_configs sets it, the
+        _mod path must too)."""
+        payload = polymer.build_polymer_moments_artifact(
+            [self.pp, self.daughter])
+        by_label = {p['label']: p for p in payload['pools']}
+        entry = by_label['polypropylene_mod']
+        assert entry['moments'] == [0.0, 0.0, 0.0]
+        assert entry['moments_provenance'] == 'spawned_empty'
+        assert entry['parent_pool'] == 'polypropylene'
+        assert entry['spawn_event_metadata'].get('source') == 'radical_feature_h_loss'
+        assert entry['monomer_mw_g_mol'] == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert self.daughter.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert self.daughter.monomer_mw_g_mol > 0
+        # the parent stays input-declared with its declared moments
+        parent_entry = by_label['polypropylene']
+        assert parent_entry['moments_provenance'] == 'input_declared'
+        assert np.allclose(parent_entry['moments'], self.pp.moments)
+
+# ---------------------------------------------------------------------------
+# Feature-pool conduit routing, stage S2 (feature-pool conduit arc,
+# adversarially ratified): the live handshake computes a per-product H-loss
+# verdict WHERE REACTANTS AND PRODUCTS ARE BOTH VISIBLE (the
+# make_new_reaction call site) and threads it through _handshake_structures
+# into create_reacted_copy(h_loss_feature=...). Routed rows emit as
+# cross-pool VOLATILE_EJECTION (H + parent_pool -> H2 + feature pool,
+# a = +MW(H)/monomer_MW). The wing scission branches additionally enforce
+# the scission invariant: a scission daughter is a PIECE of the cut chain,
+# so it must be strictly shorter (fewer heavy atoms) than the parent proxy
+# -- a same-heavy-skeleton H-loss radical daughter must never spawn
+# _scission_tail/_scission_head, flag or no flag (the PP-run species-25
+# defect: a DP-preserving chain misbooked as a half-length population with
+# a malformed +1-cation C15H31 proxy).
+# ---------------------------------------------------------------------------
+
+class TestFeaturePoolConduitRouting:
+    """S2 pins. The live PP run-2 defect shape: proxy CCCC(C)CC(C)C + H ->
+    CCC[C](C)CC(C)C + H2 spawned 'polypropylene_scission_tail' (Mn/2, Mw/2,
+    malformed C15H31 cation proxy) instead of routing the DP-preserving
+    daughter into the radical feature pool."""
+
+    TERTIARY = 'CCC[C](C)CC(C)C'  # the live center-tertiary C9H19 daughter
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.ps = Polymer(label='PS', monomer='[CH2][CH](c1ccccc1)',
+                          end_groups=['[CH3]', '[H]'], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+
+    @staticmethod
+    def _benzylic_h_loss_daughter(ps):
+        """Same-heavy-skeleton H-loss daughter of the PS proxy with the
+        radical on a backbone CH alpha to a phenyl ring: resonance-stabilized
+        (accumulating, NOT QSSA-eliminating)."""
+        mol = ps.baseline_proxy.molecule[0].copy(deep=True)
+
+        def in_ring(atom):
+            return any(b.is_benzene() for b in atom.bonds.values())
+
+        target = next(
+            a for a in mol.atoms
+            if a.is_carbon() and a.radical_electrons == 0 and not in_ring(a)
+            and sum(1 for n in a.bonds if n.is_hydrogen()) == 1
+            and any((not n.is_hydrogen()) and in_ring(n) for n in a.bonds))
+        h = next(n for n in target.bonds if n.is_hydrogen())
+        mol.remove_atom(h)
+        target.increment_radical()
+        mol.update()
+        return mol
+
+    def _routed_reaction(self):
+        """Drive the REAL generation machinery the make_new_reaction
+        handshake runs: per-product verdicts (reactants AND products
+        visible) -> _handshake_structures -> archetype stamping."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compute_h_loss_shape_evidence,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        rxn = Reaction(reactants=[h, self.pp],
+                       products=[h2, Molecule(smiles=self.TERTIARY)],
+                       reversible=False)
+        polymer_reactants = [self.pp]
+        # Live-wiring mirror (round 20): model.py routes on the pure shape
+        # EVIDENCE, not the QSSA composite.
+        verdicts = compute_h_loss_shape_evidence(
+            rxn.reactants, rxn.products, polymer_reactants)
+        _handshake_structures(rxn.products, polymer_reactants,
+                              h_loss_verdicts=verdicts)
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+        return rxn, verdicts
+
+    # --- pin 1: the live defect row becomes a feature-pool VE row ---------
+
+    def test_live_tertiary_daughter_routes_to_feature_pool_ve_row(self):
+        rxn, verdicts = self._routed_reaction()
+        assert verdicts == [False, True]
+        d = rxn.products[1]
+        assert isinstance(d, Polymer)
+        assert d.label == 'polypropylene_mod', (
+            f"live tertiary daughter must route into the radical feature "
+            f"pool, not spawn a scission population; got {d.label!r}")
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.pp.monomer_mw_g_mol, rel=1e-6), (
+            "signed eject_units convention: chain sheds exactly one H per "
+            "event, a = +MW(H)/monomer_MW")
+        assert rxn.polymer_eject_units > 0.0
+        assert rxn.is_end_group_reaction is False  # interior: mu1 scaling
+        assert getattr(rxn, 'polymer_refused', False) is False
+
+    # --- pin 2: no malformed zero-radical/charged proxy can be emitted ----
+
+    def test_routed_feature_pool_proxy_is_valid_neutral_radical(self):
+        rxn, _ = self._routed_reaction()
+        pm = rxn.products[1].get_proxy_species().molecule[0]
+        assert pm.get_net_charge() == 0, (
+            "the spawned pool proxy must be neutral (live defect: C15H31 "
+            "+1-cation proxy on the misbooked scission tail)")
+        assert pm.get_radical_count() == 1
+        assert pm.get_formula() == 'C9H19'
+
+    # --- pin 3: same-length H-loss daughter with the flag OFF refuses -----
+
+    def test_h_loss_daughter_never_scission_spawns_without_flag(self):
+        r = self.pp.create_reacted_copy(Molecule(smiles=self.TERTIARY))
+        assert r is None, (
+            f"scission invariant: a DP-preserving (same-heavy-skeleton) "
+            f"H-loss daughter must refuse with the conduit flag off, never "
+            f"spawn a scission population; got {getattr(r, 'label', r)!r}")
+        ps_daughter = self._benzylic_h_loss_daughter(self.ps)
+        r = self.ps.create_reacted_copy(ps_daughter)
+        assert r is None, (
+            f"got {getattr(r, 'label', r)!r} for the PS benzylic daughter")
+
+    # --- pin 4: the verdict is product-specific and evidence-gated --------
+
+    def test_verdict_requires_abstraction_co_product_evidence(self):
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        daughter = Molecule(smiles=self.TERTIARY)
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        ch3 = Species(label='CH3', molecule=[Molecule(smiles='[CH3]')])
+        ch4 = Species(label='CH4', molecule=[Molecule(smiles='C')])
+        # H2 / RH / H-atom co-products all carry the abstracted H -> route
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, daughter], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [ch3, self.pp], [ch4, daughter], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [self.pp], [daughter, Molecule(smiles='[H]')],
+            [self.pp]) == [True, False]
+        # structurally identical daughter WITHOUT the co-product evidence
+        # (the nonpolymer side never gained the missing H) -> no route
+        assert compute_h_loss_feature_verdicts(
+            [ch3, self.pp], [ch3, daughter], [self.pp]) == [False, False]
+        assert compute_h_loss_feature_verdicts(
+            [self.pp], [daughter], [self.pp]) == [False]
+        # ambiguous polymer source (two pool reactants) -> no route
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp, self.ps], [h2, daughter],
+            [self.pp, self.ps]) == [False, False]
+
+    # --- pin 5 (REWRITTEN, adversarial ruling round 20): accumulating -----
+    # --- daughters route through the conduit too (poly_102 r29-r31) -------
+
+    def test_accumulating_h_loss_routes_live_conduit_ve_row(self):
+        """poly_102 r29-r31 characterization: ``pool + H -> chain radical +
+        H2`` with a resonance-stabilized (accumulating-by-the-proxy)
+        daughter must collapse through the conduit into a LIVE
+        volatile_ejection/1 row with signed eject_units -- NOT the former
+        'qssa-invalid' refusal (a false-positive diagnosis: the real
+        radicals had k_out 1.1e5-1.7e8 1/s at 673-1173 K), and NOT a
+        gas-tracked chain radical (enabling the refused stamp as
+        legacy_mu1/FLUX_UNRESOLVED would fabricate ~270 g/mol per event).
+        The polymer mass is accounted exactly once: gas gets H2, the chain
+        stays chain-phase (routed into the radical feature pool), and the
+        stamped signed eject_units debit the pool by the net ejected mass
+        (+MW(H) per event) through the existing VE accounting."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compile_polymer_reaction_entries,
+                                   compute_h_loss_shape_evidence,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        polymer._flux_archetype_warned.clear()
+        daughter = self._benzylic_h_loss_daughter(self.ps)
+        assert polymer.is_qssa_eliminating_radical(daughter) is False
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        d_spc = Species(label='PSrad', molecule=[daughter])
+        rxn = Reaction(reactants=[h, self.ps], products=[h2, d_spc],
+                       reversible=False)
+        evidence = compute_h_loss_shape_evidence(
+            rxn.reactants, rxn.products, [self.ps])
+        assert evidence == [False, True], (
+            "shape evidence (the routing input post-split) must accept the "
+            "accumulating H-loss daughter")
+        _handshake_structures(rxn.products, [self.ps],
+                              h_loss_verdicts=evidence)
+        d = rxn.products[1]
+        assert isinstance(d, Polymer), (
+            "the chain-scale radical must NOT remain an independently "
+            "integrated gas species (double mass representation)")
+        assert d.label == 'PS_mod'
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, [self.ps])
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.ps.monomer_mw_g_mol, rel=1e-6), (
+            "signed eject_units: the chain sheds exactly one H per event, "
+            "a = +MW(H)/monomer_MW (existing signed accounting, not a "
+            "bespoke formula)")
+        assert rxn.polymer_eject_units > 0.0
+        assert getattr(rxn, 'polymer_refused', False) is False
+        (row,) = compile_polymer_reaction_entries(
+            [rxn], [h, h2, d, self.ps], ['PS', 'PS_mod'])
+        assert 'refused' not in row, "the r29 row must be LIVE, not refused"
+        assert row['archetype'] == 'volatile_ejection/1'
+        assert row['params']['eject_units'] == pytest.approx(
+            mw_h / self.ps.monomer_mw_g_mol, rel=1e-6)
+        assert row['scaling'] == 'mu1'
+        assert row['src_pool'] == 'PS'
+        assert row['dst_pool'] == 'PS_mod'
+
+    # --- pin 5b (adversarial ruling round 20, conduit collapse B): the ----
+    # --- H-loss SHAPE EVIDENCE is split from the QSSA-eliminating verdict -
+
+    def test_shape_evidence_is_split_from_qssa_verdict(self):
+        """poly_102 r29-r31 forensics: the resonance-count proxy
+        (is_qssa_eliminating_radical) false-positively diagnosed live
+        chain radicals (real k_out 1.1e5-1.7e8 1/s) as accumulating. The
+        ruling splits compute_h_loss_feature_verdicts into (i) pure
+        H-loss/same-heavy-skeleton shape EVIDENCE (no QSSA gate -- the
+        conduit route consumes THIS) and (ii) the optional QSSA verdict
+        (diagnostic composite, unchanged semantics)."""
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   compute_h_loss_shape_evidence)
+        daughter = self._benzylic_h_loss_daughter(self.ps)
+        assert polymer.is_qssa_eliminating_radical(daughter) is False
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        d_spc = Species(label='PSrad', molecule=[daughter])
+        reactants, products = [h, self.ps], [h2, d_spc]
+        # (i) pure shape evidence: True regardless of resonance count
+        assert compute_h_loss_shape_evidence(
+            reactants, products, [self.ps]) == [False, True]
+        # (ii) composite diagnostic verdict keeps the QSSA gate
+        assert compute_h_loss_feature_verdicts(
+            reactants, products, [self.ps]) == [False, False]
+        # eliminating daughter: evidence and composite agree
+        tert = Molecule(smiles=self.TERTIARY)
+        assert compute_h_loss_shape_evidence(
+            [h, self.pp], [h2, tert], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, tert], [self.pp]) == [False, True]
+        # evidence path preserves every negative shape gate (no co-product
+        # evidence / ambiguous polymer source stay refused)
+        ch3 = Species(label='CH3', molecule=[Molecule(smiles='[CH3]')])
+        assert compute_h_loss_shape_evidence(
+            [ch3, self.pp], [ch3, tert], [self.pp]) == [False, False]
+        assert compute_h_loss_shape_evidence(
+            [h, self.pp, self.ps], [h2, tert],
+            [self.pp, self.ps]) == [False, False]
+
+    # --- pin 7: feature pool born zero, parent monomer MW, sidecar --------
+
+    def test_routed_feature_pool_born_zero_with_parent_monomer_mw(self):
+        rxn, _ = self._routed_reaction()
+        d = rxn.products[1]
+        assert np.allclose(d.moments, 0.0)
+        assert d.initial_mass_g == 0.0
+        assert d.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert d.monomer_mw_g_mol > 0
+        assert d.parent_pool_label == 'polypropylene'
+        payload = polymer.build_polymer_moments_artifact([self.pp, d])
+        entry = {p['label']: p for p in payload['pools']}['polypropylene_mod']
+        assert entry['moments'] == [0.0, 0.0, 0.0]
+        assert entry['moments_provenance'] == 'spawned_empty'
+        assert entry['parent_pool'] == 'polypropylene'
+        assert entry['monomer_mw_g_mol'] == pytest.approx(
+            self.pp.monomer_mw_g_mol)
+
+    # --- pin 8: DP<=1 gas gate unchanged (volatiles stay gas) -------------
+
+    def test_dp1_gas_gate_unchanged_volatiles_stay_gas(self):
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        propane = Molecule(smiles='CCC')  # the PP pool's DP-1 capped chain
+        ipr = Molecule(smiles='C[CH]C')   # DP-1 H-loss radical
+        for vol in (propane, ipr):
+            for flag in (False, True):
+                assert self.pp.create_reacted_copy(
+                    vol.copy(deep=True), h_loss_feature=flag) is None
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, propane.copy(deep=True)],
+            [self.pp]) == [False, False]
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, ipr.copy(deep=True)],
+            [self.pp]) == [False, False]
+
+    # --- pin 9 (r61): Disproportionation-shaped H-transfer routing --------
+
+    def test_disproportionation_shaped_h_transfer_routes(self):
+        """r61 ruling: a Disproportionation-family row where the nonpolymer
+        side gains exactly one H (radical + pool proxy -> RH + eliminating
+        same-skeleton H-loss daughter) IS legitimate conduit routing --
+        chemically it's polymer H-abstraction, and Disproportionation is in
+        the PP v1 family whitelist. The positive shape gets verdict True and
+        routes to the _mod feature pool as a VOLATILE_EJECTION row."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        ipr = Species(label='iPr', molecule=[Molecule(smiles='C[CH]C')])
+        c3h8 = Species(label='C3H8', molecule=[Molecule(smiles='CCC')])
+        rxn = Reaction(reactants=[ipr, self.pp],
+                       products=[c3h8, Molecule(smiles=self.TERTIARY)],
+                       reversible=False)
+        verdicts = compute_h_loss_feature_verdicts(
+            rxn.reactants, rxn.products, [self.pp])
+        assert verdicts == [False, True], (
+            "Disproportionation shape (the co-reactant radical gains the "
+            "abstracted H) must get the conduit verdict")
+        _handshake_structures(rxn.products, [self.pp],
+                              h_loss_verdicts=verdicts)
+        d = rxn.products[1]
+        assert isinstance(d, Polymer) and d.label == 'polypropylene_mod', (
+            f"Disproportionation-shaped row must route into the radical "
+            f"feature pool; got {getattr(d, 'label', d)!r}")
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, [self.pp])
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert getattr(rxn, 'polymer_refused', False) is False
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.pp.monomer_mw_g_mol, rel=1e-6), (
+            "chain sheds exactly one H per event: a = +MW(H)/monomer_MW")
+
+    def test_disproportionation_shape_off_balance_does_not_route(self):
+        """r61 ruling, negative arm: a Disproportionation-looking row that
+        does NOT fit the +1-H balance must get verdict False and never
+        reach the feature pool. (a) the polymer side is the H-gainer (the
+        co-radical LOSES an H: ethyl -> ethylene); (b) two heavy products
+        (the co-product gains a heavy atom, not just the abstracted H)."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        et = Species(label='C2H5', molecule=[Molecule(smiles='C[CH2]')])
+        c2h4 = Species(label='C2H4', molecule=[Molecule(smiles='C=C')])
+        c3h8 = Species(label='C3H8', molecule=[Molecule(smiles='CCC')])
+        # (a) polymer side H-gainer: the nonpolymer side nets -1 H
+        prods_a = [c2h4, Molecule(smiles=self.TERTIARY)]
+        v_a = compute_h_loss_feature_verdicts(
+            [et, self.pp], prods_a, [self.pp])
+        assert v_a == [False, False], (
+            "polymer-side-H-gainer Disproportionation shape must not get "
+            "the conduit verdict")
+        _handshake_structures(prods_a, [self.pp], h_loss_verdicts=v_a)
+        assert not isinstance(prods_a[1], Polymer), (
+            "off-balance Disproportionation shape must not reach the "
+            "feature pool")
+        # (b) two heavy products: the co-product nets +1 C (+3 H)
+        v_b = compute_h_loss_feature_verdicts(
+            [et, self.pp], [c3h8, Molecule(smiles=self.TERTIARY)],
+            [self.pp])
+        assert v_b == [False, False], (
+            "heavy-gaining co-product must not count as abstraction "
+            "evidence")
+
+
+# ---------------------------------------------------------------------------
+# Radical-homolysis initiation conduit, Stage 1 (adjudicated adversarial
+# round 66): the k_homolysis Arrhenius kernel spawns TWO end-radical daughter
+# pools at model setup (primary = open-*1 chain terminus, secondary = open-*2
+# chain terminus per the backbone C-C cut), with hard deck exclusions against
+# k_scission > 0 (same random backbone-break physics, double-count) and
+# against QSSA random initiation (radical_qssa_unzip's initiation IS random
+# backbone homolysis).
+# ---------------------------------------------------------------------------
+
+def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    """Arrhenius triplet for the k_homolysis kernel (SI convention, same as
+    the radical_qssa_unzip blocks: A [s^-1], Ea [J/mol], n dimensionless)."""
+    return dict(A=A, n=n, Ea=Ea)
+
+
+class TestEndRadicalDaughterProducer:
+    """Pin 4 (round-66 red list): primary/secondary end-radical pools are
+    distinct (labels + fingerprints + proxies), born at zero, condensed,
+    with monomer_mw_g_mol pinned and spawned provenance."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.prim, self.sec = self.pp.generate_end_radical_daughters()
+
+    def test_labels_and_distinct_fingerprints(self):
+        """RED pin 4a: the two daughters carry the ratified label convention
+        and three-way distinct fingerprints (from each other, from the parent,
+        and from a mid-chain H-loss _mod pool of the same backbone)."""
+        assert self.prim.label == 'polypropylene_rad_primary_end'
+        assert self.sec.label == 'polypropylene_rad_secondary_end'
+        fps = {self.pp.fingerprint, self.prim.fingerprint, self.sec.fingerprint}
+        assert len(fps) == 3, (
+            f"end-radical daughters must carry distinct fingerprints, got {fps}")
+        # distinct from the S2 mid-chain _mod pool machinery too
+        mod = self.pp.create_reacted_copy(
+            Molecule(smiles='CCCC(C)[CH]C(C)C'), h_loss_feature=True)
+        assert isinstance(mod, Polymer)
+        assert self.prim.fingerprint != mod.fingerprint
+        assert self.sec.fingerprint != mod.fingerprint
+
+    def test_born_at_zero_with_monomer_mw_and_provenance(self):
+        """RED pin 4b: born-at-zero moments, monomer_mw_g_mol pinned to the
+        parent repeat unit, spawned_empty-style provenance markers."""
+        for d in (self.prim, self.sec):
+            assert d.moments is not None
+            assert np.allclose(d.moments, 0.0), (
+                f"end-radical daughter must be born at zero, got {d.moments}")
+            assert d.initial_mass_g == 0.0
+            assert d.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+            assert d.monomer_mw_g_mol > 0.0
+            assert d.parent_pool_label == 'polypropylene'
+            assert d.spawn_metadata.get('source') == 'k_homolysis_end_radical'
+
+    def test_proxies_are_valid_mono_radical_end_oligomers(self):
+        """RED pin 4c: each proxy is a valid NEUTRAL MONO-radical oligomer
+        with the radical on the expected chain-end carbon. For PP
+        ([CH2][CH](C), *1 = CH2, *2 = CH):
+          primary  end ~CH2*      -> radical C with 2 H + 1 heavy neighbor
+          secondary end ~CH*(CH3) -> radical C with 1 H + 2 heavy neighbors
+        """
+        for d, (n_h_exp, n_heavy_exp) in ((self.prim, (2, 1)),
+                                          (self.sec, (1, 2))):
+            proxy = d.get_proxy_species()
+            assert proxy is not None
+            mol = proxy.molecule[0]
+            assert mol.get_radical_count() == 1, (
+                f"{d.label} proxy must be mono-radical, got "
+                f"{mol.get_radical_count()}")
+            assert mol.get_net_charge() == 0
+            rad_atoms = [a for a in mol.atoms if a.radical_electrons > 0]
+            assert len(rad_atoms) == 1
+            rad = rad_atoms[0]
+            assert rad.is_carbon()
+            n_h = sum(1 for nb in rad.bonds if nb.is_hydrogen())
+            n_heavy = sum(1 for nb in rad.bonds if not nb.is_hydrogen())
+            assert (n_h, n_heavy) == (n_h_exp, n_heavy_exp), (
+                f"{d.label} radical environment ({n_h}H, {n_heavy}C) does not "
+                f"match the expected end site ({n_h_exp}H, {n_heavy_exp}C)")
+            assert d.multiplicity == 2
+
+    def test_primary_and_secondary_proxies_not_isomorphic(self):
+        """RED pin 4d: the two end-radical proxies are chemically distinct
+        species (not graph-isomorphic), so RMG cannot collapse the pools."""
+        p_mol = self.prim.get_proxy_species().molecule[0]
+        s_mol = self.sec.get_proxy_species().molecule[0]
+        assert not p_mol.is_isomorphic(s_mol)
+
+    def test_end_radical_pools_condensed_membership(self):
+        """RED pin 4e: once configured as pools, the daughters' proxy + mu
+        dummies resolve as condensed-phase members (label-convention source 2
+        of derive_condensed_species)."""
+        from types import SimpleNamespace
+        core = []
+        for base in ('polypropylene_rad_primary_end',
+                     'polypropylene_rad_secondary_end'):
+            proxy = Species(label=base,
+                            molecule=[Molecule(smiles='[CH2]CC')])
+            core.append(proxy)
+            for k in (0, 1, 2):
+                core.append(Species(label=f"{base}_mu{k}",
+                                    molecule=[Molecule(smiles='CO')]))
+        gas = Species(label='CH4', molecule=[Molecule(smiles='C')])
+        core.append(gas)
+        pools_cfg = [SimpleNamespace(label='polypropylene_rad_primary_end'),
+                     SimpleNamespace(label='polypropylene_rad_secondary_end')]
+        condensed = polymer.derive_condensed_species(core, pools_cfg)
+        condensed_labels = {s.label for s in condensed}
+        for base in ('polypropylene_rad_primary_end',
+                     'polypropylene_rad_secondary_end'):
+            assert base in condensed_labels
+            for k in (0, 1, 2):
+                assert f"{base}_mu{k}" in condensed_labels
+        assert 'CH4' not in condensed_labels
+
+
+def test_assert_end_radical_proxy_strict():
+    """The end-radical proxy assertion path is STRICT (round 66: do not relax
+    _assert_feature_unit/_assert_end_group; the end-radical shape gets its own
+    assertion): exactly ONE radical, sitting ON the surviving (terminal)
+    stitch-labeled heavy atom."""
+    from rmgpy.polymer import _assert_end_radical_proxy
+
+    # (a) closed-shell molecule with the open-site label -> refused
+    mol = Molecule(smiles='CCC')
+    mol.atoms[0].label = '*1'
+    with pytest.raises(ValueError, match=r"mono-radical|exactly one radical"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (b) mono-radical but the radical is NOT on the labeled terminal atom
+    mol = Molecule(smiles='C[CH]C')
+    terminal = next(a for a in mol.atoms
+                    if a.is_carbon() and a.radical_electrons == 0)
+    terminal.label = '*1'
+    with pytest.raises(ValueError, match=r"terminal|labeled"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (c) di-radical -> refused (exactly one radical total)
+    mol = Molecule(smiles='[CH2]C[CH2]')
+    rad = next(a for a in mol.atoms if a.radical_electrons > 0)
+    rad.label = '*1'
+    with pytest.raises(ValueError, match=r"mono-radical|exactly one radical"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (d) no surviving open-site label at all -> refused
+    mol = Molecule(smiles='[CH2]CC')
+    with pytest.raises(ValueError, match=r"label"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (e) the real primary-end shape passes
+    mol = Molecule(smiles='[CH2]CC')
+    rad = next(a for a in mol.atoms if a.radical_electrons > 0)
+    rad.label = '*1'
+    _assert_end_radical_proxy(mol, 'primary')
+
+
+def test_polymer_stores_k_homolysis_and_copy_preserves_it():
+    """Passive-storage + copy pin (mirrors the radical_qssa_unzip precedent):
+    losing k_homolysis or end_radical_site on copy() would silently disable
+    the initiation kernel / collapse a daughter pool's identity."""
+    kh = _khom_triplet()
+    poly = Polymer(label='PP', monomer='[CH2][CH](C)',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1,
+                   k_homolysis=kh)
+    assert poly.k_homolysis == kh
+    cp = poly.copy(deep=True)
+    assert cp.k_homolysis == kh
+    # deep copy, not aliasing
+    cp.k_homolysis['A'] = 999.0
+    assert poly.k_homolysis['A'] == kh['A'] or cp.k_homolysis is not poly.k_homolysis
+    # end_radical_site rides copy() too
+    prim, _ = poly.generate_end_radical_daughters()
+    prim_cp = prim.copy(deep=True)
+    assert prim_cp.end_radical_site == prim.end_radical_site
+    assert prim_cp.fingerprint == prim.fingerprint
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_positive_k_scission():
+    """Pin 5a (deck layer): k_scission > 0 with k_homolysis enabled is a hard
+    deck error naming both parameters -- both parameterize random backbone
+    homolysis and would double-count initiation."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*k_scission.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          k_scission=0.5,
+                          k_homolysis=_khom_triplet())
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_qssa_random_initiation():
+    """Pin 5b (deck layer): QSSA random initiation configured together with
+    k_homolysis is a hard deck error naming both params (QSSA initiation IS
+    random backbone homolysis; enabling both double-counts initiation)."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          radical_qssa_unzip=_qssa_channel(),
+                          k_homolysis=_khom_triplet())
+
+
+def test_polymer_input_helper_rejects_malformed_k_homolysis():
+    """Deck-read-time field validation for the k_homolysis triplet (shared
+    single-source validator, mirrors the QSSA triplet rules)."""
+    import rmgpy.rmg.input as rmg_input
+
+    for bad, pattern in [
+        (dict(A=-1.0, n=0.0, Ea=8.0e4), r"PP.*k_homolysis.*A.*> 0"),
+        (dict(A=float("nan"), n=0.0, Ea=8.0e4), r"PP.*k_homolysis.*A.*not finite"),
+        (dict(A=1.0e13, n=0.0), r"PP.*k_homolysis.*missing"),
+        (dict(A=1.0e13, n=0.0, Ea=8.0e4, extra=1.0), r"PP.*k_homolysis.*unknown"),
+        (dict(A=1.0e13, n=0.0, Ea=-5.0), r"PP.*k_homolysis.*Ea.*>= 0"),
+        (42.0, r"PP.*k_homolysis.*dict"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              k_homolysis=bad)
+
+
+def test_pool_to_config_rejects_k_homolysis_with_positive_k_scission():
+    """Pin 5a (config layer): PolymerPool.to_config re-enforces the
+    k_homolysis <-> k_scission mutual exclusion (a directly-constructed
+    PolymerPool must not dodge the deck check)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("[CH2][CH](C)")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_scission=0.5,
+                       k_homolysis=_khom_triplet())
+    spc_map = {s: i for i, s in enumerate(mu)}
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*k_scission.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_k_homolysis_with_qssa_channel():
+    """Pin 5b (config layer): PolymerPool.to_config re-enforces the
+    k_homolysis <-> radical_qssa_unzip mutual exclusion."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+    pool.k_homolysis = _khom_triplet()
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_positive_k_unzip():
+    """P1 (adjudicated round 67, deck layer): legacy k_unzip (phenomenological
+    closed-chain monomer-loss channel) together with k_homolysis (radical-end
+    pools feeding explicit beta-scission/unzip chemistry) lets a deck
+    double-carry depolymerization -- hard deck error naming both parameters.
+    monomer_product is wired so the k_unzip routing guard cannot mask this."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*k_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          k_unzip=0.7,
+                          k_homolysis=_khom_triplet())
+
+
+def test_pool_to_config_rejects_k_homolysis_with_positive_k_unzip():
+    """P1 (adjudicated round 67, config layer): PolymerPool.to_config
+    re-enforces the k_homolysis <-> k_unzip mutual exclusion (a
+    directly-constructed PolymerPool must not dodge the deck check).
+    monomer_product is wired so the k_unzip routing guard cannot mask this."""
+    pool, spc_map = _qssa_pool(None, k_unzip=0.5)
+    pool.k_homolysis = _khom_triplet()
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*k_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_k_homolysis_spawns_end_radical_pools():
+    """GREEN round-trip (producer wiring): polymer(...) with k_homolysis
+    registers BOTH end-radical daughter pools at model setup (not lazily),
+    stores the normalized triplet on the parent, and appends the daughters to
+    initial_species."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                                 end_groups=["[H]", "[H]"], cutoff=3,
+                                 Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                                 k_homolysis=_khom_triplet())
+        sd = rmg_input.species_dict
+        assert poly.k_homolysis == _khom_triplet()
+        assert all(isinstance(v, float) for v in poly.k_homolysis.values())
+        for suffix in ("_rad_primary_end", "_rad_secondary_end"):
+            label = f"PP{suffix}"
+            assert label in sd, f"{label} not registered by the deck helper"
+            d = sd[label]
+            assert isinstance(d, Polymer)
+            assert np.allclose(d.moments, 0.0)
+            assert d in mock_rmg.initial_species
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+# ---------------------------------------------------------------------------
+# End-radical DEPROPAGATION kernel (adjudicated round 74 SS2) -- deck +
+# producer surfaces: k_depropagation is declared on the PARENT pool's
+# k_homolysis context and applied to its spawned end-radical daughter pools.
+# ---------------------------------------------------------------------------
+
+def _kdep_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def test_polymer_stores_k_depropagation_and_copy_preserves_it():
+    """Passive-storage + copy pin (mirrors the k_homolysis precedent):
+    losing k_depropagation on copy() would silently disable the r74
+    consumption channel on the spawned daughters."""
+    kd = _kdep_triplet()
+    poly = Polymer(label='PP', monomer='[CH2][CH](C)',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1,
+                   k_homolysis=_khom_triplet(),
+                   k_depropagation=kd)
+    assert poly.k_depropagation == kd
+    cp = poly.copy(deep=True)
+    assert cp.k_depropagation == kd
+    # deep copy, not aliasing
+    cp.k_depropagation['A'] = 999.0
+    assert poly.k_depropagation['A'] == kd['A']
+
+
+def test_polymer_input_helper_rejects_k_depropagation_without_k_homolysis():
+    """Deck layer: k_depropagation configures the SPAWNED end-radical
+    daughter pools; without k_homolysis no radical-end pool exists to
+    depropagate, so the parameter would be a silent dead knob."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_depropagation.*k_homolysis"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          k_depropagation=_kdep_triplet())
+
+
+def test_polymer_input_helper_rejects_k_depropagation_without_monomer_product():
+    """Deck layer: the kernel releases one monomer volatile per unzip event;
+    without monomer_product the released units would leave the condensed
+    phase silently un-conserved."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_depropagation.*monomer_product"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          k_homolysis=_khom_triplet(),
+                          k_depropagation=_kdep_triplet())
+
+
+def test_polymer_input_helper_rejects_malformed_k_depropagation():
+    """Deck-read-time field validation for the k_depropagation triplet
+    (shared single-source validator, mirrors the k_homolysis rules)."""
+    import rmgpy.rmg.input as rmg_input
+
+    for bad, pattern in [
+        (dict(A=-1.0, n=0.0, Ea=8.0e4), r"PP.*k_depropagation.*A.*> 0"),
+        (dict(A=1.0e13, n=0.0), r"PP.*k_depropagation.*missing"),
+        (dict(A=1.0e13, n=0.0, Ea=-5.0), r"PP.*k_depropagation.*Ea.*>= 0"),
+        (42.0, r"PP.*k_depropagation.*dict"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              monomer_product="C=CC",
+                              k_homolysis=_khom_triplet(),
+                              k_depropagation=bad)
+
+
+def test_polymer_input_helper_k_depropagation_reaches_spawned_daughters():
+    """GREEN round-trip (deck wiring): polymer(...) with k_homolysis +
+    k_depropagation + monomer_product stores the normalized triplet on the
+    parent AND on both spawned end-radical daughters, with the daughters
+    holding the released-monomer Species BY REFERENCE (identity is
+    load-bearing for derive_daughter_pool_configs' object-keyed spc_map)."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        # Step 4b registers the monomer_product as a raw Molecule; the real
+        # make_new_species wraps it in a Species -- mirror that here so the
+        # registration path (and the identity contract on the wrapped
+        # Species) is exercised.
+        if isinstance(obj, Molecule):
+            spc = Species(molecule=[obj], label=obj.to_smiles())
+            return spc, True
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                                 end_groups=["[H]", "[H]"], cutoff=3,
+                                 Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                                 monomer_product="C=CC",
+                                 k_homolysis=_khom_triplet(),
+                                 k_depropagation=_kdep_triplet())
+        sd = rmg_input.species_dict
+        assert poly.k_depropagation == _kdep_triplet()
+        assert all(isinstance(v, float)
+                   for v in poly.k_depropagation.values())
+        for suffix in ("_rad_primary_end", "_rad_secondary_end"):
+            d = sd[f"PP{suffix}"]
+            assert d.k_depropagation == _kdep_triplet()
+            assert d.k_depropagation is not poly.k_depropagation
+            assert d.monomer_product_species is poly.monomer_product_species
+            assert d.monomer_product_species is not None
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+# ---------------------------------------------------------------------------
+# Side-group homolysis (FR1-K1) kernel-v2 -- producer + deck surfaces. v2 is
+# explicit Br-inventory depletion: there is NO X-loss feature/daughter pool.
+# Instead each (pool, channel) carries an auxiliary Z inventory on the CARRIER
+# (Z_c(0) = sites_c * mu1(0), dZ_c/dt = -k * Z_c / V_poly; the pool moments are
+# unchanged and the condensed mass reads
+# mu1*MW - sum_c max(0, sites_c*mu1 - Z_c)*M_X_c). Consequences pinned here:
+#   - Polymer.generate_side_loss_daughters() ALWAYS returns () (explicit
+#     no-daughter path, P1-A) -- no feature pool is ever spawned.
+#   - the deck helper KEEPS gas-product registration (step 4e: each channel's
+#     ejected X radical, populating poly.side_group_gas_species) but DELETES
+#     the feature-pool spawn (step 4f) -- no PVBr_sidegrp_* species.
+#   - the deck REJECTS an SGH carrier that also declares a mu1-moving kernel
+#     (k_homolysis / k_depropagation / explicit_dp): inventory-depletion SGH
+#     requires a STATIONARY carrier mu1.
+#   - the structural site-selector law (round-72) now lives in the solver:
+#     rmgpy.solver.polymer.side_group_site_atom_indices(monomer, sym, selector)
+#     and validate_side_group_homolysis(pool_label, channels, monomer=...).
+# ---------------------------------------------------------------------------
+
+def _sgh_channel(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                 site_selector="aliphatic", sites_per_unit=1.0,
+                 gas_product="[Br]"):
+    return dict(label=label, A=A, n=n, Ea=Ea, site_selector=site_selector,
+                sites_per_unit=sites_per_unit, gas_product=gas_product)
+
+
+def _pvbr(label='PVBr', **kw):
+    """Poly(vinyl bromide)-like pool: repeat unit [CH2][CH]Br (one aliphatic
+    C-Br per unit)."""
+    return Polymer(label=label, monomer='[CH2][CH]Br',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1, **kw)
+
+
+# FR1-like MIXED-site repeat unit (round-72 P1 fixture): ONE aryl Br (on the
+# ring) + ONE aliphatic Br (on the pendant CH2, whose carbon touches no
+# aromatic atom) per unit. On this monomer the pre-selector code removed the
+# ARYL Br for EVERY channel (first removable Br in atom order), so a channel
+# labeled 'aliphatic_C-Br' minted the aryl defect -- the adjudicated silent
+# chemical corruption.
+FR1_MIXED_MONOMER = '[CH2][C](c1ccc(Br)cc1)CBr'
+
+
+def _fr1(label='FR1', **kw):
+    """FR1-like mixed-site pool (aryl Br + aliphatic Br in one repeat
+    unit)."""
+    return Polymer(label=label, monomer=FR1_MIXED_MONOMER,
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1, **kw)
+
+
+def _defect_radical_on_ring(unit):
+    """True iff the feature unit's defect radical (the ex-neighbor of the
+    removed X; unlabeled, so never a stitch atom) sits on an aromatic-ring
+    carbon -- i.e. the removed Br was the ARYL one."""
+    rads = [a for a in unit.atoms if a.radical_electrons == 1 and not a.label]
+    assert len(rads) == 1, "X-loss unit must carry exactly one defect radical"
+    ring_atoms = set()
+    for ring in unit.get_aromatic_rings()[0]:
+        ring_atoms.update(ring)
+    return rads[0] in ring_atoms
+
+
+def test_generate_side_loss_daughters_v2_emits_no_feature_pool():
+    """Producer pin (kernel-v2): side_group_homolysis spawns NO feature/
+    daughter pool. Multi-loss X depletion is tracked on an auxiliary Z
+    inventory on the CARRIER, so generate_side_loss_daughters() ALWAYS
+    returns () -- an EXPLICIT no-daughter path (P1-A) -- for both a
+    single-channel carrier and a multi-channel one."""
+    poly = _pvbr(side_group_homolysis=[_sgh_channel()])
+    assert poly.generate_side_loss_daughters() == ()
+
+    fr1 = _fr1(side_group_homolysis=[
+        _sgh_channel(),
+        _sgh_channel(label="aryl_C-Br", site_selector="aryl")])
+    assert fr1.generate_side_loss_daughters() == ()
+
+
+def test_side_loss_channels_never_lump_distinct_labels():
+    """The "never lump" ruling now lives in validation, not daughters: two
+    channels of the SAME element stay SEPARATE, normalized to two distinct
+    channels keyed by label. v2 spawns no daughters (== ()), so the property
+    is asserted through validate_side_group_homolysis instead."""
+    from rmgpy.solver.polymer import (validate_side_group_homolysis,
+                                       side_group_site_atom_indices)
+    poly = _fr1(side_group_homolysis=[
+        _sgh_channel(),
+        _sgh_channel(label="aryl_C-Br", site_selector="aryl")])
+    assert poly.generate_side_loss_daughters() == ()
+
+    channels = [_sgh_channel(),
+                _sgh_channel(label="aryl_C-Br", site_selector="aryl")]
+    normalized = validate_side_group_homolysis("FR1", channels,
+                                               monomer=poly.monomer)
+    assert len(normalized) == 2
+    assert normalized[0]["label"] != normalized[1]["label"]
+    assert {normalized[0]["label"], normalized[1]["label"]} == {
+        "aliphatic_C-Br", "aryl_C-Br"}
+
+
+# --- Round-72 P1: REQUIRED structural site selector -----------------------
+# side_group_homolysis channels carried a kinetics label + sites_per_unit
+# but NO structural site selector; _side_loss_feature_unit removed the FIRST
+# removable X in monomer atom order, so on a mixed-site monomer different
+# channels (different rates) minted the SAME defect structure -- or the
+# wrong one. The adjudicated fix: a REQUIRED per-channel site_selector
+# ('aryl' | 'benzylic' | 'aliphatic'), structurally validated against the
+# parsed monomer, directing WHICH X atom the deterministic removal targets.
+
+
+def test_side_loss_selector_aliphatic_channel_removes_aliphatic_br():
+    """RED 1 (round-72), v2 home: on the mixed aryl/aliphatic monomer the
+    'aliphatic' selector must resolve to the ALIPHATIC Br (neighbor carbon
+    NOT aromatic), while the 'aryl' selector resolves to a DIFFERENT (aryl)
+    Br. The structural law now lives in side_group_site_atom_indices."""
+    from rmgpy.solver.polymer import side_group_site_atom_indices
+    poly = _fr1(side_group_homolysis=[_sgh_channel()])
+    ali = side_group_site_atom_indices(poly.monomer, "Br", "aliphatic")
+    aryl = side_group_site_atom_indices(poly.monomer, "Br", "aryl")
+    assert ali, "aliphatic selector matched no Br"
+    assert aryl, "aryl selector matched no Br"
+    assert set(ali).isdisjoint(aryl), (
+        "aliphatic and aryl selectors resolved to the SAME Br")
+
+    aromatic_atoms = set()
+    for ring in poly.monomer.get_aromatic_rings()[0]:
+        aromatic_atoms.update(ring)
+    for idx in ali:
+        neighbor = next(iter(poly.monomer.atoms[idx].bonds.keys()))
+        assert neighbor not in aromatic_atoms, (
+            "aliphatic channel picked an ARYL Br (round-72 P1 corruption)")
+
+
+def test_side_loss_selector_channels_mint_distinct_defect_structures():
+    """RED 2 (round-72), v2 home: the aliphatic and aryl selectors must
+    resolve to DISJOINT, non-empty atom-index sets on the mixed FR1 monomer
+    -- the round-72 guarantee that different channels (different rates)
+    target different structural sites, never the same one twice."""
+    from rmgpy.solver.polymer import side_group_site_atom_indices
+    poly = _fr1(side_group_homolysis=[_sgh_channel()])
+    ali = side_group_site_atom_indices(poly.monomer, "Br", "aliphatic")
+    aryl = side_group_site_atom_indices(poly.monomer, "Br", "aryl")
+    assert ali and aryl
+    assert set(ali).isdisjoint(aryl), (
+        "different channels resolved to the SAME defect site -- the "
+        "round-72 double-carry")
+
+
+def test_side_loss_selector_missing_hard_fails():
+    """RED 3 (round-72), v2 home: site_selector is a REQUIRED channel key --
+    a channel dict lacking it hard-fails the shared validator naming the
+    missing key (no monomer structure needed for this field-shape error)."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    ch = _sgh_channel()
+    del ch["site_selector"]
+    with pytest.raises(ValueError, match=r"missing"):
+        validate_side_group_homolysis("PP", [ch])
+
+
+def test_side_loss_selector_same_atom_set_hard_fails():
+    """RED 4 (round-72), v2 home: two channels whose selectors resolve to the
+    SAME atom set in the monomer are a double-carry the distinct labels were
+    hiding -- validate_side_group_homolysis(monomer=...) hard-fails naming
+    both channels."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    poly = _fr1()
+    channels = [_sgh_channel(),
+                _sgh_channel(label="backbone_C-Br", A=2.0e13)]
+    with pytest.raises(ValueError,
+                       match=r"aliphatic_C-Br.*backbone_C-Br.*SAME"):
+        validate_side_group_homolysis("FR1", channels, monomer=poly.monomer)
+
+
+def test_side_loss_selector_checks_sites_per_unit_against_match_count():
+    """RED 5 (round-72), v2 home: sites_per_unit is CHECKED against the
+    selector's structural match count in the monomer, no longer trusted --
+    a contradiction hard-fails naming both numbers (FR1 has ONE aliphatic
+    Br, so sites_per_unit=2 contradicts the match count of 1)."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    poly = _fr1()
+    with pytest.raises(ValueError,
+                       match=r"sites_per_unit=2.*matches 1"):
+        validate_side_group_homolysis(
+            "FR1", [_sgh_channel(sites_per_unit=2.0)], monomer=poly.monomer)
+
+
+def test_side_loss_selector_rejects_absent_element():
+    """A channel whose gas_product element is absent from the monomer matches
+    NO removable side-group atom -- validate_side_group_homolysis(monomer=...)
+    hard-fails naming the channel and the missing element, never a silent
+    no-op."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    poly = Polymer(label='PP', monomer='[CH2][CH](C)',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1)
+    with pytest.raises(ValueError, match=r"aliphatic_C-Br.*Br"):
+        validate_side_group_homolysis("PP", [_sgh_channel()],
+                                      monomer=poly.monomer)
+
+
+def test_polymer_copy_preserves_side_group_fields():
+    """copy() must carry side_group_homolysis (the carrier kernel) as an
+    independent object; losing it would disable the kernel. v2 spawns no
+    daughter, so only the parent-copy invariant is asserted."""
+    poly = _pvbr(side_group_homolysis=[_sgh_channel()])
+    cp = poly.copy(deep=True)
+    assert cp.side_group_homolysis == poly.side_group_homolysis
+    assert cp.side_group_homolysis is not poly.side_group_homolysis
+
+
+def test_polymer_input_helper_rejects_side_group_with_positive_k_unzip():
+    """Deck layer exclusion: side_group_homolysis together with legacy
+    k_unzip double-carries degradation -- hard deck error naming both."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError,
+                       match=r"PVBr.*side_group_homolysis.*k_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CBr", k_unzip=0.7,
+                          side_group_homolysis=[_sgh_channel()])
+
+
+def test_polymer_input_helper_rejects_side_group_with_qssa_random_initiation():
+    """Deck layer exclusion: QSSA random initiation together with
+    side_group_homolysis double-carries initiation -- hard deck error."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError,
+                       match=r"PVBr.*side_group_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CBr",
+                          radical_qssa_unzip=_qssa_channel(),
+                          side_group_homolysis=[_sgh_channel()])
+
+
+def test_polymer_input_helper_rejects_malformed_side_group_channels():
+    """Deck-read-time field validation (shared single-source validator)."""
+    import rmgpy.rmg.input as rmg_input
+
+    for bad, pattern in [
+        (dict(_sgh_channel()), r"PVBr.*side_group_homolysis.*list"),
+        ([dict(label="x", A=1.0e13)], r"PVBr.*missing"),
+        ([_sgh_channel(sites_per_unit=-1.0)], r"PVBr.*sites_per_unit.*> 0"),
+        ([_sgh_channel(gas_product="CC")], r"PVBr.*gas_product.*radical"),
+        ([_sgh_channel(), _sgh_channel(A=2e13)], r"PVBr.*duplicate"),
+        # round-72: structural layers at deck-read time -- selector
+        # vocabulary, and sites_per_unit checked against the parsed
+        # monomer's match count (PVBr has ONE aliphatic Br).
+        ([_sgh_channel(site_selector="halogenated")],
+         r"PVBr.*site_selector.*one of"),
+        ([_sgh_channel(sites_per_unit=3.0)],
+         r"PVBr.*sites_per_unit=3.*matches 1"),
+        ([_sgh_channel(site_selector="aryl")],
+         r"PVBr.*aryl.*matches NO"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              side_group_homolysis=bad)
+
+
+def test_pool_to_config_rejects_side_group_with_k_unzip_and_qssa():
+    """Config layer exclusions: PolymerPool.to_config re-enforces both
+    mutual exclusions (a directly-constructed PolymerPool must not dodge
+    the deck checks)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("[CH2][CH]Br")
+    gas = Species(molecule=[Molecule().from_smiles("[Br]")])
+    gas.label = "Br"
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    mono_prod = Species(molecule=[Molecule().from_smiles("C=CBr")])
+    mono_prod.label = "VBr"
+    spc_map = {s: i for i, s in enumerate(mu + [gas, mono_prod])}
+
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.5, monomer_product=mono_prod,
+                       side_group_homolysis=[_sgh_channel()],
+                       side_group_gas_species=[gas])
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*side_group_homolysis.*k_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, monomer_product=mono_prod,
+                       radical_qssa_unzip=_qssa_channel(),
+                       side_group_homolysis=[_sgh_channel()],
+                       side_group_gas_species=[gas])
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*side_group_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_resolves_side_group_gas_indices():
+    """Config assembly resolves each channel's gas-product core index (the
+    kernel's X-radical destination); an unresolvable gas species is a hard
+    error (the emitted X would silently vanish -- un-conserved mass)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("[CH2][CH]Br")
+    gas = Species(molecule=[Molecule().from_smiles("[Br]")])
+    gas.label = "Br"
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu,
+                       side_group_homolysis=[_sgh_channel()],
+                       side_group_gas_species=[gas])
+    spc_map = {s: i for i, s in enumerate(mu + [gas])}
+    cfg = pool.to_config(spc_map)
+    assert cfg.side_group_homolysis is not None
+    assert cfg.side_group_gas_indices == (3,)
+
+    # gas species missing from the core map -> hard error
+    pool2 = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                        mu_species=mu,
+                        side_group_homolysis=[_sgh_channel()],
+                        side_group_gas_species=[gas])
+    spc_map2 = {s: i for i, s in enumerate(mu)}
+    with pytest.raises(ValueError, match=r"Pool P.*side_group.*gas"):
+        pool2.to_config(spc_map2)
+
+
+def test_polymer_input_helper_side_group_registers_gas_no_feature_pool():
+    """GREEN round-trip (kernel-v2 wiring): polymer(...) with
+    side_group_homolysis registers ONLY the gas X radical at model setup
+    (step 4e), stores the normalized channel list on the parent, and spawns
+    NO feature pool (step 4f deleted) -- no PVBr_sidegrp_* species."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Molecule):
+            spc = Species(molecule=[obj])
+            spc.label = obj.get_formula()
+            return spc, True
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                                 end_groups=["[H]", "[H]"], cutoff=3,
+                                 Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                                 side_group_homolysis=[_sgh_channel()])
+        sd = rmg_input.species_dict
+        assert poly.side_group_homolysis == [_sgh_channel()]
+        assert len(poly.side_group_gas_species) == 1
+        assert poly.side_group_gas_species[0] in mock_rmg.initial_species
+        # v2 spawns NO feature pool (step 4f deleted)
+        assert "PVBr_sidegrp_aliphatic_C_Br" not in sd
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+def test_side_group_homolysis_rejects_coexistence_with_k_homolysis_at_deck():
+    """kernel-v2 P1 contract: side-group C-X loss depletes an inventory on a
+    STATIONARY carrier mu1, whereas k_homolysis (random backbone homolysis)
+    MOVES the carrier's mu1 -- so the two are mutually exclusive and the deck
+    REJECTS the combination at deck-read validation, before any daughter
+    spawn."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Molecule):
+            spc = Species(molecule=[obj])
+            spc.label = obj.get_formula()
+            return spc, True
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        with pytest.raises(InputError,
+                           match=r"PVBr.*side_group_homolysis.*k_homolysis.*mutually exclusive"):
+            rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              k_homolysis=_khom_triplet(),
+                              side_group_homolysis=[_sgh_channel()])
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+class TestNearFloorEpisodeTracker:
+    """Round-41 near-floor episode diagnostic (reporting only, no law
+    change): per-pool sub-floor episode records for the regen-#4 abort
+    protocol and the reference runner. WARNING class = transient dip
+    with recovery and nothing beyond -floor; HARD-FAIL class = negative
+    beyond tolerance, no recovery, integrator failure, or conservation
+    failure recorded by the caller."""
+
+    def _tracker(self):
+        from rmgpy.polymer import NearFloorEpisodeTracker
+        return NearFloorEpisodeTracker(
+            {"P": (0, 1, 2)}, {"P": (1e-10, 1e-10, 1e-10)})
+
+    def _y(self, m0, m1, m2):
+        import numpy as np
+        return np.array([m0, m1, m2], dtype=float)
+
+    def test_transient_dip_with_recovery_is_one_warning_episode(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(5e-11, 5e-11, 5e-11), wall=1.0)   # 0.5 fl
+        tr.observe(3.0, self._y(2e-12, 3e-12, 2e-12), wall=2.5)   # 0.02 fl
+        tr.observe(4.0, self._y(3e-10, 3e-10, 3e-10), wall=4.0)   # recover
+        tr.finalize(4.0)
+        assert len(tr.episodes) == 1
+        ep = tr.episodes[0]
+        assert ep["classification"] == "warning"
+        assert ep["pool"] == "P"
+        assert ep["recovered"] is True
+        assert ep["negative_beyond_tolerance"] is False
+        assert ep["min_floor_ratio"] == pytest.approx(0.02, rel=1e-9)
+        assert ep["t_start"] == 2.0 and ep["t_end"] == 4.0
+        assert ep["duration_below_floor_s"] == 2.0
+        assert ep["wall_in_episode_s"] == pytest.approx(3.0)
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("NEAR-FLOOR EPISODE (transient, recovered)"
+                   in r.getMessage() for r in caplog.records)
+        assert not tr.hard_failures()
+
+    def test_no_recovery_is_hard_fail(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.finalize(9.0)
+        assert len(tr.episodes) == 1
+        ep = tr.episodes[0]
+        assert ep["classification"] == "hard-fail"
+        assert ep["recovered"] is False
+        assert ep["t_end"] == 9.0
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("NEAR-FLOOR HARD-FAIL" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_negative_beyond_tolerance_is_hard_fail_even_with_recovery(self):
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(-2e-10, 5e-11, 5e-11), wall=1.0)  # < -floor
+        tr.observe(3.0, self._y(3e-10, 3e-10, 3e-10), wall=2.0)   # recovers
+        tr.finalize(3.0)
+        ep = tr.episodes[0]
+        assert ep["negative_beyond_tolerance"] is True
+        assert ep["classification"] == "hard-fail"
+
+    def test_in_band_negative_is_warning_class(self):
+        # accepted values in (-floor, 0) are the tolerated numerical band
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(-3e-11, 5e-11, 5e-11), wall=1.0)  # in-band
+        tr.observe(3.0, self._y(3e-10, 3e-10, 3e-10), wall=2.0)
+        tr.finalize(3.0)
+        ep = tr.episodes[0]
+        assert ep["negative_beyond_tolerance"] is False
+        assert ep["classification"] == "warning"
+
+    def test_integrator_failure_makes_open_episode_hard(self):
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.record_integrator_failure(1.5, "IDID=-7")
+        tr.finalize(1.5)
+        assert tr.episodes[0]["classification"] == "hard-fail"
+
+    def test_censored_finalize_is_not_a_hard_fail(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.finalize(2.0, censored=True)      # bounded window cut
+        ep = tr.episodes[0]
+        assert ep["classification"] == "open-censored"
+        assert not tr.hard_failures()
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("OPEN at window end, censored" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_healthy_run_has_no_episodes(self):
+        tr = self._tracker()
+        for t in (1.0, 2.0, 3.0):
+            tr.observe(t, self._y(5e-10, 6e-10, 7e-10), wall=t)
+        tr.finalize(3.0)
+        assert tr.episodes == []

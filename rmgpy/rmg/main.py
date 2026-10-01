@@ -47,13 +47,14 @@ import h5py
 import numpy as np
 import psutil
 import yaml
-from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
 from rmgpy import settings
+from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.constraints import fails_species_constraints
+from rmgpy.constraints import fails_species_constraints, reset_polymer_warning, validate_explicit_dp_oligomers
+from rmgpy.polymer_conduit import reset_conduit_state
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -231,6 +232,7 @@ class RMG(util.Subject):
         self.ml_estimator = None
         self.ml_settings = None
         self.species_constraints = {}
+        self.polymer_constraints = None
         self.walltime = "00:00:00:00"
         self.save_seed_modulus = -1
         self.max_iterations = None
@@ -466,7 +468,9 @@ class RMG(util.Subject):
                 logging.info("Adding rate rules from training set in kinetics families...")
                 # Temporarily remove species constraints for the training reactions
                 copy_species_constraints = copy.copy(self.species_constraints)
+                copy_polymer_constraints = copy.copy(self.polymer_constraints)
                 self.species_constraints = {}
+                self.polymer_constraints = None
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
@@ -484,6 +488,7 @@ class RMG(util.Subject):
                             f.write("\n")
 
                 self.species_constraints = copy_species_constraints
+                self.polymer_constraints = copy_polymer_constraints
             else:
                 logging.info("Training set explicitly not added to rate rules in kinetics families...")
             logging.info("Filling in rate rules in kinetics families by averaging...")
@@ -501,6 +506,17 @@ class RMG(util.Subject):
 
         # Save initialization time
         self.initialization_time = time.time()
+
+        # Reset the once-per-run unbounded-polymer warning.
+        reset_polymer_warning()
+
+        # M18.3 run-boundary HARD reset (polymer conduit, DESIGN §3.3):
+        # clear the candidate ledger AND the warn-once census sets that
+        # feed it, together ("reset both or neither") -- candidate keys are
+        # run-scoped label(index) strings, and a cleared ledger with
+        # un-cleared warn-once sets would starve the FEATURE-RADICAL side
+        # of re-sightings.
+        reset_conduit_state()
 
         # Log start timestamp
         logging.info("RMG execution initiated at " + time.asctime() + "\n")
@@ -535,6 +551,21 @@ class RMG(util.Subject):
         # Properly set filter_reactions to initialize flags properly
         if len(self.model_settings_list) > 0:
             self.filter_reactions = self.model_settings_list[0].filter_reactions
+            # Round-20 increment 7 plumbing (Codex round-22 P1): carry the
+            # deck's filterThreshold into the polymer reactors' census-only
+            # QSSA k_out policy floor (qssa_kout_floor_s), so the rebuild
+            # census's logged threshold really is
+            # max(filterThreshold, 1/terminationTime) as ruled. Only
+            # meaningful when the deck filters at all; guarded by the
+            # to_solver_object duck-type so cdef reactors (SimpleReactor
+            # etc.), which reject arbitrary attributes and never read the
+            # knob, are left untouched.
+            if self.filter_reactions:
+                for reaction_system in (self.reaction_systems or []):
+                    if hasattr(reaction_system, "to_solver_object"):
+                        reaction_system.qssa_kout_floor_s = float(
+                            self.model_settings_list[0].filter_threshold
+                            or 0.0)
 
         # Make output subdirectories
         util.make_output_subdirectory(self.output_directory, "pdep")
@@ -672,6 +703,13 @@ class RMG(util.Subject):
             if is_new:
                 self.initial_species.append(spec)
 
+        # Explicit-DP handshake (stage A) hard gate: auto-generated DP=xs
+        # oligomers (polymer() input block, explicit_dp=True) must survive the
+        # constraint pass or fail LOUDLY with an actionable message naming the
+        # deck flag. Runs BEFORE the generic input-species loop below so the
+        # tailored error wins over the generic "remove the species" one.
+        validate_explicit_dp_oligomers(self.initial_species, self.species_constraints)
+
         # Perform species constraints and forbidden species checks on input species
         for spec in self.initial_species:
             if self.database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
@@ -769,8 +807,8 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
         self.attach(RMSWriter(self.output_directory))
+        self.attach(CanteraWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -795,307 +833,412 @@ class RMG(util.Subject):
         ``initialize`` is a ``bool`` type flag used to determine whether to call self.initialize()
         """
 
-        requires_rms=False
-        if initialize:
-            requires_rms = self.initialize(**kwargs)
-
-        # register listeners
-        self.register_listeners(requires_rms=requires_rms)
-
-        self.done = False
-
-        # determine min and max values for T and P (don't determine P values for liquid reactors)
-        self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
-        self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
+        # P1-A (round-58) / P1-1 (round-60): wrap the body -- INCLUDING the
+        # self.initialize(**kwargs) call itself -- in try/finally so the
+        # conduit lifecycle close runs on EVERY execute() exit: success,
+        # the early-return termination paths below (walltime exhaustion /
+        # max-iterations), and any exception, including one raised from
+        # inside initialize().
+        #
+        # round-60 P1-1: initialize() opens a fresh conduit lifecycle near
+        # its OWN start (reset_conduit_state(), well before load_input,
+        # load_database, walltime parsing, and constraints setup run). The
+        # try used to start only AFTER self.initialize(**kwargs) returned,
+        # so any exception raised by one of those later initialize() steps
+        # left the just-opened lifecycle unclosed until the next run's
+        # reset (or the last-resort process-exit atexit guard). Moving the
+        # try to enclose the initialize() call closes that gap.
+        # _conduit_lifecycle_close() is a guarded no-op when no lifecycle
+        # is open at all (it delegates to close_conduit_lifecycle(), which
+        # closes BOTH the label-oracle and CORE EPOCH provider surfaces --
+        # _LabelOracleState.close_lifecycle() returns None on a
+        # virgin/never-opened state, and round-71 P2 gives
+        # _EpochProvider.close_lifecycle() the same virgin-lifecycle guard:
+        # it emits nothing -- no MAP lines, no fake "epochs=0 ... last=epre"
+        # HEALTH line -- rather than fabricating health for a lifecycle
+        # that never opened) and never raises, so this is also safe for
+        # failures that occur BEFORE initialize() ever calls
+        # reset_conduit_state().
+        #
+        # The finally never swallows or re-raises; it only ensures the
+        # guarded, idempotent close side-effect runs. finish() (called on
+        # the success tail below) also calls the same helper -- the
+        # double-call is a no-op.
         try:
-            self.Pmin = min([x.Prange[0].value_si if hasattr(x, "Prange") and x.Prange else x.P.value_si for x in self.reaction_systems])
-            self.Pmax = max([x.Prange[1].value_si if hasattr(x, "Prange") and x.Prange else x.P.value_si for x in self.reaction_systems])
-        except AttributeError:
-            pass
+            requires_rms = False
+            if initialize:
+                requires_rms = self.initialize(**kwargs)
 
-        self.rmg_memories = []
-
-        logging.info("Initialization complete. Starting model generation.\n")
-
-        # Initiate first reaction discovery step after adding all core species
-        for index, reaction_system in enumerate(self.reaction_systems):
-            # Initialize memory object to track conditions for ranged reactors
-            self.rmg_memories.append(RMG_Memory(reaction_system, self.balance_species))
-            self.rmg_memories[index].generate_cond()
-            log_conditions(self.rmg_memories, index)
-
-            # Update react flags
-            if self.filter_reactions:
-                # Run the reaction system to update threshold and react flags
-                if requires_rms and isinstance(reaction_system, RMSReactor):
-                    self.update_reaction_threshold_and_react_flags(
-                        rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
-                        rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
-                        rxn_sys_trimol_threshold=np.zeros(
-                            (len(self.reaction_model.core.species), len(self.reaction_model.core.species), len(self.reaction_model.core.species)),
-                            bool,
-                        ),
-                    )
-
-                else:
-                    reaction_system.initialize_model(
-                        core_species=self.reaction_model.core.species,
-                        core_reactions=self.reaction_model.core.reactions,
-                        edge_species=[],
-                        edge_reactions=[],
-                        pdep_networks=self.reaction_model.network_list,
-                        atol=self.simulator_settings_list[0].atol,
-                        rtol=self.simulator_settings_list[0].rtol,
-                        filter_reactions=True,
-                        conditions=self.rmg_memories[index].get_cond(),
-                    )
-
-                    self.update_reaction_threshold_and_react_flags(
-                        rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
-                        rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
-                        rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
-                    )
-
-                logging.info("Generating initial reactions for reaction system {0}...".format(index + 1))
-            else:
-                # If we're not filtering reactions, then we only need to react
-                # the first reaction system since they share the same core
-                if index > 0:
-                    continue
-                logging.info("Generating initial reactions...")
-
-            # React core species to enlarge edge
-            self.reaction_model.enlarge(
-                react_edge=True,
-                unimolecular_react=self.unimolecular_react,
-                bimolecular_react=self.bimolecular_react,
-                trimolecular_react=self.trimolecular_react,
-                requires_rms=requires_rms,
-            )
-
-        if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-            self.reaction_model.set_thermodynamic_filtering_parameters(
-                self.Tmax,
-                thermo_tol_keep_spc_in_edge=self.model_settings_list[0].thermo_tol_keep_spc_in_edge,
-                min_core_size_for_prune=self.model_settings_list[0].min_core_size_for_prune,
-                maximum_edge_species=self.model_settings_list[0].maximum_edge_species,
-                reaction_systems=self.reaction_systems,
-            )
-
-        if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species, requires_rms=requires_rms)
-
-        logging.info("Completed initial enlarge edge step.\n")
-
-        self.save_everything()
-
-        if self.generate_seed_each_iteration:
-            self.make_seed_mech()
-
-        max_num_spcs_hit = False  # default
-
-        for q, model_settings in enumerate(self.model_settings_list):
-            if len(self.simulator_settings_list) > 1:
-                simulator_settings = self.simulator_settings_list[q]
-            else:  # if they only provide one input for simulator use that everytime
-                simulator_settings = self.simulator_settings_list[0]
-
-            self.filter_reactions = model_settings.filter_reactions
-
-            logging.info("Beginning model generation stage {0}...\n".format(q + 1))
+            # register listeners
+            self.register_listeners(requires_rms=requires_rms)
 
             self.done = False
 
-            # Main RMG loop
-            while not self.done:
-                # iteration number starts at 0. Increment it before entering make_seed_mech
-                self.reaction_model.iteration_num += 1
-                self.done = True
+            # determine min and max values for T and P (don't determine P values for liquid reactors)
+            self.Tmin = min([x.Trange[0].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
+            self.Tmax = max([x.Trange[1].value_si if x.Trange else x.T.value_si for x in self.reaction_systems])
+            try:
+                self.Pmin = min([x.Prange[0].value_si if hasattr(x, "Prange") and x.Prange else x.P.value_si for x in self.reaction_systems])
+                self.Pmax = max([x.Prange[1].value_si if hasattr(x, "Prange") and x.Prange else x.P.value_si for x in self.reaction_systems])
+            except AttributeError:
+                pass
 
-                if self.generate_seed_each_iteration:
-                    self.make_seed_mech()
+            self.rmg_memories = []
 
-                all_terminated = True
-                num_core_species = len(self.reaction_model.core.species)
+            logging.info("Initialization complete. Starting model generation.\n")
 
-                prunable_species = self.reaction_model.edge.species[:]
-                prunable_networks = self.reaction_model.network_list[:]
+            # Initiate first reaction discovery step after adding all core species
+            for index, reaction_system in enumerate(self.reaction_systems):
+                # Initialize memory object to track conditions for ranged reactors
+                self.rmg_memories.append(RMG_Memory(reaction_system, self.balance_species))
+                self.rmg_memories[index].generate_cond()
+                log_conditions(self.rmg_memories, index)
 
-                for index, reaction_system in enumerate(self.reaction_systems):
-                    reaction_system.prunable_species = prunable_species  # these lines reset pruning for a new cycle
-                    reaction_system.prunable_networks = prunable_networks
-                    reaction_system.reset_max_edge_species_rate_ratios()
+                # Update react flags
+                if self.filter_reactions:
+                    # Run the reaction system to update threshold and react flags
+                    if requires_rms and isinstance(reaction_system, RMSReactor):
+                        self.update_reaction_threshold_and_react_flags(
+                            rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
+                            rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
+                            rxn_sys_trimol_threshold=np.zeros(
+                                (len(self.reaction_model.core.species), len(self.reaction_model.core.species), len(self.reaction_model.core.species)),
+                                bool,
+                            ),
+                        )
 
-                    for p in range(reaction_system.n_sims):
-                        reactor_done = True
-                        objects_to_enlarge = []
-
-                        conditions = self.rmg_memories[index].get_cond()
-                        if conditions and self.solvent:
-                            T = conditions["T"]
-                            # Set solvent viscosity
-                            solvent_data = self.database.solvation.get_solvent_data(self.solvent)
-                            reaction_system.viscosity = solvent_data.get_solvent_viscosity(T)
-
-                        self.reaction_system = reaction_system
-                        # Conduct simulation
-                        logging.info("Conducting simulation of reaction system %s..." % (index + 1))
-                        prune = True
-
-                        self.reaction_model.adjust_surface()
-
-                        if num_core_species < model_settings.min_core_size_for_prune:
-                            # Turn pruning off if we haven't reached minimum core size.
-                            prune = False
-
+                    else:
+                        # Core epoch advance (design m184-epoch-registry
+                        # §1.2/§4 item 2, site 1/4): initial filter build.
+                        self._advance_conduit_epoch()
                         try:
-                            if requires_rms and isinstance(reaction_system, RMSReactor):
-                                (
-                                    terminated,
-                                    resurrected,
-                                    obj,
-                                    unimolecular_threshold,
-                                    bimolecular_threshold,
-                                    trimolecular_threshold,
-                                    max_edge_species_rate_ratios,
-                                    t,
-                                    x,
-                                ) = reaction_system.simulate(
-                                    model_settings=model_settings,
-                                    simulator_settings=simulator_settings,
-                                    conditions=self.rmg_memories[index].get_cond(),
-                                )
-                                reaction_system.unimolecular_threshold = unimolecular_threshold
-                                reaction_system.bimolecular_threshold = bimolecular_threshold
-                                reaction_system.trimolecular_threshold = trimolecular_threshold
-                                if hasattr(reaction_system, "max_edge_species_rate_ratios"):
-                                    max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
-                                    for i in range(len(max_edge_species_rate_ratios)):
-                                        if i < len(reaction_system.max_edge_species_rate_ratios):
-                                            max_edge_species_rate_ratios_temp[i] = max(
-                                                reaction_system.max_edge_species_rate_ratios[i], max_edge_species_rate_ratios[i]
-                                            )
-                                        else:
-                                            max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
-                                    reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
-                                else:
-                                    reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
-                                new_surface_species = []
-                                new_surface_reactions = []
-                                obj_temp = []
-                                for item in obj:
-                                    if hasattr(item, "name"):
-                                        obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
-                                    else:  # Reaction
-                                        for val in item.reactants + item.products:
-                                            spc = self.reaction_model.edge.phase_system.species_dict[val.name]
-                                            if spc not in self.reaction_model.core.species:
-                                                obj_temp.append(spc)
-                                        assert len(obj_temp) > 0
-                                obj = obj_temp
-                            else:
-                                terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
-                                    core_species=self.reaction_model.core.species,
-                                    core_reactions=self.reaction_model.core.reactions,
-                                    edge_species=self.reaction_model.edge.species,
-                                    edge_reactions=self.reaction_model.edge.reactions,
-                                    surface_species=self.reaction_model.surface.species,
-                                    surface_reactions=self.reaction_model.surface.reactions,
-                                    pdep_networks=self.reaction_model.network_list,
-                                    prune=prune,
-                                    model_settings=model_settings,
-                                    simulator_settings=simulator_settings,
-                                    conditions=self.rmg_memories[index].get_cond(),
-                                )
+                            reaction_system.initialize_model(
+                                core_species=self.reaction_model.core.species,
+                                core_reactions=self.reaction_model.core.reactions,
+                                edge_species=[],
+                                edge_reactions=[],
+                                pdep_networks=self.reaction_model.network_list,
+                                atol=self.simulator_settings_list[0].atol,
+                                rtol=self.simulator_settings_list[0].rtol,
+                                filter_reactions=True,
+                                conditions=self.rmg_memories[index].get_cond(),
+                            )
                         except:
-                            logging.error("Model core reactions:")
-                            if len(self.reaction_model.core.reactions) > 5:
-                                logging.error("Too many to print in detail")
-                            else:
-                                from arkane.output import prettify
-
-                                logging.error(prettify(repr(self.reaction_model.core.reactions)))
-                            if not self.generate_seed_each_iteration:  # Then we haven't saved the seed mechanism yet
-                                self.make_seed_mech()  # Just in case the user wants to restart from this
+                            self._note_conduit_rebuild_failed()
                             raise
 
-                        self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
-                        self.rmg_memories[index].generate_cond()
-                        log_conditions(self.rmg_memories, index)
+                        self.update_reaction_threshold_and_react_flags(
+                            rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
+                            rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
+                            rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
+                        )
 
-                        reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species, new_surface_reactions, reaction_system)
+                    logging.info("Generating initial reactions for reaction system {0}...".format(index + 1))
+                else:
+                    # If we're not filtering reactions, then we only need to react
+                    # the first reaction system since they share the same core
+                    if index > 0:
+                        continue
+                    logging.info("Generating initial reactions...")
 
-                        all_terminated = all_terminated and terminated
-                        logging.info("")
+                # React core species to enlarge edge
+                self.reaction_model.enlarge(
+                    react_edge=True,
+                    unimolecular_react=self.unimolecular_react,
+                    bimolecular_react=self.bimolecular_react,
+                    trimolecular_react=self.trimolecular_react,
+                    requires_rms=requires_rms,
+                )
 
-                        # If simulation is invalid, note which species should be added to
-                        # the core
-                        if obj != [] and not (obj is None):
-                            objects_to_enlarge = self.process_to_species_networks(obj)
+            if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
+                self.reaction_model.set_thermodynamic_filtering_parameters(
+                    self.Tmax,
+                    thermo_tol_keep_spc_in_edge=self.model_settings_list[0].thermo_tol_keep_spc_in_edge,
+                    min_core_size_for_prune=self.model_settings_list[0].min_core_size_for_prune,
+                    maximum_edge_species=self.model_settings_list[0].maximum_edge_species,
+                    reaction_systems=self.reaction_systems,
+                )
 
-                            reactor_done = False
-                        # Enlarge objects identified by the simulation for enlarging
-                        # These should be Species or Network objects
-                        logging.info("")
+            if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
+                self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species, requires_rms=requires_rms)
 
-                        objects_to_enlarge = list(set(objects_to_enlarge))
+            logging.info("Completed initial enlarge edge step.\n")
 
-                        # Add objects to enlarge to the core first
-                        for objectToEnlarge in objects_to_enlarge:
-                            self.reaction_model.enlarge(objectToEnlarge, requires_rms=requires_rms)
+            self.save_everything()
 
-                        if model_settings.filter_reactions:
-                            # Run a raw simulation to get updated reaction system threshold values
-                            # Run with the same conditions as with pruning off
-                            temp_model_settings = deepcopy(model_settings)
-                            temp_model_settings.tol_keep_in_edge = 0
-                            if not resurrected:
-                                try:
-                                    if requires_rms and isinstance(reaction_system, RMSReactor):
-                                        (
-                                            terminated,
-                                            resurrected,
-                                            obj,
-                                            unimolecular_threshold,
-                                            bimolecular_threshold,
-                                            trimolecular_threshold,
-                                            max_edge_species_rate_ratios,
-                                            t,
-                                            x,
-                                        ) = reaction_system.simulate(
+            if self.generate_seed_each_iteration:
+                self.make_seed_mech()
+
+            max_num_spcs_hit = False  # default
+
+            for q, model_settings in enumerate(self.model_settings_list):
+                if len(self.simulator_settings_list) > 1:
+                    simulator_settings = self.simulator_settings_list[q]
+                else:  # if they only provide one input for simulator use that everytime
+                    simulator_settings = self.simulator_settings_list[0]
+
+                self.filter_reactions = model_settings.filter_reactions
+
+                logging.info("Beginning model generation stage {0}...\n".format(q + 1))
+
+                self.done = False
+
+                # Main RMG loop
+                while not self.done:
+                    # iteration number starts at 0. Increment it before entering make_seed_mech
+                    self.reaction_model.iteration_num += 1
+                    self.done = True
+
+                    if self.generate_seed_each_iteration:
+                        self.make_seed_mech()
+
+                    all_terminated = True
+                    num_core_species = len(self.reaction_model.core.species)
+
+                    prunable_species = self.reaction_model.edge.species[:]
+                    prunable_networks = self.reaction_model.network_list[:]
+
+                    for index, reaction_system in enumerate(self.reaction_systems):
+                        reaction_system.prunable_species = prunable_species  # these lines reset pruning for a new cycle
+                        reaction_system.prunable_networks = prunable_networks
+                        reaction_system.reset_max_edge_species_rate_ratios()
+
+                        for p in range(reaction_system.n_sims):
+                            reactor_done = True
+                            objects_to_enlarge = []
+
+                            conditions = self.rmg_memories[index].get_cond()
+                            if conditions and self.solvent:
+                                T = conditions["T"]
+                                # Set solvent viscosity
+                                solvent_data = self.database.solvation.get_solvent_data(self.solvent)
+                                reaction_system.viscosity = solvent_data.get_solvent_viscosity(T)
+
+                            self.reaction_system = reaction_system
+                            # Conduct simulation
+                            logging.info("Conducting simulation of reaction system %s..." % (index + 1))
+                            prune = True
+
+                            self.reaction_model.adjust_surface()
+
+                            if num_core_species < model_settings.min_core_size_for_prune:
+                                # Turn pruning off if we haven't reached minimum core size.
+                                prune = False
+
+                            try:
+                                if requires_rms and isinstance(reaction_system, RMSReactor):
+                                    (
+                                        terminated,
+                                        resurrected,
+                                        obj,
+                                        unimolecular_threshold,
+                                        bimolecular_threshold,
+                                        trimolecular_threshold,
+                                        max_edge_species_rate_ratios,
+                                        t,
+                                        x,
+                                    ) = reaction_system.simulate(
+                                        model_settings=model_settings,
+                                        simulator_settings=simulator_settings,
+                                        conditions=self.rmg_memories[index].get_cond(),
+                                    )
+                                    reaction_system.unimolecular_threshold = unimolecular_threshold
+                                    reaction_system.bimolecular_threshold = bimolecular_threshold
+                                    reaction_system.trimolecular_threshold = trimolecular_threshold
+                                    if hasattr(reaction_system, "max_edge_species_rate_ratios"):
+                                        max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
+                                        for i in range(len(max_edge_species_rate_ratios)):
+                                            if i < len(reaction_system.max_edge_species_rate_ratios):
+                                                max_edge_species_rate_ratios_temp[i] = max(
+                                                    reaction_system.max_edge_species_rate_ratios[i], max_edge_species_rate_ratios[i]
+                                                )
+                                            else:
+                                                max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
+                                        reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
+                                    else:
+                                        reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
+                                    new_surface_species = []
+                                    new_surface_reactions = []
+                                    obj_temp = []
+                                    for item in obj:
+                                        if hasattr(item, "name"):
+                                            obj_temp.append(self.reaction_model.edge.phase_system.species_dict[item.name])
+                                        else:  # Reaction
+                                            for val in item.reactants + item.products:
+                                                spc = self.reaction_model.edge.phase_system.species_dict[val.name]
+                                                if spc not in self.reaction_model.core.species:
+                                                    obj_temp.append(spc)
+                                            assert len(obj_temp) > 0
+                                    obj = obj_temp
+                                else:
+                                    # Core epoch advance (design
+                                    # m184-epoch-registry §1.2/§4 item 2,
+                                    # site 2/4): primary per-iteration
+                                    # simulate.
+                                    self._advance_conduit_epoch()
+                                    try:
+                                        terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
+                                            core_species=self.reaction_model.core.species,
+                                            core_reactions=self.reaction_model.core.reactions,
+                                            edge_species=self.reaction_model.edge.species,
+                                            edge_reactions=self.reaction_model.edge.reactions,
+                                            surface_species=self.reaction_model.surface.species,
+                                            surface_reactions=self.reaction_model.surface.reactions,
+                                            pdep_networks=self.reaction_model.network_list,
+                                            prune=prune,
                                             model_settings=model_settings,
                                             simulator_settings=simulator_settings,
                                             conditions=self.rmg_memories[index].get_cond(),
                                         )
-                                        reaction_system.unimolecular_threshold = unimolecular_threshold
-                                        reaction_system.bimolecular_threshold = bimolecular_threshold
-                                        reaction_system.trimolecular_threshold = trimolecular_threshold
-                                        if hasattr(reaction_system, "max_edge_species_rate_ratios"):
-                                            max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
-                                            for i in range(len(max_edge_species_rate_ratios)):
-                                                if i < len(reaction_system.max_edge_species_rate_ratios):
-                                                    max_edge_species_rate_ratios_temp[i] = max(
-                                                        reaction_system.max_edge_species_rate_ratios[i], max_edge_species_rate_ratios[i]
-                                                    )
-                                                else:
-                                                    max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
-                                            reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
+                                    except:
+                                        self._note_conduit_rebuild_failed()
+                                        raise
+                            except:
+                                logging.error("Model core reactions:")
+                                if len(self.reaction_model.core.reactions) > 5:
+                                    logging.error("Too many to print in detail")
+                                else:
+                                    from arkane.output import prettify
+
+                                    logging.error(prettify(repr(self.reaction_model.core.reactions)))
+                                if not self.generate_seed_each_iteration:  # Then we haven't saved the seed mechanism yet
+                                    self.make_seed_mech()  # Just in case the user wants to restart from this
+                                raise
+
+                            # Mass-flux spawn-gate snapshot (multi-pool §4.4, spec
+                            # 2026-06-10): read the 3-tuple (gross for all core
+                            # species, pool_stats, proxy_event_mass_total) off the
+                            # ENGINE — `system.solver`, never the
+                            # HybridPolymerReactor blueprint (the established
+                            # blueprint-vs-engine gotcha) — and stash on the
+                            # reaction model for the Phase-D gate. Stays None for
+                            # non-polymer systems (honest degradation: the gate
+                            # defers). This stash + the motif ledger are the
+                            # shared infrastructure the spec-§2.2 iteration-
+                            # boundary re-check upgrade would reuse.
+                            engine = getattr(reaction_system, "solver", None) or reaction_system
+                            if callable(getattr(engine, "spawn_gate_flux_snapshot", None)):
+                                try:
+                                    # Census enrichment (item #14a): the engine
+                                    # has no ledger, so the stash passes per-pool
+                                    # motif counts (ledger entries with >=1
+                                    # representative attributed to the pool) for
+                                    # the SPAWN-GATE ATTRIBUTION CENSUS line.
+                                    motif_counts = {}
+                                    for _entry in (getattr(self.reaction_model, "polymer_motif_ledger", None) or []):
+                                        for _pl in {pl for (_lbl, pl) in getattr(_entry, "representatives", [])}:
+                                            motif_counts[_pl] = motif_counts.get(_pl, 0) + 1
+                                    self.reaction_model.polymer_flux_snapshot = engine.spawn_gate_flux_snapshot(
+                                        motif_counts_by_pool=motif_counts)
+                                    self.reaction_model.polymer_flux_snapshot_iteration = self.reaction_model.iteration_num
+                                except Exception as exc:
+                                    self.reaction_model.polymer_flux_snapshot = None
+                                    logging.warning(
+                                        "Polymer spawn-gate snapshot failed (all spawns will defer): %s", exc)
+
+                            self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
+                            self.rmg_memories[index].generate_cond()
+                            log_conditions(self.rmg_memories, index)
+
+                            reactor_done = self.reaction_model.add_new_surface_objects(obj, new_surface_species, new_surface_reactions, reaction_system)
+
+                            all_terminated = all_terminated and terminated
+                            logging.info("")
+
+                            # If simulation is invalid, note which species should be added to
+                            # the core
+                            if obj != [] and not (obj is None):
+                                objects_to_enlarge = self.process_to_species_networks(obj)
+
+                                reactor_done = False
+                            # Enlarge objects identified by the simulation for enlarging
+                            # These should be Species or Network objects
+                            logging.info("")
+
+                            objects_to_enlarge = list(set(objects_to_enlarge))
+
+                            # Add objects to enlarge to the core first
+                            for objectToEnlarge in objects_to_enlarge:
+                                self.reaction_model.enlarge(objectToEnlarge, requires_rms=requires_rms)
+
+                            if model_settings.filter_reactions:
+                                # Run a raw simulation to get updated reaction system threshold values
+                                # Run with the same conditions as with pruning off
+                                temp_model_settings = deepcopy(model_settings)
+                                temp_model_settings.tol_keep_in_edge = 0
+                                if not resurrected:
+                                    try:
+                                        if requires_rms and isinstance(reaction_system, RMSReactor):
+                                            (
+                                                terminated,
+                                                resurrected,
+                                                obj,
+                                                unimolecular_threshold,
+                                                bimolecular_threshold,
+                                                trimolecular_threshold,
+                                                max_edge_species_rate_ratios,
+                                                t,
+                                                x,
+                                            ) = reaction_system.simulate(
+                                                model_settings=model_settings,
+                                                simulator_settings=simulator_settings,
+                                                conditions=self.rmg_memories[index].get_cond(),
+                                            )
+                                            reaction_system.unimolecular_threshold = unimolecular_threshold
+                                            reaction_system.bimolecular_threshold = bimolecular_threshold
+                                            reaction_system.trimolecular_threshold = trimolecular_threshold
+                                            if hasattr(reaction_system, "max_edge_species_rate_ratios"):
+                                                max_edge_species_rate_ratios_temp = np.zeros(len(max_edge_species_rate_ratios))
+                                                for i in range(len(max_edge_species_rate_ratios)):
+                                                    if i < len(reaction_system.max_edge_species_rate_ratios):
+                                                        max_edge_species_rate_ratios_temp[i] = max(
+                                                            reaction_system.max_edge_species_rate_ratios[i], max_edge_species_rate_ratios[i]
+                                                        )
+                                                    else:
+                                                        max_edge_species_rate_ratios_temp[i] = max_edge_species_rate_ratios[i]
+                                                reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios_temp
+                                            else:
+                                                reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
                                         else:
-                                            reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
-                                    else:
-                                        reaction_system.simulate(
-                                            core_species=self.reaction_model.core.species,
-                                            core_reactions=self.reaction_model.core.reactions,
-                                            edge_species=[],
-                                            edge_reactions=[],
-                                            surface_species=self.reaction_model.surface.species,
-                                            surface_reactions=self.reaction_model.surface.reactions,
-                                            pdep_networks=self.reaction_model.network_list,
-                                            model_settings=temp_model_settings,
-                                            simulator_settings=simulator_settings,
-                                            conditions=self.rmg_memories[index].get_cond(),
+                                            # Core epoch advance (design
+                                            # m184-epoch-registry §1.2/§4
+                                            # item 2, site 3/4): post-enlarge
+                                            # raw-filter simulate.
+                                            self._advance_conduit_epoch()
+                                            try:
+                                                reaction_system.simulate(
+                                                    core_species=self.reaction_model.core.species,
+                                                    core_reactions=self.reaction_model.core.reactions,
+                                                    edge_species=[],
+                                                    edge_reactions=[],
+                                                    surface_species=self.reaction_model.surface.species,
+                                                    surface_reactions=self.reaction_model.surface.reactions,
+                                                    pdep_networks=self.reaction_model.network_list,
+                                                    model_settings=temp_model_settings,
+                                                    simulator_settings=simulator_settings,
+                                                    conditions=self.rmg_memories[index].get_cond(),
+                                                )
+                                            except:
+                                                self._note_conduit_rebuild_failed()
+                                                raise
+                                    except:
+                                        self.update_reaction_threshold_and_react_flags(
+                                            rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
+                                            rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
+                                            rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
+                                            skip_update=True,
                                         )
-                                except:
+                                        logging.warning(
+                                            "Reaction thresholds/flags for Reaction System {0} was not updated "
+                                            "due to simulation failure".format(index + 1)
+                                        )
+                                    else:
+                                        self.update_reaction_threshold_and_react_flags(
+                                            rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
+                                            rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
+                                            rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
+                                        )
+                                else:
                                     self.update_reaction_threshold_and_react_flags(
                                         rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
                                         rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
@@ -1103,95 +1246,89 @@ class RMG(util.Subject):
                                         skip_update=True,
                                     )
                                     logging.warning(
-                                        "Reaction thresholds/flags for Reaction System {0} was not updated "
-                                        "due to simulation failure".format(index + 1)
+                                        "Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection".format(index + 1)
                                     )
-                                else:
-                                    self.update_reaction_threshold_and_react_flags(
-                                        rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
-                                        rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
-                                        rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
-                                    )
+
+                                logging.info("")
                             else:
-                                self.update_reaction_threshold_and_react_flags(
-                                    rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
-                                    rxn_sys_bimol_threshold=reaction_system.bimolecular_threshold,
-                                    rxn_sys_trimol_threshold=reaction_system.trimolecular_threshold,
-                                    skip_update=True,
-                                )
-                                logging.warning(
-                                    "Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection".format(index + 1)
+                                self.update_reaction_threshold_and_react_flags()
+
+                            if not np.isinf(model_settings.thermo_tol_keep_spc_in_edge):
+                                self.reaction_model.set_thermodynamic_filtering_parameters(
+                                    self.Tmax,
+                                    thermo_tol_keep_spc_in_edge=model_settings.thermo_tol_keep_spc_in_edge,
+                                    min_core_size_for_prune=model_settings.min_core_size_for_prune,
+                                    maximum_edge_species=model_settings.maximum_edge_species,
+                                    reaction_systems=self.reaction_systems,
                                 )
 
-                            logging.info("")
-                        else:
-                            self.update_reaction_threshold_and_react_flags()
-
-                        if not np.isinf(model_settings.thermo_tol_keep_spc_in_edge):
-                            self.reaction_model.set_thermodynamic_filtering_parameters(
-                                self.Tmax,
-                                thermo_tol_keep_spc_in_edge=model_settings.thermo_tol_keep_spc_in_edge,
-                                min_core_size_for_prune=model_settings.min_core_size_for_prune,
-                                maximum_edge_species=model_settings.maximum_edge_species,
-                                reaction_systems=self.reaction_systems,
+                            old_edge_size = len(self.reaction_model.edge.reactions)
+                            old_core_size = len(self.reaction_model.core.reactions)
+                            self.reaction_model.enlarge(
+                                react_edge=True,
+                                unimolecular_react=self.unimolecular_react,
+                                bimolecular_react=self.bimolecular_react,
+                                trimolecular_react=self.trimolecular_react,
+                                requires_rms=requires_rms,
                             )
 
-                        old_edge_size = len(self.reaction_model.edge.reactions)
-                        old_core_size = len(self.reaction_model.core.reactions)
-                        self.reaction_model.enlarge(
-                            react_edge=True,
-                            unimolecular_react=self.unimolecular_react,
-                            bimolecular_react=self.bimolecular_react,
-                            trimolecular_react=self.trimolecular_react,
-                            requires_rms=requires_rms,
-                        )
+                            if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(self.reaction_model.core.reactions):
+                                reactor_done = False
 
-                        if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(self.reaction_model.core.reactions):
-                            reactor_done = False
+                            if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
+                                self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species, requires_rms=requires_rms)
 
-                        if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species, requires_rms=requires_rms)
+                            max_num_spcs_hit = len(self.reaction_model.core.species) >= model_settings.max_num_species
 
-                        max_num_spcs_hit = len(self.reaction_model.core.species) >= model_settings.max_num_species
+                            self.save_everything()
 
-                        self.save_everything()
+                            if max_num_spcs_hit:  # breaks the n_sims loop
+                                # self.done is still True, which will break the while loop
+                                break
 
-                        if max_num_spcs_hit:  # breaks the n_sims loop
-                            # self.done is still True, which will break the while loop
+                            if not reactor_done:
+                                self.done = False
+
+                        if max_num_spcs_hit:  # breaks the reaction_systems loop
                             break
 
-                        if not reactor_done:
-                            self.done = False
+                    if not self.done:  # There is something that needs exploring/enlarging
+                        # If we reached our termination conditions, then try to prune
+                        # species from the edge
+                        if all_terminated and model_settings.tol_keep_in_edge > 0.0:
+                            logging.info("Attempting to prune...")
+                            self.reaction_model.prune(
+                                self.reaction_systems,
+                                model_settings.tol_keep_in_edge,
+                                model_settings.tol_move_to_core,
+                                model_settings.maximum_edge_species,
+                                model_settings.min_species_exist_iterations_for_prune,
+                                requires_rms=requires_rms,
+                            )
+                            # Perform garbage collection after pruning
+                            collected = gc.collect()
+                            logging.info("Garbage collector: collected %d objects." % collected)
 
-                    if max_num_spcs_hit:  # breaks the reaction_systems loop
-                        break
+                    # Consider stopping gracefully if the next iteration might take us
+                    # past the wall time
+                    if self.walltime > 0 and len(self.exec_time) > 1:
+                        t = self.exec_time[-1]
+                        dt = self.exec_time[-1] - self.exec_time[-2]
+                        if t + 3 * dt > self.walltime:
+                            logging.info("MODEL GENERATION TERMINATED")
+                            logging.info("")
+                            logging.info("There is not enough time to complete the next iteration before the wall time is reached.")
+                            logging.info("The output model may be incomplete.")
+                            logging.info("")
+                            core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+                            logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
+                            logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
+                            return
 
-                if not self.done:  # There is something that needs exploring/enlarging
-                    # If we reached our termination conditions, then try to prune
-                    # species from the edge
-                    if all_terminated and model_settings.tol_keep_in_edge > 0.0:
-                        logging.info("Attempting to prune...")
-                        self.reaction_model.prune(
-                            self.reaction_systems,
-                            model_settings.tol_keep_in_edge,
-                            model_settings.tol_move_to_core,
-                            model_settings.maximum_edge_species,
-                            model_settings.min_species_exist_iterations_for_prune,
-                            requires_rms=requires_rms,
-                        )
-                        # Perform garbage collection after pruning
-                        collected = gc.collect()
-                        logging.info("Garbage collector: collected %d objects." % collected)
-
-                # Consider stopping gracefully if the next iteration might take us
-                # past the wall time
-                if self.walltime > 0 and len(self.exec_time) > 1:
-                    t = self.exec_time[-1]
-                    dt = self.exec_time[-1] - self.exec_time[-2]
-                    if t + 3 * dt > self.walltime:
+                    if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
                         logging.info("MODEL GENERATION TERMINATED")
                         logging.info("")
-                        logging.info("There is not enough time to complete the next iteration before the wall time is reached.")
+                        logging.info("The maximum number of iterations of {0} has been reached".format(self.max_iterations))
                         logging.info("The output model may be incomplete.")
                         logging.info("")
                         core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
@@ -1199,55 +1336,27 @@ class RMG(util.Subject):
                         logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
                         return
 
-                if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
-                    logging.info("MODEL GENERATION TERMINATED")
-                    logging.info("")
-                    logging.info("The maximum number of iterations of {0} has been reached".format(self.max_iterations))
-                    logging.info("The output model may be incomplete.")
-                    logging.info("")
-                    core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
-                    logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
-                    logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                    return
+                if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
+                    logging.info("The maximum number of species ({0}) has been hit, Exiting stage {1} ...".format(model_settings.max_num_species, q + 1))
+                    max_num_spcs_hit = False
 
-            if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
-                logging.info("The maximum number of species ({0}) has been hit, Exiting stage {1} ...".format(model_settings.max_num_species, q + 1))
-                max_num_spcs_hit = False
+            # Save the final seed mechanism
+            self.make_seed_mech()
 
-        # Save the final seed mechanism
-        self.make_seed_mech()
+            self.run_model_analysis()
 
-        self.run_model_analysis()
+            self.check_model()
+            # Write output file
+            logging.info("")
+            logging.info("MODEL GENERATION COMPLETED")
+            logging.info("")
+            core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+            logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
+            logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
-        try:
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
-            else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
-        except EnvironmentError:
-            logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
-        except Exception:
-            logging.exception("Could not generate Cantera files for some reason.")
-
-        self.check_model()
-        # Write output file
-        logging.info("")
-        logging.info("MODEL GENERATION COMPLETED")
-        logging.info("")
-        core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
-        logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
-        logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-
-        self.finish()
+            self.finish()
+        finally:
+            self._conduit_lifecycle_close()
 
     def run_model_analysis(self, number=10):
         """
@@ -1266,20 +1375,27 @@ class RMG(util.Subject):
                     csvfile_path = os.path.join(self.output_directory, "solver", "sensitivity_{0}_SPC_{1}.csv".format(index + 1, spec.index))
                     sens_worksheet.append(csvfile_path)
 
-                terminated, resurrected, obj, surface_species, surface_reactions, t, x = reaction_system.simulate(
-                    core_species=self.reaction_model.core.species,
-                    core_reactions=self.reaction_model.core.reactions,
-                    edge_species=self.reaction_model.edge.species,
-                    edge_reactions=self.reaction_model.edge.reactions,
-                    surface_species=[],
-                    surface_reactions=[],
-                    pdep_networks=self.reaction_model.network_list,
-                    sensitivity=True,
-                    sens_worksheet=sens_worksheet,
-                    model_settings=ModelSettings(tol_move_to_core=1e8, tol_interrupt_simulation=1e8),
-                    simulator_settings=self.simulator_settings_list[-1],
-                    conditions=reaction_system.sens_conditions,
-                )
+                # Core epoch advance (design m184-epoch-registry §1.2/§4
+                # item 2, site 4/4): sensitivity simulate.
+                self._advance_conduit_epoch()
+                try:
+                    terminated, resurrected, obj, surface_species, surface_reactions, t, x = reaction_system.simulate(
+                        core_species=self.reaction_model.core.species,
+                        core_reactions=self.reaction_model.core.reactions,
+                        edge_species=self.reaction_model.edge.species,
+                        edge_reactions=self.reaction_model.edge.reactions,
+                        surface_species=[],
+                        surface_reactions=[],
+                        pdep_networks=self.reaction_model.network_list,
+                        sensitivity=True,
+                        sens_worksheet=sens_worksheet,
+                        model_settings=ModelSettings(tol_move_to_core=1e8, tol_interrupt_simulation=1e8),
+                        simulator_settings=self.simulator_settings_list[-1],
+                        conditions=reaction_system.sens_conditions,
+                    )
+                except:
+                    self._note_conduit_rebuild_failed()
+                    raise
 
                 plot_sensitivity(self.output_directory, index, reaction_system.sensitive_species, number=number)
 
@@ -1326,11 +1442,13 @@ class RMG(util.Subject):
                 )
                 # Temporarily remove species constraints for the training reactions
                 self.species_constraints, speciesConstraintsCopy = {}, self.species_constraints
+                self.polymer_constraints, polymerConstraintsCopy = None, self.polymer_constraints
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
                         family.fill_rules_by_averaging_up(verbose=True)
                 self.species_constraints = speciesConstraintsCopy
+                self.polymer_constraints = polymerConstraintsCopy
 
             for correlated in correlation:
                 uncertainty.assign_parameter_uncertainties(correlated=correlated)
@@ -1455,9 +1573,15 @@ class RMG(util.Subject):
         logging.info("Performing final model checks...")
 
         # Check that no two species in core or edge are isomorphic
+        # (skip polymer moment dummies and proxy species — they are intentionally
+        #  isomorphic placeholders distinguished only by label)
         for i, spc in enumerate(self.reaction_model.core.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.core.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     raise CoreError(
                         "Although the model has completed, species {0} is isomorphic to species {1} in the core. "
@@ -1466,8 +1590,12 @@ class RMG(util.Subject):
                     )
 
         for i, spc in enumerate(self.reaction_model.edge.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.edge.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     logging.warning(
                         "Species {0} is isomorphic to species {1} in the edge. This does not affect "
@@ -1481,6 +1609,9 @@ class RMG(util.Subject):
         for rxn in self.reaction_model.core.reactions:
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
+                continue
+            if any(getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False)
+                   for spc in rxn.reactants + rxn.products):
                 continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
@@ -1803,32 +1934,6 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkin_file, **kwargs):
-        """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
-        """
-        transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
-        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
-        if "surface_file" in kwargs:
-            out_name = out_name.replace("-gas.", ".")
-        cantera_dir = os.path.dirname(out_name)
-        try:
-            os.makedirs(cantera_dir)
-        except OSError:
-            if not os.path.isdir(cantera_dir):
-                raise
-        if os.path.exists(out_name):
-            os.remove(out_name)
-        parser = ck2yaml.Parser()
-        try:
-            parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
-        except ck2yaml.InputError:
-            logging.exception("Error converting to Cantera format.")
-            logging.info("Trying again without transport data file.")
-            parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
-
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
 
@@ -2086,7 +2191,315 @@ class RMG(util.Subject):
         # Notify registered listeners:
         self.notify()
 
+        # Emit the polymer_pools.json sidecar (schema 2.0) alongside the
+        # chemkin / cantera outputs so the TA-side mechanism loader
+        # (~/Code/TA) can pick up pool semantics + compiled flux terms.
+        # Normative contract: docs/polymer_moments_format.md.
+        try:
+            from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
+                                       _artifact_species_label, collect_polymer_pool_registry,
+                                       derive_condensed_species,
+                                       core_topology_signature)
+            # Identity-deduped: a freshly-promoted daughter Polymer sits in
+            # BOTH core.species and new_species_list until the next enlarge
+            # clears it, so a plain concatenation would serialize the same
+            # pool twice in the sidecar.
+            pool_registry = collect_polymer_pool_registry(
+                self.reaction_model.core.species,
+                self.reaction_model.edge.species,
+                self.reaction_model.new_species_list,
+            )
+            if pool_registry and self.output_directory:
+                chemkin_dir = os.path.join(self.output_directory, "chemkin")
+                target_dir = chemkin_dir if os.path.isdir(chemkin_dir) else self.output_directory
+
+                core_species = self.reaction_model.core.species
+                core_reactions = self.reaction_model.core.reactions
+
+                # Cantera index map: recompute the exact filter/ordering the
+                # CanteraWriter listener (notify() above) just used on the
+                # same core — same inputs, same map.
+                cantera_index_map = None
+                try:
+                    from rmgpy.cantera import generate_cantera_data
+                    _, cantera_index_map = generate_cantera_data(
+                        core_species, core_reactions,
+                        return_reaction_index_map=True)
+                except Exception as e:
+                    logging.warning(
+                        "polymer_pools.json: cantera index map unavailable (%s); "
+                        "all reaction entries will be emitted cantera-null.", e)
+
+                # Phase mask / monomer routing from the live hybrid reactor.
+                # self.reaction_systems holds the HybridPolymerReactor BLUEPRINT,
+                # whose runnable HybridPolymerSystem engine (the one carrying the
+                # final-core gas_species_mask and the per-pool index config) is
+                # rebuilt per iteration and parked on `system.solver`. Resolve the
+                # authoritative solver first, then fall back to the system itself
+                # for the test/runner case where the HybridPolymerSystem IS the
+                # reaction system. gas_species_mask: True=gas, False=condensed.
+                #
+                # ORACLE TRUTH (docs/polymer_moments_format.md §2): the artifact
+                # MUST mirror the live solver engine. configured_pools is the
+                # ENGINE's polymer_pools labels — NOT pool_registry. A daughter
+                # pool SPAWNED mid-run (e.g. epdm_scission_tail) lives in the
+                # registry but is NOT a solver config: the solver runs its proxies
+                # as ordinary species (no site scaling, no conc:=1.0 rule) and
+                # DEMOTES stamps whose src/dst pool is unconfigured. condensed_species
+                # is likewise the engine's FINAL gas_species_mask verbatim (False=
+                # condensed); the spawned daughter's proxies/µ-dummies are GAS in
+                # that mask and must NOT be reported condensed. derive_condensed_species
+                # is only the FALLBACK when the engine mask is unavailable/length-
+                # mismatched, and is then keyed on the CONFIGURED pools (not the
+                # full registry) so the fallback mirrors the same demotion.
+                configured = None
+                routing = {}
+                explicit_dp_species_by_pool = {}
+                solver_mask = None
+                engine_pools_cfg = None
+                initial_explicit_by_pool = None
+                generation_mass_transfer = None
+                generation_v_poly_m3 = None
+                sidecar_stale_topology = False
+                for system in (self.reaction_systems or []):
+                    engine = getattr(system, "solver", None) or system
+                    pools_cfg = getattr(engine, "polymer_pools", None)
+                    if not pools_cfg:
+                        continue
+                    engine_pools_cfg = pools_cfg
+                    # P1-4 stale-sidecar tripwire (regen-#2 forensics):
+                    # save_everything() runs AFTER enlarge but BEFORE the
+                    # next solver rebuild, so every engine-frozen surface
+                    # read below (polymer_pools, gas_species_mask, per-pool
+                    # index maps) plus the rebuild-stamped refusal state on
+                    # the Reaction objects can describe a core the engine
+                    # has never seen (regen #2: all 8 conduit rows emitted
+                    # refused=true/dst_pool null while the post-rebuild
+                    # solver ran 5 live). Round-27 P1-C predicate: compare
+                    # the ENGINE REBUILD SIGNATURE the solver captured at
+                    # initialize_model (stable (label, index) identity keys
+                    # of the core species + reactions it was built against;
+                    # rmgpy.polymer.core_topology_signature) with the same
+                    # signature of the CURRENT core. Bare count equality is
+                    # NOT enough -- a same-count species/reaction swap or
+                    # restamp between rebuilds must be caught. Signature
+                    # unavailable (pre-P1-C engine, or an engine never
+                    # rebuilt) => stale. Forcing initialize_model here
+                    # instead would clobber live filter-threshold state
+                    # mid-run, so the honest marker is the non-perturbing
+                    # fix.
+                    engine_sig = getattr(
+                        engine, "core_topology_signature", None)
+                    try:
+                        sidecar_stale_topology = (
+                            engine_sig is None
+                            or engine_sig != core_topology_signature(
+                                core_species, core_reactions))
+                    except (TypeError, ValueError):
+                        sidecar_stale_topology = True
+                    solver_mask = getattr(engine, "gas_species_mask", None)
+                    # Stage-A explicit-DP loadings ({pool_label: {dp: moles}},
+                    # the exact shape set_initial_conditions step 2 seeds) —
+                    # feeds the schema-2.3 explicit_dp block's initial_moles.
+                    initial_explicit_by_pool = getattr(
+                        engine, "initial_explicit_species", None)
+                    # NON-normative generation provenance
+                    # (conventions.generation_defaults): the V_poly the
+                    # engine integrates, and the DECK-declared mass_transfer
+                    # entries from the blueprint phase (labels resolved the
+                    # same way as every other artifact label). Omitted deck
+                    # mass_transfer -> key absent.
+                    v_poly = getattr(engine, "V_poly", None)
+                    if v_poly is not None:
+                        generation_v_poly_m3 = float(v_poly)
+                    phase = getattr(system, "polymerPhase", None)
+                    deck_mt = getattr(phase, "mass_transfer", None) or []
+                    if deck_mt:
+                        generation_mass_transfer = [
+                            {
+                                "gas_species": _artifact_species_label(mt.gas_species),
+                                "poly_species": _artifact_species_label(mt.poly_species),
+                                "K": (mt.K.value_si
+                                      if hasattr(mt.K, "value_si")
+                                      else float(mt.K)),
+                                "kLa": (mt.kLa.value_si
+                                        if hasattr(mt.kLa, "value_si")
+                                        else float(mt.kLa)),
+                            }
+                            for mt in deck_mt
+                        ]
+                    for p in pools_cfg:
+                        idx = getattr(p, "monomer_poly_index", None)
+                        if idx is not None and 0 <= idx < len(core_species):
+                            routing[p.label] = _artifact_species_label(core_species[idx])
+                        # schema-2.9 explicit-DP inventory: resolve the
+                        # solver's real DP->core-species-index roster
+                        # (explicit_dp_to_species_index) into artifact labels
+                        # against the SAME core universe every other label
+                        # comes from. These are the actual discrete chips the
+                        # solver tracks; a pool with a single cutoff chip
+                        # keeps the byte-identical 2.3 block, a multi-chip
+                        # pool emits the full inventory. Never fabricated:
+                        # only real, in-range tracked chips are listed.
+                        edp = getattr(p, "explicit_dp_to_species_index", None)
+                        if edp:
+                            chip_labels = {
+                                int(dp): _artifact_species_label(
+                                    core_species[cidx])
+                                for dp, cidx in edp.items()
+                                if 0 <= cidx < len(core_species)
+                            }
+                            if chip_labels:
+                                explicit_dp_species_by_pool[p.label] = chip_labels
+                    break
+
+                if engine_pools_cfg is not None:
+                    # Authoritative: the live solver's configured pools.
+                    configured = [getattr(p, "label", "") for p in engine_pools_cfg] or None
+                    configured_pools_cfg = engine_pools_cfg
+                else:
+                    # No live engine (direct/test invocation, or the initial
+                    # save before any solver was ever built): fall back to the
+                    # full registry. build_polymer_moments_artifact's own default
+                    # would do the same; passing it explicitly keeps the fallback
+                    # condensed-species derivation keyed on the SAME pool set.
+                    configured = [getattr(p, "label", "") for p in pool_registry] or None
+                    configured_pools_cfg = pool_registry
+                    # P1-4: a polymer run that HAS reaction systems but no
+                    # live polymer engine yet (initial save at main.py's
+                    # "Completed initial enlarge edge step" path) is by
+                    # definition pre-rebuild -- mark it.
+                    if self.reaction_systems:
+                        sidecar_stale_topology = True
+
+                # condensed_species: the engine's final-core mask is honored
+                # verbatim when length-matched; otherwise derive membership from
+                # the CONFIGURED pools only (mirrors the solver's mask, which
+                # never marks unconfigured-daughter proxies condensed).
+                condensed = derive_condensed_species(
+                    core_species, configured_pools_cfg, solver_mask)
+
+                write_polymer_pools_sidecar(
+                    pool_registry=pool_registry,
+                    output_dir=target_dir,
+                    iteration=getattr(self.reaction_model, "iteration_num", 0),
+                    core_species=core_species,
+                    core_reactions=core_reactions,
+                    configured_pool_labels=configured,
+                    condensed_species=condensed,
+                    monomer_routing_by_pool=routing,
+                    cantera_index_map=cantera_index_map,
+                    initial_explicit_by_pool=initial_explicit_by_pool,
+                    generation_mass_transfer=generation_mass_transfer,
+                    generation_v_poly_m3=generation_v_poly_m3,
+                    explicit_dp_species_by_pool=explicit_dp_species_by_pool,
+                    stale_topology=sidecar_stale_topology,
+                )
+        except Exception as e:
+            logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)
+
         self.save_profiler_info()
+
+    def _advance_conduit_epoch(self):
+        """Guarded CORE EPOCH advance (design m184-epoch-registry §1.2/§4
+        item 2): called immediately before each of the four RMG-owned
+        (non-RMS) polymer rebuild/simulate sites so that any
+        ``register()``/``annotate_*`` sighting that follows sees the
+        current core-topology's epoch token rather than a stale one.
+
+        Computed from the CURRENT core (``self.reaction_model.core``), same
+        object main.py already reads at these sites (e.g. the
+        ``core_topology_signature`` staleness check in
+        :meth:`save_everything`). Runs unconditionally -- like
+        :func:`rmgpy.polymer_conduit.reset_conduit_state` /
+        :meth:`_conduit_lifecycle_close`, both of which already fire on
+        every RMG run without a polymer-only gate -- because the epoch
+        token is only ever consumed by the polymer conduit's own
+        ``register()`` fallback (:INVERSION-1); a non-polymer run just
+        advances epochs nobody reads.
+
+        NEVER raises into generation (module contract, design §1.4
+        'Constraints fixed'): an internal failure here must not abort
+        model generation.
+
+        round-70 P1-a/P1-b: records the explicit outcome of THIS advance
+        on ``self._last_conduit_advance`` as ``(token, created, ok)`` --
+        ``created`` is True only when a NEW ordinal was actually minted
+        (never on a dedup no-op), ``ok`` is False when the advance call
+        itself raised internally (still caught and swallowed here, exactly
+        as before, but the caught-outcome is now explicit rather than
+        silently absent). :meth:`_note_conduit_rebuild_failed` reads this
+        recorded outcome -- never re-derives or infers it -- to decide
+        whether the immediately-following rebuild failure may burn an
+        ordinal."""
+        try:
+            from rmgpy.polymer import core_topology_signature
+            from rmgpy.polymer_conduit import advance_conduit_epoch
+            token, created = advance_conduit_epoch(core_topology_signature(
+                self.reaction_model.core.species,
+                self.reaction_model.core.reactions))
+            self._last_conduit_advance = (token, created, True)
+        except Exception as exc:  # pragma: no cover - defensive fail-open
+            self._last_conduit_advance = (None, False, False)
+            logging.debug(
+                "conduit core-epoch advance failed (%s: %s); "
+                "census-only bookkeeping, run output unaffected.",
+                type(exc).__name__, exc, exc_info=True)
+
+    def _note_conduit_rebuild_failed(self):
+        """Guarded burned-epoch marker (design m184-epoch-registry
+        §1.2/§1.4 amendment 7; round-70 P1-a/P1-b honest accounting):
+        called from the ``except`` path alongside each of the four
+        :meth:`_advance_conduit_epoch` call sites when the rebuild/simulate
+        the just-advanced epoch labeled then raised.
+
+        Reads the explicit ``(token, created, ok)`` outcome recorded by the
+        immediately-preceding :meth:`_advance_conduit_epoch` call at this
+        same site and passes it on honestly: the epoch is accounted as
+        BURNED only when that advance both succeeded (``ok``) AND actually
+        created a new ordinal (``created``); a dedup no-op advance, or one
+        whose own internal call raised (``ok=False`` -- no reliable
+        ordinal-created signal exists), instead increments the separate
+        ``failed_attempts`` counter -- never a burn.
+
+        NEVER raises into generation; never changes the original
+        exception's propagation -- callers invoke this and then re-raise
+        unconditionally."""
+        try:
+            from rmgpy.polymer_conduit import note_conduit_rebuild_failed
+            token, created, ok = getattr(
+                self, "_last_conduit_advance", (None, False, False))
+            note_conduit_rebuild_failed(
+                token=token, created=bool(created and ok))
+        except Exception as exc:  # pragma: no cover - defensive fail-open
+            logging.debug(
+                "conduit burned-epoch marking failed (%s: %s); "
+                "census-only bookkeeping, run output unaffected.",
+                type(exc).__name__, exc, exc_info=True)
+
+    def _conduit_lifecycle_close(self):
+        """Guarded, idempotent close of the conduit census/label-oracle
+        lifecycle (round-56 F1; round-58 P1-A).
+
+        Called from BOTH RMG.execute's ``finally`` (so the close runs on
+        EVERY execute() exit -- success, an early-return termination path
+        such as walltime exhaustion or max-iterations, or a propagating
+        exception) and from RMG.finish's success tail. close_conduit_lifecycle
+        is idempotent per lifecycle (round-56 F1(b)), so whichever caller
+        runs second is a no-op.
+
+        NEVER raises: this is census-only bookkeeping and must not be able
+        to change RMG.execute's return value or exception-propagation
+        behavior (P2-A: logs with exc_info so a real close defect is still
+        diagnosable)."""
+        try:
+            from rmgpy.polymer_conduit import close_conduit_lifecycle
+            close_conduit_lifecycle()
+        except Exception as exc:  # pragma: no cover - defensive fail-open
+            logging.warning(
+                "conduit lifecycle close failed (%s: %s); "
+                "census-only bookkeeping, run output unaffected.",
+                type(exc).__name__, exc, exc_info=True)
 
     def finish(self):
         """
@@ -2105,6 +2518,19 @@ class RMG(util.Subject):
             logging.info("")
             logging.info(textwrap.fill(quote, subsequent_indent=" "))
             logging.info("             ---Quote-generating neural network, {}".format(datetime.datetime.now().strftime("%B %Y")))
+
+        # round-56 F1: close the conduit census/label-oracle lifecycle at
+        # the deterministic end-of-generation point so THIS run's
+        # CONDUIT CLASSIFIER ORACLE HEALTH/1 line lands in THIS run's log --
+        # not deferred to the next run's initialize, and not left to the
+        # fragile process-exit atexit path. This is census-only bookkeeping
+        # and is guarded so it can NEVER raise into RMG.execute.
+        #
+        # round-58 P1-A: also called from RMG.execute's finally (see
+        # _conduit_lifecycle_close), so this call may be the SECOND close
+        # of the current lifecycle -- close_conduit_lifecycle is idempotent
+        # per lifecycle (round-56 F1(b)), so the repeat is a no-op.
+        self._conduit_lifecycle_close()
 
         # Log end timestamp
         logging.info("")
@@ -2350,7 +2776,14 @@ class RMG_Memory(object):
         the resulting condition is added to the end of condition_list
         """
         if self.condition_list == []:
-            self.condition_list.append({key: value[0] for key, value in self.Ranges.items()})
+            seed_cond = {key: value[0] for key, value in self.Ranges.items()}
+            # Ranges["P"] is stored in log-space (see __init__), so the seed
+            # condition must be exponentiated back to real pressure, exactly as
+            # the sampled (non-seed) branch does below. Without this the first
+            # iteration runs at ln(P) Pa instead of P Pa.
+            if "P" in seed_cond:
+                seed_cond["P"] = np.exp(seed_cond["P"])
+            self.condition_list.append(seed_cond)
             self.scaled_condition_list.append({key: 0.0 for key, value in self.Ranges.items()})
         elif len(self.condition_list[0]) == 0:
             pass

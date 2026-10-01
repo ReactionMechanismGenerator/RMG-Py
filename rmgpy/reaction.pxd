@@ -63,6 +63,17 @@ cdef class Reaction:
     cdef public dict k_effective_cache
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
+    cdef public bint is_end_group_reaction
+    cdef public bint polymer_refused
+    cdef public bint polymer_refused_accumulating
+    cdef public object polymer_refused_reason
+    cdef public int polymer_flux_archetype
+    cdef public int polymer_chip_units
+    cdef public double polymer_eject_units
+    cdef public object polymer_conduit_params
+    cdef public object polymer_conduit_dst_pool
+    cdef public bint polymer_conduit_admission_pending
+    cdef public bint polymer_conduit_admission_readjudicated
     cdef public object rank
 
     cpdef bint is_isomerization(self)

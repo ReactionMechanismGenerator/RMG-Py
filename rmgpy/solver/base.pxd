@@ -84,6 +84,14 @@ cdef class ReactionSystem(DASx):
     # variables that cache maximum rate (ratio) data
     cdef public np.ndarray max_edge_species_rate_ratios
     cdef public np.ndarray max_network_leak_rate_ratios
+
+    # Optional boolean include-mask over the core-species index space: True =
+    # the species' production rate is a genuine molar flux and counts toward the
+    # enlargement characteristic flux (char_rate); False = exclude it. None
+    # (default) means include all (no-op for every non-polymer reactor). The
+    # polymer solver sets False at moment-dummy positions so char_rate is not
+    # contaminated by moment-coordinate derivatives (fix #2a).
+    cdef public np.ndarray _char_rate_include_mask
     
     #for managing prunable edge species
     cdef public list prunable_species

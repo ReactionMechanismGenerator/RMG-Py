@@ -262,9 +262,17 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic,
                                    save_order=save_order)
 
-    if filter_structures:
-        return filtration.filter_structures(mol_list, features=features, save_order=save_order)
+    if mol.is_polymer_proxy:
+        for m in mol_list:
+            m.is_polymer_proxy = True
 
+    if filter_structures:
+        # return filtration.filter_structures(mol_list, features=features, save_order=save_order)
+        mol_list = filtration.filter_structures(mol_list, features=features, save_order=save_order)
+        if mol.is_polymer_proxy:
+            for m in mol_list:
+                m.is_polymer_proxy = True
+        return mol_list
     return mol_list
 
 

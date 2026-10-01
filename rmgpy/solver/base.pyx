@@ -56,7 +56,8 @@ from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.solver.termination import (TerminationTime, TerminationConversion, TerminationRateRatio,
+                                      TerminationPolymerConversion)
 ################################################################################
 
 cdef class ReactionSystem(DASx):
@@ -146,6 +147,11 @@ cdef class ReactionSystem(DASx):
         # variables that cache maximum rate (ratio) data
         self.max_edge_species_rate_ratios = None
         self.max_network_leak_rate_ratios = None
+
+        # Optional core-species include-mask for the characteristic flux
+        # (fix #2a). None = include every core species (no-op default). The
+        # polymer solver overrides it to drop moment-dummy positions.
+        self._char_rate_include_mask = None
 
         #for managing prunable edge species
         self.prunable_species = []
@@ -568,6 +574,17 @@ cdef class ReactionSystem(DASx):
 
         return surface_species, surface_reactions
 
+    def _phase_gate_flux_census(self, core_species, edge_species,
+                                edge_reactions, char_rate, tol_move_to_core):
+        """No-op hook: phase-gate flux census (polymer item 17, spec
+        2026-06-12 SS3(e) dynamic half). HybridPolymerSystem overrides this
+        with the gate-zeroed-edge-flux census; every other reactor pays one
+        no-op call per accepted snapshot. Plain def on the cdef class -- no
+        base.pxd change; the Python-MRO override is reachable from inside
+        cpdef simulate (compile-proven; precedent:
+        get_threshold_rate_constants)."""
+        pass
+
     @cython.boundscheck(False)
     cpdef simulate(self, list core_species, list core_reactions, list edge_species,
                    list edge_reactions, list surface_species, list surface_reactions,
@@ -708,6 +725,41 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
+        # r86 terminationPolymerConversion: freeze M_poly(0) at simulation
+        # initialization and validate it loudly. The metric itself lives on
+        # the polymer-aware subclass (get_total_polymer_condensed_mass_g);
+        # the base implementation returns None, so requesting a polymer
+        # conversion cut on a pool-less model is a hard error, never a
+        # silently ignored criterion.
+        polymer_conv_term = None
+        polymer_mass_initial_g = 0.0
+        for term in self.termination:
+            if isinstance(term, TerminationPolymerConversion):
+                polymer_conv_term = term
+                m0 = self.get_total_polymer_condensed_mass_g()
+                if m0 is None:
+                    raise ValueError(
+                        'terminationPolymerConversion requires a reaction '
+                        'system with polymer pools (the metric '
+                        'M_poly = sum over pools of max(0, mu1*monomer_mw '
+                        '- mu0*chain_mass_defect) is undefined here).')
+                if not (m0 > 0.0):
+                    raise ValueError(
+                        'terminationPolymerConversion: initial condensed '
+                        'polymer mass M_poly(0) = {0!r} g must be strictly '
+                        'positive (zero or defect-swamped initial pool '
+                        'state).'.format(m0))
+                polymer_mass_initial_g = m0
+                break
+        # Accepted-checkpoint history for the conservative solver-target
+        # cap (Codex r86: post-step-only checking is a NO-GO -- the
+        # geometric step schedule must not carry the integrator past the
+        # crossing into the post-chemistry stiff region).
+        polymer_conv_prev_t = self.t
+        polymer_conv_prev_x = 0.0
+        polymer_conv_have_ckpt = False
+        polymer_conv_cap = 0.0
+
         # a list with the time, Volume, number of moles of core species
         self.snapshots = []
 
@@ -730,7 +782,14 @@ cdef class ReactionSystem(DASx):
 
             if not first_time:
                 try:
-                    self.step(step_time)
+                    # r86 terminationPolymerConversion reachability cap: the
+                    # geometric target is clipped to the conservative
+                    # pre-crossing cap computed at the previous accepted
+                    # checkpoint (0.0 = no cap active).
+                    if 0.0 < polymer_conv_cap < step_time:
+                        self.step(polymer_conv_cap)
+                    else:
+                        self.step(step_time)
                     if np.isnan(self.y).any():
                         raise DASxError("nans in moles")
                 except DASxError as e:
@@ -746,28 +805,55 @@ cdef class ReactionSystem(DASx):
                             conversion = 1 - (y_core_species[index] / y0[index])
 
                     if invalid_objects == []:
+                        # Resurrection zero-metric guard (adjudicated round
+                        # 81, the PP run-7 amplifier): resurrection must
+                        # NEVER promote an object whose selected metric is
+                        # <= 0 or below the normal movement threshold --
+                        # adding species "at rate ratio 0.0" grows the core
+                        # on zero flux and re-integrates into the same
+                        # DASPK wall. Each criterion keeps its argmax
+                        # selection (positive-rate resurrection unchanged)
+                        # but the winner must clear the SAME bar normal
+                        # enlargement applies (tol_move_to_core for species
+                        # / network ratios, tol_move_edge_reaction_to_core
+                        # in ln space for dynamics numbers) AND be strictly
+                        # positive (a zero metric never qualifies, even
+                        # when the threshold is 0).
                         #species flux criterion
                         if len(edge_species_rate_ratios) > 0:
                             ind = np.argmax(edge_species_rate_ratios)
-                            obj = edge_species[ind]
-                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
-                            invalid_objects.append(obj)
+                            val = edge_species_rate_ratios[ind]
+                            if val > 0.0 and val >= tol_move_to_core:
+                                obj = edge_species[ind]
+                                logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
+                                             'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
+                                invalid_objects.append(obj)
 
-                        if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
+                        if total_div_accum_nums is not None and len(total_div_accum_nums) > 0:  #if dynamics data available
                             ind = np.argmax(total_div_accum_nums)
-                            obj = edge_reactions[ind]
-                            logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
-                            invalid_objects.append(obj)
+                            val = total_div_accum_nums[ind]
+                            if val > 1.0 and np.log(val) >= tol_move_edge_reaction_to_core:
+                                obj = edge_reactions[ind]
+                                logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
+                                             'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
+                                invalid_objects.append(obj)
 
-                        if pdep_networks != [] and network_leak_rate_ratios != []:
+                        if len(pdep_networks) > 0 and len(network_leak_rate_ratios) > 0:
                             ind = np.argmax(network_leak_rate_ratios)
-                            obj = pdep_networks[ind]
-                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
-                                         'was sent for exploring during model resurrection process'
-                                         ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
-                            invalid_objects.append(obj)
+                            val = network_leak_rate_ratios[ind]
+                            if val > 0.0 and val >= tol_move_to_core:
+                                obj = pdep_networks[ind]
+                                logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
+                                             'was sent for exploring during model resurrection process'
+                                             ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
+                                invalid_objects.append(obj)
+
+                        if invalid_objects == []:
+                            logging.error(
+                                'no positive resurrection candidate: the DASPK failure at t={0:10.4e} s found every '
+                                'edge species / edge reaction / network candidate metric zero or below its normal '
+                                'movement threshold -- refusing to grow the core on zero flux (r81); the solver '
+                                'failure is surfaced below instead.'.format(self.t))
 
                     if invalid_objects != []:
                         return False, True, invalid_objects, surface_species, surface_reactions, self.t, conversion
@@ -807,8 +893,22 @@ cdef class ReactionSystem(DASx):
             snapshot.extend(y_core_species)
             self.snapshots.append(snapshot)
 
-            # Get the characteristic flux
-            char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
+            # Get the characteristic flux. This L2 norm is the yardstick the
+            # edge->core enlargement ratios are normalized against (lines below),
+            # so it MUST be a norm of genuine molar species fluxes. When a
+            # reactor supplies an include-mask (fix #2a, polymer solver), exclude
+            # the masked-out core positions -- the polymer moment dummies, whose
+            # "rate" is a moment-coordinate derivative (e.g. d mu2/dt under unzip)
+            # in incompatible units, not a species production rate. Excluding
+            # them keeps the real monomer-release flux as the characteristic
+            # scale (2a) rather than letting the lumped moment channel bury the
+            # family chemistry. Default mask (None) includes every species, so
+            # SimpleReactor and every other reactor are byte-identical.
+            if self._char_rate_include_mask is None:
+                char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
+            else:
+                char_rate_real_rates = self.core_species_rates[self._char_rate_include_mask]
+                char_rate = sqrt(np.sum(char_rate_real_rates * char_rate_real_rates))
 
             if char_rate > max_char_rate:
                 max_char_rate = char_rate
@@ -822,6 +922,17 @@ cdef class ReactionSystem(DASx):
             core_species_rate_ratios = np.abs(self.core_species_rates / char_rate)
             edge_species_rate_ratios = np.abs(self.edge_species_rates / char_rate)
             network_leak_rate_ratios = np.abs(self.network_leak_rates / char_rate)
+
+            # Phase-gate flux census hook (polymer item 17, spec 2026-06-12
+            # SS3(e)). Census staleness is a FEATURE (amendment A2): the hook
+            # reads the ungated arrays from the most recent residual
+            # evaluation -- EXACTLY the staleness of the
+            # self.edge_species_rates snapshot the enlargement ratios above
+            # are formed from. Do NOT move this onto accepted-state-only
+            # plumbing: that would break parity with the audited quantity.
+            self._phase_gate_flux_census(core_species, edge_species,
+                                         edge_reactions, char_rate,
+                                         tol_move_to_core)
             num_edge_reactions = self.num_edge_reactions
             core_reaction_rates = self.core_reaction_rates
             product_indices = self.product_indices
@@ -1240,10 +1351,47 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination RateRatio: '
                                      '{1}'.format(self.t,char_rate/max_char_rate))
                         self.log_conversions(species_index, y0)
+                elif isinstance(term, TerminationPolymerConversion):
+                    # r86: defect-adjusted condensed polymer mass across ALL
+                    # solver pools; M_poly(0) frozen and validated above.
+                    polymer_conv_x = 1.0 - (self.get_total_polymer_condensed_mass_g()
+                                            / polymer_mass_initial_g)
+                    if polymer_conv_x > term.conversion:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination polymer conversion: '
+                                     'X_polymer = {1:.6f} (target {2:f}).'.format(
+                                         self.t, polymer_conv_x, term.conversion))
+                        self.log_conversions(species_index, y0)
+                        break
 
             # Increment destination step time if necessary
             if self.t >= 0.9999 * step_time:
                 step_time *= 10.0
+
+            # r86 terminationPolymerConversion reachability: conservative
+            # solver-target capping (Codex NO-GO on post-step-only). Once
+            # X_polymer > 0, estimate dX/dt from the accepted checkpoints
+            # and cap the NEXT step target before the predicted crossing
+            # (safety factor 0.5), with a minimum relative advance of 0.1%
+            # of the current time so the capped sequence still crosses the
+            # target in bounded iterations. The geometric step_time above
+            # is left untouched -- the cap applies at the step() call.
+            if polymer_conv_term is not None and not terminated:
+                polymer_conv_x = 1.0 - (self.get_total_polymer_condensed_mass_g()
+                                        / polymer_mass_initial_g)
+                polymer_conv_cap = 0.0
+                if (polymer_conv_have_ckpt and polymer_conv_x > 0.0
+                        and self.t > polymer_conv_prev_t
+                        and polymer_conv_x > polymer_conv_prev_x):
+                    rate = ((polymer_conv_x - polymer_conv_prev_x)
+                            / (self.t - polymer_conv_prev_t))
+                    dt_pred = (polymer_conv_term.conversion - polymer_conv_x) / rate
+                    if dt_pred > 0.0:
+                        polymer_conv_cap = self.t + max(
+                            0.5 * dt_pred, 1.0e-3 * max(self.t, 1.0e-300))
+                polymer_conv_prev_t = self.t
+                polymer_conv_prev_x = polymer_conv_x
+                polymer_conv_have_ckpt = True
 
         # Change surface species and reactions based on what will be added to the surface
         surface_species, surface_reactions = self.add_reactions_to_surface(new_surface_reactions,
@@ -1304,6 +1452,14 @@ cdef class ReactionSystem(DASx):
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(
                     network.index, network_rate, network_rate / char_rate))
+
+    def get_total_polymer_condensed_mass_g(self, y=None):
+        """r86 terminationPolymerConversion metric hook. The base reaction
+        system carries no polymer pools, so the defect-adjusted condensed
+        polymer mass is undefined: return ``None`` (the simulate() guard
+        turns that into a loud ``ValueError`` if a polymer-conversion cut
+        was requested). Polymer-aware systems override this."""
+        return None
 
     cpdef log_conversions(self, species_index, y0):
         """

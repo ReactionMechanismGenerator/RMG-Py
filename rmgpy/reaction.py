@@ -126,6 +126,10 @@ class Reaction:
                  comment='',
                  is_forward=None,
                  allow_max_rate_violation=False,
+                 is_end_group_reaction=False,
+                 polymer_flux_archetype=0,
+                 polymer_chip_units=0,
+                 polymer_eject_units=0.0,
                  ):
         self.index = index
         self.label = label
@@ -147,6 +151,69 @@ class Reaction:
         self.k_effective_cache = {}
         self.is_forward = is_forward
         self.allow_max_rate_violation = allow_max_rate_violation
+        # Set by the polymer handshake (rmgpy.rmg.model.make_new_reaction) when a
+        # product classifies END_MOD; the polymer hybrid solver then scales this
+        # reaction by chain-end density (mu0) instead of monomer-unit density (mu1).
+        self.is_end_group_reaction = is_end_group_reaction
+        # Radical-conservation flags for the polymer hybrid solver
+        # (item 18, refuse-not-leak). Set later via attribute assignment by
+        # refuse detection at stamp time, not passed to the constructor.
+        # polymer_refused suppresses a mass-fabricating flux at the solver RHS;
+        # polymer_refused_accumulating feeds the refused-reaction census that
+        # distinguishes eliminating vs accumulating radicals. Like
+        # is_end_group_reaction they are deliberately NOT serialized in
+        # __reduce__; the solver re-derives them at initialize_model.
+        self.polymer_refused = False
+        self.polymer_refused_accumulating = False
+        # Single-source refused_reason stamp (round-20 increment 7): the
+        # solver rebuild's rate-derived QSSA census writes its computed
+        # census reason here ('qssa-invalid' / 'qssa-unassessable'); the
+        # artifact emitter reads THIS attr first so census and artifact can
+        # never disagree. None = no rebuild assessment ran (the emitter
+        # falls back to the stamp-time accumulating-bit ternary). Like its
+        # siblings it is NOT serialized in __reduce__; the solver re-derives
+        # it at initialize_model.
+        self.polymer_refused_reason = None
+        # Pool moment-flux archetype (int values of
+        # rmgpy.polymer.PolymerFluxArchetype), stamped by the polymer handshake
+        # in rmgpy.rmg.model.make_new_reaction. 0 = NONE. Like
+        # is_end_group_reaction it is NOT serialized in __reduce__; the solver
+        # remaps unstamped proxy-touching reactions to UNRESOLVED at
+        # initialize_model (legacy mu1 flux), so restarts stay correct-but-loud.
+        self.polymer_flux_archetype = polymer_flux_archetype
+        # Repeat-unit count of the discrete chip for DISCRETE_CHIP reactions
+        # (a = round(chip_MW / monomer_MW), a == 0 legal), stamped by chip
+        # product surgery in rmgpy.polymer.stamp_polymer_flux_archetype via
+        # make_new_reaction. Like the two fields above it is NOT serialized in
+        # __reduce__; the solver demotes unstamped arrivals at initialize_model.
+        self.polymer_chip_units = polymer_chip_units
+        # Fractional source-monomer-equivalents ejected as discrete volatile(s)
+        # for VOLATILE_EJECTION reactions (a = sum(volatile MW g/mol) /
+        # source monomer_mw_g_mol; NOT rounded), stamped in
+        # rmgpy.polymer.stamp_polymer_flux_archetype via make_new_reaction. Like
+        # the fields above it is NOT serialized in __reduce__; the solver demotes
+        # unstamped arrivals at initialize_model.
+        self.polymer_eject_units = polymer_eject_units
+        # moment_credit_conduit/1 admission stamp (M18.3, DESIGN §2.1/§3.1):
+        # the §2.1 params dict + destination pool label written by the r93
+        # stamp site's admit arm (dead behind CONDUIT_ADMISSION_ENABLED
+        # until M18.4). None means "not an admitted conduit row". Like the
+        # polymer fields above, NOT serialized in __reduce__; admission is
+        # re-evaluated at every solver rebuild (DESIGN §3.3).
+        self.polymer_conduit_params = None
+        self.polymer_conduit_dst_pool = None
+        # G6 re-adjudication markers (adjudicated defect fix): the r93 stamp
+        # site runs BEFORE make_new_reaction assigns kinetics, so its G6
+        # verdict on a family-generated row is the PROVISIONAL
+        # kinetics-not-yet-assigned deny. _pending marks the row for
+        # rmgpy.polymer.readjudicate_conduit_admission (called after the
+        # kinetics conversion/barrier block, and at the canonical-dedup
+        # early return after the stamp merge); _readjudicated marks a FINAL
+        # re-adjudicated verdict so a later duplicate's merge can never
+        # demote it back to provisional. Like the polymer fields above, NOT
+        # serialized in __reduce__ (census/ledger bookkeeping only).
+        self.polymer_conduit_admission_pending = False
+        self.polymer_conduit_admission_readjudicated = False
 
     def __repr__(self):
         """
