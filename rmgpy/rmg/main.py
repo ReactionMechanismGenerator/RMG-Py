@@ -47,13 +47,14 @@ import h5py
 import numpy as np
 import psutil
 import yaml
-from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
 from rmgpy import settings
+from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.constraints import fails_species_constraints
+from rmgpy.constraints import fails_species_constraints, reset_polymer_warning, validate_explicit_dp_oligomers
+from rmgpy.polymer_conduit import reset_conduit_state
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -145,6 +146,7 @@ class RMG(util.Subject):
     `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `trimolecular_product_reversible`                          ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
+    `tolerate_missing_reverse_reactions`                       ``False`` (default) to raise a fatal error when an own-reverse family finds no matching reverse reaction; ``True`` or a positive integer to drop (and audit-log) such reactions instead
     `pressure_dependence`                                      Whether to process unimolecular (pressure-dependent) reaction networks
     `quantum_mechanics`                                        Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `ml_estimator`                                             To use thermo estimation with machine learning
@@ -225,12 +227,19 @@ class RMG(util.Subject):
         self.verbose_comments = None
         self.save_edge_species = None
         self.keep_irreversible = None
+        # M18.4 polymer conduit-admission opt-in (default-off). None =
+        # inherit the module-constant fallback (off); set by the
+        # options(polymerConduitAdmission=...) input flag and copied onto
+        # the reaction model in load_input.
+        self.polymer_conduit_admission = None
         self.trimolecular_product_reversible = None
+        self.tolerate_missing_reverse_reactions = False
         self.pressure_dependence = None
         self.quantum_mechanics = None
         self.ml_estimator = None
         self.ml_settings = None
         self.species_constraints = {}
+        self.polymer_constraints = None
         self.walltime = "00:00:00:00"
         self.save_seed_modulus = -1
         self.max_iterations = None
@@ -276,6 +285,17 @@ class RMG(util.Subject):
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
+        # M18.4 opt-in: thread the (default-off) conduit-admission flag onto
+        # the reaction model, where readjudicate_conduit_admission reads it.
+        self.reaction_model.conduit_admission_enabled = getattr(
+            self, "polymer_conduit_admission", None)
+        if self.reaction_model.conduit_admission_enabled is True:
+            # Loud, once-per-run banner: this is an opt-in, prediction-changing
+            # feature, so its active state must be auditable in the log.
+            logging.warning(
+                "Polymer moment-credit conduit admission is ENABLED for this "
+                "run (options(polymerConduitAdmission=True)); admitted conduit "
+                "rows will change the predicted evolved-gas moment balance.")
 
         if self.quantum_mechanics:
             self.reaction_model.quantum_mechanics = self.quantum_mechanics
@@ -466,7 +486,9 @@ class RMG(util.Subject):
                 logging.info("Adding rate rules from training set in kinetics families...")
                 # Temporarily remove species constraints for the training reactions
                 copy_species_constraints = copy.copy(self.species_constraints)
+                copy_polymer_constraints = copy.copy(self.polymer_constraints)
                 self.species_constraints = {}
+                self.polymer_constraints = None
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
@@ -484,6 +506,7 @@ class RMG(util.Subject):
                             f.write("\n")
 
                 self.species_constraints = copy_species_constraints
+                self.polymer_constraints = copy_polymer_constraints
             else:
                 logging.info("Training set explicitly not added to rate rules in kinetics families...")
             logging.info("Filling in rate rules in kinetics families by averaging...")
@@ -501,6 +524,17 @@ class RMG(util.Subject):
 
         # Save initialization time
         self.initialization_time = time.time()
+
+        # Reset the once-per-run unbounded-polymer warning.
+        reset_polymer_warning()
+
+        # M18.3 run-boundary HARD reset (polymer conduit, DESIGN §3.3):
+        # clear the candidate ledger AND the warn-once census sets that
+        # feed it, together ("reset both or neither") -- candidate keys are
+        # run-scoped label(index) strings, and a cleared ledger with
+        # un-cleared warn-once sets would starve the FEATURE-RADICAL side
+        # of re-sightings.
+        reset_conduit_state()
 
         # Log start timestamp
         logging.info("RMG execution initiated at " + time.asctime() + "\n")
@@ -535,6 +569,21 @@ class RMG(util.Subject):
         # Properly set filter_reactions to initialize flags properly
         if len(self.model_settings_list) > 0:
             self.filter_reactions = self.model_settings_list[0].filter_reactions
+            # Round-20 increment 7 plumbing (Codex round-22 P1): carry the
+            # deck's filterThreshold into the polymer reactors' census-only
+            # QSSA k_out policy floor (qssa_kout_floor_s), so the rebuild
+            # census's logged threshold really is
+            # max(filterThreshold, 1/terminationTime) as ruled. Only
+            # meaningful when the deck filters at all; guarded by the
+            # to_solver_object duck-type so cdef reactors (SimpleReactor
+            # etc.), which reject arbitrary attributes and never read the
+            # knob, are left untouched.
+            if self.filter_reactions:
+                for reaction_system in (self.reaction_systems or []):
+                    if hasattr(reaction_system, "to_solver_object"):
+                        reaction_system.qssa_kout_floor_s = float(
+                            self.model_settings_list[0].filter_threshold
+                            or 0.0)
 
         # Make output subdirectories
         util.make_output_subdirectory(self.output_directory, "pdep")
@@ -672,6 +721,13 @@ class RMG(util.Subject):
             if is_new:
                 self.initial_species.append(spec)
 
+        # Explicit-DP handshake (stage A) hard gate: auto-generated DP=xs
+        # oligomers (polymer() input block, explicit_dp=True) must survive the
+        # constraint pass or fail LOUDLY with an actionable message naming the
+        # deck flag. Runs BEFORE the generic input-species loop below so the
+        # tailored error wins over the generic "remove the species" one.
+        validate_explicit_dp_oligomers(self.initial_species, self.species_constraints)
+
         # Perform species constraints and forbidden species checks on input species
         for spec in self.initial_species:
             if self.database.forbidden_structures.is_molecule_forbidden(spec.molecule[0]):
@@ -769,8 +825,8 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
         self.attach(RMSWriter(self.output_directory))
+        self.attach(CanteraWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -1019,6 +1075,37 @@ class RMG(util.Subject):
                                 self.make_seed_mech()  # Just in case the user wants to restart from this
                             raise
 
+                        # Mass-flux spawn-gate snapshot (multi-pool §4.4, spec
+                        # 2026-06-10): read the 3-tuple (gross for all core
+                        # species, pool_stats, proxy_event_mass_total) off the
+                        # ENGINE — `system.solver`, never the
+                        # HybridPolymerReactor blueprint (the established
+                        # blueprint-vs-engine gotcha) — and stash on the
+                        # reaction model for the Phase-D gate. Stays None for
+                        # non-polymer systems (honest degradation: the gate
+                        # defers). This stash + the motif ledger are the
+                        # shared infrastructure the spec-§2.2 iteration-
+                        # boundary re-check upgrade would reuse.
+                        engine = getattr(reaction_system, "solver", None) or reaction_system
+                        if callable(getattr(engine, "spawn_gate_flux_snapshot", None)):
+                            try:
+                                # Census enrichment (item #14a): the engine
+                                # has no ledger, so the stash passes per-pool
+                                # motif counts (ledger entries with >=1
+                                # representative attributed to the pool) for
+                                # the SPAWN-GATE ATTRIBUTION CENSUS line.
+                                motif_counts = {}
+                                for _entry in (getattr(self.reaction_model, "polymer_motif_ledger", None) or []):
+                                    for _pl in {pl for (_lbl, pl) in getattr(_entry, "representatives", [])}:
+                                        motif_counts[_pl] = motif_counts.get(_pl, 0) + 1
+                                self.reaction_model.polymer_flux_snapshot = engine.spawn_gate_flux_snapshot(
+                                    motif_counts_by_pool=motif_counts)
+                                self.reaction_model.polymer_flux_snapshot_iteration = self.reaction_model.iteration_num
+                            except Exception as exc:
+                                self.reaction_model.polymer_flux_snapshot = None
+                                logging.warning(
+                                    "Polymer spawn-gate snapshot failed (all spawns will defer): %s", exc)
+
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
                         self.rmg_memories[index].generate_cond()
                         log_conditions(self.rmg_memories, index)
@@ -1219,25 +1306,6 @@ class RMG(util.Subject):
 
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
-        try:
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
-            else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
-        except EnvironmentError:
-            logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
-        except Exception:
-            logging.exception("Could not generate Cantera files for some reason.")
-
         self.check_model()
         # Write output file
         logging.info("")
@@ -1326,11 +1394,13 @@ class RMG(util.Subject):
                 )
                 # Temporarily remove species constraints for the training reactions
                 self.species_constraints, speciesConstraintsCopy = {}, self.species_constraints
+                self.polymer_constraints, polymerConstraintsCopy = None, self.polymer_constraints
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
                         family.fill_rules_by_averaging_up(verbose=True)
                 self.species_constraints = speciesConstraintsCopy
+                self.polymer_constraints = polymerConstraintsCopy
 
             for correlated in correlation:
                 uncertainty.assign_parameter_uncertainties(correlated=correlated)
@@ -1455,9 +1525,15 @@ class RMG(util.Subject):
         logging.info("Performing final model checks...")
 
         # Check that no two species in core or edge are isomorphic
+        # (skip polymer moment dummies and proxy species — they are intentionally
+        #  isomorphic placeholders distinguished only by label)
         for i, spc in enumerate(self.reaction_model.core.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.core.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     raise CoreError(
                         "Although the model has completed, species {0} is isomorphic to species {1} in the core. "
@@ -1466,8 +1542,12 @@ class RMG(util.Subject):
                     )
 
         for i, spc in enumerate(self.reaction_model.edge.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.edge.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     logging.warning(
                         "Species {0} is isomorphic to species {1} in the edge. This does not affect "
@@ -1481,6 +1561,9 @@ class RMG(util.Subject):
         for rxn in self.reaction_model.core.reactions:
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
+                continue
+            if any(getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False)
+                   for spc in rxn.reactants + rxn.products):
                 continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
@@ -1803,32 +1886,6 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkin_file, **kwargs):
-        """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
-        """
-        transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
-        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
-        if "surface_file" in kwargs:
-            out_name = out_name.replace("-gas.", ".")
-        cantera_dir = os.path.dirname(out_name)
-        try:
-            os.makedirs(cantera_dir)
-        except OSError:
-            if not os.path.isdir(cantera_dir):
-                raise
-        if os.path.exists(out_name):
-            os.remove(out_name)
-        parser = ck2yaml.Parser()
-        try:
-            parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
-        except ck2yaml.InputError:
-            logging.exception("Error converting to Cantera format.")
-            logging.info("Trying again without transport data file.")
-            parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
-
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
 
@@ -2085,6 +2142,213 @@ class RMG(util.Subject):
 
         # Notify registered listeners:
         self.notify()
+
+        # Emit the polymer_pools.json sidecar (schema 2.0) alongside the
+        # chemkin / cantera outputs so the TA-side mechanism loader
+        # (~/Code/TA) can pick up pool semantics + compiled flux terms.
+        # Normative contract: docs/polymer_moments_format.md.
+        try:
+            from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
+                                       _artifact_species_label, collect_polymer_pool_registry,
+                                       derive_condensed_species,
+                                       core_topology_signature)
+            # Identity-deduped: a freshly-promoted daughter Polymer sits in
+            # BOTH core.species and new_species_list until the next enlarge
+            # clears it, so a plain concatenation would serialize the same
+            # pool twice in the sidecar.
+            pool_registry = collect_polymer_pool_registry(
+                self.reaction_model.core.species,
+                self.reaction_model.edge.species,
+                self.reaction_model.new_species_list,
+            )
+            if pool_registry and self.output_directory:
+                chemkin_dir = os.path.join(self.output_directory, "chemkin")
+                target_dir = chemkin_dir if os.path.isdir(chemkin_dir) else self.output_directory
+
+                core_species = self.reaction_model.core.species
+                core_reactions = self.reaction_model.core.reactions
+
+                # Cantera index map: recompute the exact filter/ordering the
+                # CanteraWriter listener (notify() above) just used on the
+                # same core — same inputs, same map.
+                cantera_index_map = None
+                try:
+                    from rmgpy.cantera import generate_cantera_data
+                    _, cantera_index_map = generate_cantera_data(
+                        core_species, core_reactions,
+                        return_reaction_index_map=True)
+                except Exception as e:
+                    logging.warning(
+                        "polymer_pools.json: cantera index map unavailable (%s); "
+                        "all reaction entries will be emitted cantera-null.", e)
+
+                # Phase mask / monomer routing from the live hybrid reactor.
+                # self.reaction_systems holds the HybridPolymerReactor BLUEPRINT,
+                # whose runnable HybridPolymerSystem engine (the one carrying the
+                # final-core gas_species_mask and the per-pool index config) is
+                # rebuilt per iteration and parked on `system.solver`. Resolve the
+                # authoritative solver first, then fall back to the system itself
+                # for the test/runner case where the HybridPolymerSystem IS the
+                # reaction system. gas_species_mask: True=gas, False=condensed.
+                #
+                # ORACLE TRUTH (docs/polymer_moments_format.md §2): the artifact
+                # MUST mirror the live solver engine. configured_pools is the
+                # ENGINE's polymer_pools labels — NOT pool_registry. A daughter
+                # pool SPAWNED mid-run (e.g. epdm_scission_tail) lives in the
+                # registry but is NOT a solver config: the solver runs its proxies
+                # as ordinary species (no site scaling, no conc:=1.0 rule) and
+                # DEMOTES stamps whose src/dst pool is unconfigured. condensed_species
+                # is likewise the engine's FINAL gas_species_mask verbatim (False=
+                # condensed); the spawned daughter's proxies/µ-dummies are GAS in
+                # that mask and must NOT be reported condensed. derive_condensed_species
+                # is only the FALLBACK when the engine mask is unavailable/length-
+                # mismatched, and is then keyed on the CONFIGURED pools (not the
+                # full registry) so the fallback mirrors the same demotion.
+                configured = None
+                routing = {}
+                explicit_dp_species_by_pool = {}
+                solver_mask = None
+                engine_pools_cfg = None
+                initial_explicit_by_pool = None
+                generation_mass_transfer = None
+                generation_v_poly_m3 = None
+                sidecar_stale_topology = False
+                for system in (self.reaction_systems or []):
+                    engine = getattr(system, "solver", None) or system
+                    pools_cfg = getattr(engine, "polymer_pools", None)
+                    if not pools_cfg:
+                        continue
+                    engine_pools_cfg = pools_cfg
+                    # P1-4 stale-sidecar tripwire (regen-#2 forensics):
+                    # save_everything() runs AFTER enlarge but BEFORE the
+                    # next solver rebuild, so every engine-frozen surface
+                    # read below (polymer_pools, gas_species_mask, per-pool
+                    # index maps) plus the rebuild-stamped refusal state on
+                    # the Reaction objects can describe a core the engine
+                    # has never seen (regen #2: all 8 conduit rows emitted
+                    # refused=true/dst_pool null while the post-rebuild
+                    # solver ran 5 live). Round-27 P1-C predicate: compare
+                    # the ENGINE REBUILD SIGNATURE the solver captured at
+                    # initialize_model (stable (label, index) identity keys
+                    # of the core species + reactions it was built against;
+                    # rmgpy.polymer.core_topology_signature) with the same
+                    # signature of the CURRENT core. Bare count equality is
+                    # NOT enough -- a same-count species/reaction swap or
+                    # restamp between rebuilds must be caught. Signature
+                    # unavailable (pre-P1-C engine, or an engine never
+                    # rebuilt) => stale. Forcing initialize_model here
+                    # instead would clobber live filter-threshold state
+                    # mid-run, so the honest marker is the non-perturbing
+                    # fix.
+                    engine_sig = getattr(
+                        engine, "core_topology_signature", None)
+                    try:
+                        sidecar_stale_topology = (
+                            engine_sig is None
+                            or engine_sig != core_topology_signature(
+                                core_species, core_reactions))
+                    except (TypeError, ValueError):
+                        sidecar_stale_topology = True
+                    solver_mask = getattr(engine, "gas_species_mask", None)
+                    # Stage-A explicit-DP loadings ({pool_label: {dp: moles}},
+                    # the exact shape set_initial_conditions step 2 seeds) —
+                    # feeds the schema-2.3 explicit_dp block's initial_moles.
+                    initial_explicit_by_pool = getattr(
+                        engine, "initial_explicit_species", None)
+                    # NON-normative generation provenance
+                    # (conventions.generation_defaults): the V_poly the
+                    # engine integrates, and the DECK-declared mass_transfer
+                    # entries from the blueprint phase (labels resolved the
+                    # same way as every other artifact label). Omitted deck
+                    # mass_transfer -> key absent.
+                    v_poly = getattr(engine, "V_poly", None)
+                    if v_poly is not None:
+                        generation_v_poly_m3 = float(v_poly)
+                    phase = getattr(system, "polymerPhase", None)
+                    deck_mt = getattr(phase, "mass_transfer", None) or []
+                    if deck_mt:
+                        generation_mass_transfer = [
+                            {
+                                "gas_species": _artifact_species_label(mt.gas_species),
+                                "poly_species": _artifact_species_label(mt.poly_species),
+                                "K": (mt.K.value_si
+                                      if hasattr(mt.K, "value_si")
+                                      else float(mt.K)),
+                                "kLa": (mt.kLa.value_si
+                                        if hasattr(mt.kLa, "value_si")
+                                        else float(mt.kLa)),
+                            }
+                            for mt in deck_mt
+                        ]
+                    for p in pools_cfg:
+                        idx = getattr(p, "monomer_poly_index", None)
+                        if idx is not None and 0 <= idx < len(core_species):
+                            routing[p.label] = _artifact_species_label(core_species[idx])
+                        # schema-2.9 explicit-DP inventory: resolve the
+                        # solver's real DP->core-species-index roster
+                        # (explicit_dp_to_species_index) into artifact labels
+                        # against the SAME core universe every other label
+                        # comes from. These are the actual discrete chips the
+                        # solver tracks; a pool with a single cutoff chip
+                        # keeps the byte-identical 2.3 block, a multi-chip
+                        # pool emits the full inventory. Never fabricated:
+                        # only real, in-range tracked chips are listed.
+                        edp = getattr(p, "explicit_dp_to_species_index", None)
+                        if edp:
+                            chip_labels = {
+                                int(dp): _artifact_species_label(
+                                    core_species[cidx])
+                                for dp, cidx in edp.items()
+                                if 0 <= cidx < len(core_species)
+                            }
+                            if chip_labels:
+                                explicit_dp_species_by_pool[p.label] = chip_labels
+                    break
+
+                if engine_pools_cfg is not None:
+                    # Authoritative: the live solver's configured pools.
+                    configured = [getattr(p, "label", "") for p in engine_pools_cfg] or None
+                    configured_pools_cfg = engine_pools_cfg
+                else:
+                    # No live engine (direct/test invocation, or the initial
+                    # save before any solver was ever built): fall back to the
+                    # full registry. build_polymer_moments_artifact's own default
+                    # would do the same; passing it explicitly keeps the fallback
+                    # condensed-species derivation keyed on the SAME pool set.
+                    configured = [getattr(p, "label", "") for p in pool_registry] or None
+                    configured_pools_cfg = pool_registry
+                    # P1-4: a polymer run that HAS reaction systems but no
+                    # live polymer engine yet (initial save at main.py's
+                    # "Completed initial enlarge edge step" path) is by
+                    # definition pre-rebuild -- mark it.
+                    if self.reaction_systems:
+                        sidecar_stale_topology = True
+
+                # condensed_species: the engine's final-core mask is honored
+                # verbatim when length-matched; otherwise derive membership from
+                # the CONFIGURED pools only (mirrors the solver's mask, which
+                # never marks unconfigured-daughter proxies condensed).
+                condensed = derive_condensed_species(
+                    core_species, configured_pools_cfg, solver_mask)
+
+                write_polymer_pools_sidecar(
+                    pool_registry=pool_registry,
+                    output_dir=target_dir,
+                    iteration=getattr(self.reaction_model, "iteration_num", 0),
+                    core_species=core_species,
+                    core_reactions=core_reactions,
+                    configured_pool_labels=configured,
+                    condensed_species=condensed,
+                    monomer_routing_by_pool=routing,
+                    cantera_index_map=cantera_index_map,
+                    initial_explicit_by_pool=initial_explicit_by_pool,
+                    generation_mass_transfer=generation_mass_transfer,
+                    generation_v_poly_m3=generation_v_poly_m3,
+                    explicit_dp_species_by_pool=explicit_dp_species_by_pool,
+                    stale_topology=sidecar_stale_topology,
+                )
+        except Exception as e:
+            logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)
 
         self.save_profiler_info()
 
@@ -2350,7 +2614,14 @@ class RMG_Memory(object):
         the resulting condition is added to the end of condition_list
         """
         if self.condition_list == []:
-            self.condition_list.append({key: value[0] for key, value in self.Ranges.items()})
+            seed_cond = {key: value[0] for key, value in self.Ranges.items()}
+            # Ranges["P"] is stored in log-space (see __init__), so the seed
+            # condition must be exponentiated back to real pressure, exactly as
+            # the sampled (non-seed) branch does below. Without this the first
+            # iteration runs at ln(P) Pa instead of P Pa.
+            if "P" in seed_cond:
+                seed_cond["P"] = np.exp(seed_cond["P"])
+            self.condition_list.append(seed_cond)
             self.scaled_condition_list.append({key: 0.0 for key, value in self.Ranges.items()})
         elif len(self.condition_list[0]) == 0:
             pass

@@ -43,13 +43,15 @@ import rmgpy.data.rmg
 from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
-from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_concerted_loss_evidence, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, readjudicate_conduit_admission, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
-from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.kinetics import Arrhenius, KineticsData, ArrheniusBM
+from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity
@@ -225,6 +227,26 @@ class CoreEdgeReactionModel:
         self.index_species_dict = {}
         self.save_edge_species = False
         self.iteration_num = 0
+        # Mass-flux spawn-gate state (multi-pool §4.4, spec 2026-06-10): the
+        # motif ledger + trailing-window accumulator live on the reaction
+        # model. In-memory ONLY — an RMG restart resets windows and deferred
+        # motifs re-earn their bar (correct-but-loud, same philosophy as
+        # unstamped-reaction demotion). main.py stashes the 3-tuple
+        # polymer_flux_snapshot (gross, pool_stats, proxy_event_mass_total)
+        # plus the iteration it was taken at right after each polymer
+        # simulate(); it stays None for non-polymer systems.
+        self.polymer_motif_ledger = []
+        self.polymer_flux_accumulator = MassFluxAccumulator()
+        self.polymer_flux_snapshot = None
+        self.polymer_flux_snapshot_iteration = -1
+        # M18.4 opt-in (default-off): the resolved per-run conduit-admission
+        # override, set from the RMG object's polymer_conduit_admission (the
+        # options(polymerConduitAdmission=...) input flag) in
+        # RMG.load_input. None = inherit the module-constant fallback (off);
+        # True/False = explicit per-deck enable/disable. Threaded into
+        # readjudicate_conduit_admission so no deck's generation behavior
+        # changes unless it opts in.
+        self.conduit_admission_enabled = None
         self.thermo_tol_keep_spc_in_edge = np.inf
         self.Gfmax = np.inf
         self.Gmax = np.inf
@@ -304,6 +326,135 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
+    def _register_polymer(self, poly, generate_thermo=True):
+        """
+        Register a new :class:`Polymer` species in the model, checking for
+        duplicates by fingerprint rather than by molecule isomorphism.
+
+        Every new Polymer also gets three moment-tracking dummy species
+        (``_mu0``, ``_mu1``, ``_mu2``) that act as placeholders in the
+        solver's y-vector for the distribution moments.
+
+        Returns ``(polymer, is_new)`` — the canonical polymer object and
+        whether it was freshly added.
+        """
+        fp = poly.fingerprint
+        # Search existing registries (fast: check in order of likelihood)
+        for spec in self.new_species_list + self.core.species + self.edge.species:
+            if isinstance(spec, Polymer) and spec.fingerprint == fp:
+                # Round-25 P2-2: dedup discards the incoming object, so a
+                # channel-free first registration must not silently swallow a
+                # later channel-bearing equivalent's radical_qssa_unzip /
+                # monomer_product_species. Transfer them onto the canonical
+                # existing Polymer (same posture as the gas-veto props
+                # transfer in make_new_species, commit c133b34e1).
+                from rmgpy.polymer import merge_unzip_channel_on_dedup
+                merge_unzip_channel_on_dedup(spec, poly)
+                return spec, False
+
+        # Fresh polymer product — reset caches so it acts as an independent species
+        poly._fingerprint = None
+        poly._cached_backbone_group = None
+
+        self.species_counter += 1
+        poly.index = self.species_counter
+        poly.creation_iteration = self.iteration_num
+
+        # Disambiguate label if already taken by another species (e.g. two
+        # structurally distinct scission tails both labelled "PS_scission_tail").
+        # Unique labels are required so each Polymer gets its own mu dummies.
+        all_labels = {spec.label for spec in self.new_species_list + self.core.species + self.edge.species}
+        if poly.label in all_labels:
+            base = poly.label
+            n = 2
+            while f"{base}_{n}" in all_labels:
+                n += 1
+            poly.label = f"{base}_{n}"
+
+        formula = poly.molecule[0].get_formula()
+        if formula in self.species_dict:
+            self.species_dict[formula].append(poly)
+        else:
+            self.species_dict[formula] = [poly]
+
+        self.new_species_list.append(poly)
+        if poly.reactive:
+            self.index_species_dict[poly.index] = poly
+
+        logging.debug("Creating new Polymer species %s", poly.label)
+
+        if generate_thermo:
+            self.generate_thermo(poly)
+
+        # Inject moment-tracking dummy species (_mu0, _mu1, _mu2).
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            m_label = f"{poly.label}{suffix}"
+            # Check whether the dummy already exists (e.g., from the input
+            # file) to avoid duplicates.
+            already_exists = False
+            for existing in self.new_species_list + self.core.species + self.edge.species:
+                if existing.label == m_label:
+                    already_exists = True
+                    break
+            if already_exists:
+                continue
+            m_spc = Species(label=m_label, reactive=False)
+            m_spc.molecule = [Molecule().from_smiles("[Ne]")]
+            m_spc.is_moment_dummy = True
+            m_spc.index = -1
+            m_spc.creation_iteration = self.iteration_num
+            self.new_species_list.append(m_spc)
+            formula = m_spc.molecule[0].get_formula()
+            if formula in self.species_dict:
+                self.species_dict[formula].append(m_spc)
+            else:
+                self.species_dict[formula] = [m_spc]
+            if generate_thermo:
+                self.generate_thermo(m_spc)
+
+        return poly, True
+
+    def _apply_multipool_spawn_pass(self, candidates):
+        """Run multi-pool polymer spawn detection on a list of candidate Species.
+
+        Iteration-boundary hook (see docs/multi_pool_design.md §4.5). Filters
+        ``candidates`` to those tagged ``is_polymer_proxy``, classifies them
+        against the current live pool registry, and drains any spawn intents
+        into newly-registered :class:`Polymer` objects. The registration path
+        goes through :meth:`make_new_species`, so each daughter Polymer
+        auto-attaches its own ``_mu0`` / ``_mu1`` / ``_mu2`` moment-dummy
+        core species. The next :meth:`HybridPolymerSystem.initialize_model`
+        sees the expanded core species list and grows the state vector
+        through the standard polymer-pool resolution path.
+        """
+        from rmgpy.polymer import (
+            apply_spawn_intents,
+            collect_polymer_pool_registry,
+            process_polymer_candidates_multipool,
+        )
+        proxy = [c for c in candidates if getattr(c, "is_polymer_proxy", False)]
+        if not proxy:
+            return
+        # Identity-deduped: a freshly-promoted daughter Polymer sits in BOTH
+        # core.species and new_species_list until the next enlarge clears it.
+        pool_registry = collect_polymer_pool_registry(
+            self.core.species, self.edge.species, self.new_species_list)
+        if not pool_registry:
+            return
+        _, intents = process_polymer_candidates_multipool(
+            candidates=proxy,
+            reaction_model=self,
+            pool_registry=pool_registry,
+            iteration=getattr(self, "iteration_num", 0),
+        )
+        if not intents:
+            return
+        apply_spawn_intents(
+            self, intents,
+            iteration=getattr(self, "iteration_num", 0),
+            existing_pools=pool_registry,
+        )
+
     def make_new_species(self, object, label="", reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
@@ -311,6 +462,12 @@ class CoreEdgeReactionModel:
         object. It is emphasized that `reactive` relates to the :Class:`Species` attribute, while `reactive_structure`
         relates to the :Class:`Molecule` attribute.
         """
+
+        # Polymer objects must be registered via their own path (fingerprint-based
+        # deduplication rather than molecule isomorphism, which would conflate
+        # different Polymer distributions that share the same proxy structure).
+        if isinstance(object, Polymer):
+            return self._register_polymer(object, generate_thermo=generate_thermo)
 
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
@@ -321,11 +478,26 @@ class CoreEdgeReactionModel:
 
         molecule.clear_labeled_atoms()
 
+        # Durable gas-volatile veto (rmgpy.polymer): a positive verdict set by
+        # the polymer handshake / chip demotion on a genuine discrete gas
+        # volatile that got proxy-contaminated. It must reach the
+        # solver-visible Species. Read it off the incoming object/molecule and
+        # transfer it below -- onto BOTH a newly created Species AND an existing
+        # (deduped) Species, since dedup short-circuits before the proxy logic
+        # (first-write-wins would otherwise drop the verdict).
+        from rmgpy.polymer import (has_polymer_gas_veto,
+                                   POLYMER_REFERENCE_STATE_GAS_VETO_KEY)
+        _gas_veto = has_polymer_gas_veto(object) or has_polymer_gas_veto(molecule)
+
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
         if check_existing:
             spec = self.check_for_existing_species(molecule)
             if spec is not None:
+                if _gas_veto:
+                    if not isinstance(getattr(spec, "props", None), dict):
+                        spec.props = {}
+                    spec.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
                 return spec, False
 
         # If we're here then we're ready to make the new species
@@ -341,11 +513,12 @@ class CoreEdgeReactionModel:
             else:
                 return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]
 
-        try:
-            spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(label=label, molecule=[molecule], reactive=reactive)
-
+        thermo, transport = getattr(object, 'thermo', None), getattr(object, 'transport_data', None)
+        spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=thermo, transport_data=transport)
+        if molecule.is_polymer_proxy or object.is_polymer_proxy:
+            spec.is_polymer_proxy = True
+        if _gas_veto:
+            spec.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
         spec.generate_resonance_structures()
 
         if check_decay:
@@ -493,8 +666,66 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
+        real_products_snapshot = None
+        relabeled = False
+        polymer_ea_pre = None
+        polymer_real_H0 = None
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+
+            # Polymer handshake: if any reactant is a Polymer, attempt to
+            # convert product Molecule fragments into new Polymer objects
+            # (modification, scission-head, or scission-tail) before the
+            # generic make_new_species loop runs.  Without this step, the
+            # reacted proxy fragments would be registered as plain small-
+            # molecule Species and the polymer distribution would "leak"
+            # out of the kinetic model as gas-phase molecules.
+            polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
+            if polymer_reactants:
+                real_products_snapshot = [p.copy(deep=True) for p in forward.products]
+                # Per-product H-loss conduit verdicts (stage S2): computed
+                # HERE, the one place where resolved reactants and raw
+                # products are both visible, then threaded through the
+                # handshake into create_reacted_copy(h_loss_feature=...).
+                # Ruling round 20 (conduit collapse B): route on the pure
+                # SHAPE EVIDENCE only -- the QSSA-eliminating composite
+                # false-positively refused live chain radicals
+                # (poly_102 r29-r31, 'qssa-invalid').
+                h_loss_verdicts = compute_h_loss_shape_evidence(
+                    reactants, forward.products, polymer_reactants)
+                # Concerted-loss evidence (regen5 route): same seam, same
+                # contract -- the ejected-gas Molecule per heavy product of
+                # an atom-balanced unimolecular concerted elimination, so
+                # the handshake can book the closed-shell chain daughter
+                # into its channel-keyed {label}_loss{gas} feature pool
+                # instead of misbooking it as a scission tail.
+                concerted_loss_gases = compute_concerted_loss_evidence(
+                    reactants, forward.products, polymer_reactants)
+                try:
+                    relabeled = _handshake_structures(forward.products, polymer_reactants,
+                                                      h_loss_verdicts=h_loss_verdicts,
+                                                      concerted_loss_gases=concerted_loss_gases)
+                except PolymerCrosslinkError as e:
+                    # Chain-chain coupling is not representable in the method-of-
+                    # moments model; discard the reaction rather than leak the
+                    # coupled product as a gas-phase species.
+                    logging.debug("Rejecting crosslink polymer reaction %s: %s", forward, e)
+                    return None, False
+                # Flag end-group (terminal) modifications so the polymer solver
+                # scales them by chain-end density (mu0) instead of mu1.
+                forward.is_end_group_reaction = is_end_group_reaction(forward.products)
+                # Chip product surgery + archetype stamping (spec 2026-06-10
+                # §4.2): MUST run after the stored is_end_group_reaction flag
+                # and before make_new_species registers the products, so the
+                # SCISSION daughter is replaced before any spawn-candidate or
+                # registration pass can see it (never-queue).
+                stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
+                # Handshake replaced some Molecule objects in forward.products
+                # with Polymer objects (and chip surgery may have swapped them
+                # again), so forward.pairs references stale objects.
+                # Invalidate pairs so they are regenerated later.
+                forward.pairs = None
+
             products = []
             if perform_cut:
                 # check if the product is too large so that we can cut
@@ -521,7 +752,39 @@ class CoreEdgeReactionModel:
         else:
             try:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+
+                # Polymer handshake (same logic as the is_forward branch):
+                # resolve reactants first so we can detect Polymer objects,
+                # then convert product Molecules before they are registered.
+                polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
+                if polymer_reactants:
+                    real_products_snapshot = [p.copy(deep=True) for p in forward.products]
+                    # Same S2 evidence computation as the is_forward
+                    # branch (round-20 conduit collapse: evidence, not the
+                    # QSSA composite).
+                    h_loss_verdicts = compute_h_loss_shape_evidence(
+                        reactants, forward.products, polymer_reactants)
+                    # Same concerted-loss evidence as the is_forward branch
+                    # (regen5 route) -- this else-branch is the LIBRARY
+                    # ingestion path, the live seam for hand-authored
+                    # unimolecular concerted-elimination channels.
+                    concerted_loss_gases = compute_concerted_loss_evidence(
+                        reactants, forward.products, polymer_reactants)
+                    relabeled = _handshake_structures(forward.products, polymer_reactants,
+                                                      h_loss_verdicts=h_loss_verdicts,
+                                                      concerted_loss_gases=concerted_loss_gases)
+                    forward.is_end_group_reaction = is_end_group_reaction(forward.products)
+                    # Same surgery + stamping as the is_forward branch.
+                    stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
+                    forward.pairs = None
+
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+            except PolymerCrosslinkError as e:
+                # Chain-chain coupling is not representable in the method-of-
+                # moments model; discard the reaction rather than leak the
+                # coupled product as a gas-phase species.
+                logging.debug("Rejecting crosslink polymer reaction %s: %s", forward, e)
+                return None, False
             except:
                 logging.error(f"Error when making species in reaction {forward} from {forward.family}")
                 raise
@@ -540,9 +803,45 @@ class CoreEdgeReactionModel:
         forward.reactants = reactants
         forward.products = products
 
+        # PP v1 campaign refusal (adjudicated round 63): a row bridging PURE
+        # gas-phase radicals into a condensed pool proxy (association, either
+        # generated orientation) is refused conduit-deferred at classification
+        # time, so the solver's thermo reference-state tripwire never sees it
+        # live. The association orientation has NO polymer reactant, so the
+        # polymer_reactants stamping blocks above never see it -- this is the
+        # one seam where both RESOLVED sides are visible for every branch
+        # (the recombination product resolves onto the registered pool
+        # Polymer via species_dict isomorphism in make_new_species).
+        # pool_registry (r87 shape B): the reference-state-split
+        # isomerization carries no Polymer participant on EITHER side, so
+        # the monomer scale for the chain-scale conjunct comes from the
+        # registered pools; the lambda keeps the collection lazy (the stamp
+        # resolves it only after its cheap evidence pre-gate passes).
+        stamp_gas_association_refusal(
+            forward,
+            pool_registry=lambda: collect_polymer_pool_registry(
+                self.core.species, self.edge.species, self.new_species_list))
+
         if check_existing:
             found, rxn = self.check_for_existing_reaction(forward)
             if found:
+                # r71 FIX 1 (run-5 stall): the canonical-dedup path discards
+                # the freshly stamped `forward` -- merge its polymer
+                # adjudication (refusal, archetype, chip/eject units,
+                # end-group flag) onto the returned canonical object so the
+                # adjudication is never lost with the discarded candidate.
+                # qssa-invalid wins over conduit-deferred inside the merge.
+                if rxn is not None:
+                    merge_polymer_adjudication_stamps(forward, rxn)
+                    # G6 re-adjudication defect fix: if the discarded
+                    # candidate carried a PROVISIONAL kinetics-not-yet-
+                    # assigned admission verdict, the merge transferred its
+                    # pending marker; resolve it HERE against the canonical
+                    # object's final kinetics -- this early return never
+                    # reaches the post-kinetics hook below. Census-only,
+                    # never raises.
+                    readjudicate_conduit_admission(
+                        rxn, admission_enabled=self.conduit_admission_enabled)
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
@@ -573,6 +872,34 @@ class CoreEdgeReactionModel:
 
             if isinstance(forward.kinetics, KineticsData):
                 forward.kinetics = forward.kinetics.to_arrhenius()
+            # Polymer real-ΔH BM pre-conversion (spec 2026-06-27 §3-§5). The
+            # handshake relabeled the routing products to moment-pool proxies,
+            # whose thermo would pollute the BM->Arrhenius Ea. Convert here using
+            # the REAL atom-balanced products so fix_barrier_height (next) sees a
+            # plain Arrhenius and no-ops its BM branch. reaction.py is untouched.
+            if relabeled and isinstance(forward.kinetics, ArrheniusBM):
+                try:
+                    real_dHrxn = self._polymer_real_dHrxn(reactants, real_products_snapshot)
+                except Exception as e:
+                    logging.warning(
+                        "Polymer real-ΔH estimation failed for reaction %s (family %s): "
+                        "%s; falling back to routing-product enthalpy (Ea may be polluted).",
+                        forward, getattr(forward, 'family', None), e)
+                    real_dHrxn = None
+                if real_dHrxn is not None:
+                    self._convert_bm_kinetics_with_dHrxn(forward, real_dHrxn)
+                    # I-1 (spec §8 / Task 7): stash the real-product Ea + H0 floor so
+                    # the downstream pool-sourced endothermicity clamp in fix_barrier_height
+                    # cannot re-pollute Ea.
+                    polymer_ea_pre = forward.kinetics.Ea.value_si
+                    try:
+                        polymer_real_H0 = self._polymer_real_H0(reactants, real_products_snapshot)
+                    except Exception as e:
+                        logging.warning(
+                            "Polymer real-H0 estimation failed for reaction %s (family %s): "
+                            "%s; downstream pool H0 clamp left uncorrected.",
+                            forward, getattr(forward, 'family', None), e)
+                        polymer_real_H0 = None
             #  correct barrier heights of estimated kinetics
             if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
                 forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.
@@ -587,11 +914,125 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 forward.fix_barrier_height(force_positive=True,solvent="")
 
+            if polymer_real_H0 is not None and isinstance(forward.kinetics, Arrhenius):
+                # I-1 (spec §8 / Task 7): post-fix_barrier_height real-product correction.
+                # fix_barrier_height's endothermicity clamp reads pool-relabeled products and
+                # may have raised Ea to a pool-sourced H0 floor.  Replay ONLY the monotonic
+                # floors that fix_barrier_height applies, but from real (pre-handshake) thermo:
+                #   (a) H0 clamp: if real H0 >= 0 and ea_pre < real H0, floor = real H0
+                #   (b) force_positive: if pressure_dependence + unimolecular, floor = 0
+                # If the result differs from what fix_barrier_height produced, correct it.
+                ea_correct = polymer_ea_pre
+                if polymer_real_H0 >= 0 and ea_correct < polymer_real_H0:
+                    ea_correct = polymer_real_H0
+                if self.pressure_dependence and forward.is_unimolecular() and ea_correct < 0:
+                    ea_correct = 0.0
+                if abs(forward.kinetics.Ea.value_si - ea_correct) > 1e-6:
+                    polluted = forward.kinetics.Ea.value_si
+                    forward.kinetics.Ea.value_si = ea_correct
+                    forward.kinetics.comment += (
+                        "\nEa correction (polymer real-product H0): {0:.1f} -> {1:.1f} kJ/mol "
+                        "(downstream clamp had used relabeled pool-product endothermicity).".format(
+                            polluted / 1000., ea_correct / 1000.))
+                    logging.info(
+                        "For reaction %s, Ea corrected from %.1f to %.1f kJ/mol "
+                        "(pool-product H0 clamp reverted to real-product result).",
+                        forward, polluted / 1000., ea_correct / 1000.)
+
+        # G6 re-adjudication defect fix: the r93 admission stamp above ran
+        # BEFORE kinetics assignment, so a family-generated row's G6 verdict
+        # was the PROVISIONAL kinetics-not-yet-assigned deny. The kinetics
+        # conversion / barrier-correction block is done -- re-adjudicate G6
+        # against the final kinetics and census the FINAL verdict
+        # (would_admit=1, or kinetics-not-exportable for genuinely
+        # non-Arrhenius rates). Census-only, never raises; no-op unless the
+        # row carries the pending marker.
+        readjudicate_conduit_admission(
+            forward, admission_enabled=self.conduit_admission_enabled)
+
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
 
         # Return newly created reaction
         return forward, True
+
+    def _convert_bm_kinetics_with_dHrxn(self, reaction, dHrxn298):
+        """Convert a reaction's ArrheniusBM kinetics to Arrhenius using the REAL
+        atom-balanced reaction enthalpy ``dHrxn298`` (J/mol at 298 K).
+
+        Mirrors the ArrheniusBM branch of Reaction.fix_barrier_height
+        (rmgpy/reaction.py:1075-1085) EXACTLY -- the ONLY difference is the
+        enthalpy source (real products here vs the moment-pool-relabeled
+        products fix_barrier_height would read). Pinned by a parity test.
+        """
+        Ea = reaction.kinetics.E0.value_si  # intrinsic barrier height E0
+        reaction.kinetics = reaction.kinetics.to_arrhenius(dHrxn298)
+        if reaction.kinetics.Ea.value_si < 0.0 and reaction.kinetics.Ea.value_si < Ea:
+            Ea = min(0.0, Ea)
+            reaction.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                reaction.kinetics.Ea.value_si / 1000., Ea / 1000.)
+            logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                reaction, reaction.kinetics.Ea.value_si / 1000., Ea / 1000.))
+            reaction.kinetics.Ea.value_si = Ea
+
+    def _thermo_for_snapshot_product(self, product):
+        """Return a Species carrying thermo for a snapshot product (a deep copy
+        of a pre-handshake product, Molecule or Species).
+
+        Reuse existing thermo if the snapshot is a Species already carrying it;
+        otherwise estimate via the SAME path normal generation uses
+        (clear_labeled_atoms -> generate_resonance_structures -> generate_thermo)
+        on a TRANSIENT, non-registered Species (no model side effects, the real
+        fragment is never registered).
+        """
+        if isinstance(product, Species):
+            if product.has_thermo():
+                return product
+            product.molecule[0].clear_labeled_atoms()
+            spc = product
+        else:  # Molecule
+            product.clear_labeled_atoms()
+            spc = Species(molecule=[product])
+        spc.generate_resonance_structures()
+        self.generate_thermo(spc)
+        return spc
+
+    def _polymer_real_dHrxn(self, reactants, real_products_snapshot):
+        """Real atom-balanced ΔH298 (J/mol at 298 K) for a polymer reaction whose
+        routing products were relabeled. ``reactants`` are registered Species
+        (carry thermo). ``real_products_snapshot`` are deep copies of the
+        pre-handshake products (Molecule or Species, thermo preserved if present).
+
+        Side effect: entries in ``real_products_snapshot`` are replaced in-place with
+        the thermo-bearing Species objects created by ``_thermo_for_snapshot_product``.
+        This allows downstream callers (e.g. ``_polymer_real_H0``) to call
+        ``_thermo_for_snapshot_product`` on the same list without re-processing the
+        underlying Molecule objects (which can fail on repeated resonance-structure
+        generation).
+        """
+        dHrxn = 0.0
+        for reactant in reactants:
+            dHrxn -= reactant.get_enthalpy(298)
+        for i, product in enumerate(real_products_snapshot):
+            spc = self._thermo_for_snapshot_product(product)
+            real_products_snapshot[i] = spc  # upgrade Molecule -> Species with thermo
+            dHrxn += spc.get_enthalpy(298)
+        return dHrxn
+
+    def _polymer_real_H0(self, reactants, real_products_snapshot):
+        """Real atom-balanced 0 K reaction enthalpy H0 (J/mol) for a relabeled polymer
+        reaction, mirroring the H0 term in Reaction.fix_barrier_height (reaction.py:1073-1074)
+        EXACTLY, but from the real (pre-handshake) products instead of the moment-pool proxies.
+        Reuses the same thermo-bearing snapshot Species as _polymer_real_dHrxn."""
+        def _E0(spec):
+            td = spec.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+        H0 = 0.0
+        for reactant in reactants:
+            H0 -= _E0(reactant)
+        for product in real_products_snapshot:
+            H0 += _E0(self._thermo_for_snapshot_product(product))
+        return H0
 
     def make_new_pdep_reaction(self, forward):
         """
@@ -770,7 +1211,62 @@ class CoreEdgeReactionModel:
             react_edge=react_edge,
         )
 
+        # Multi-pool spawn pass — detect novel polymer chain populations among
+        # the freshly-added candidates and grow the pool registry accordingly
+        # (see docs/multi_pool_design.md §4.5).
+        if self.new_species_list:
+            self._apply_multipool_spawn_pass(self.new_species_list)
+
+        # Item 16: engine-owned core promotion for mid-run-spawned daughter
+        # Polymer pools (r91 closure). Runs at the spawn/enlarge boundary,
+        # every enlarge, so daughters spawned during THIS enlarge and any
+        # left edge-resident by an earlier iteration both promote.
+        self._promote_spawned_polymer_pools(requires_rms=requires_rms)
+
         logging.info("")
+
+    def _promote_spawned_polymer_pools(self, requires_rms=False):
+        """Item 16 (r91 closure): promote every mid-run-spawned daughter
+        Polymer pool -- plus its ``_mu0/_mu1/_mu2`` moment dummies, handled
+        inside :meth:`add_species_to_core` -- from the edge (or a fresh
+        registration in ``new_species_list``) into the integrated CORE state
+        at the spawn/enlarge boundary.
+
+        Why not flux admission: a spawned daughter's ONLY formation route is
+        the stamped pool-coupled row that created it, and while the daughter
+        has no solver pool config the rebuild REFUSES that row
+        conduit-deferred (SPAWNED-POOL DEMOTION REFUSAL,
+        rmgpy/solver/polymer.pyx r91) -- zero flux everywhere including
+        ``edge_species_rates``, so the standard flux-based promotion can
+        never fire: a self-sealing loop. A daughter pool is not an ordinary
+        edge candidate anyway -- it is a moment-integrated population whose
+        PolymerPoolConfig must point at mu indices in the integrated core
+        state (edge-only configs would invent indices or integrate nothing).
+        Promotion here lets the next solver rebuild derive its config from
+        the registered species (``derive_daughter_pool_configs``), after
+        which the SAME stamped row resolves and runs fully apportioned (the
+        refusal is deliberately non-sticky). The r91 refusal stays ARMED for
+        any endpoint that still has no config.
+
+        Spawned daughters are born honest-empty (moments [0,0,0]; no copied
+        parent mass), so admitting them to the core adds zero mass and zero
+        initial flux -- only state slots and a config."""
+        from rmgpy.polymer import is_engine_spawned_pool_daughter
+
+        promoted = []
+        for spc in list(self.edge.species) + list(self.new_species_list):
+            if not is_engine_spawned_pool_daughter(spc):
+                continue
+            if spc in self.core.species:
+                continue
+            self.add_species_to_core(spc, requires_rms=requires_rms)
+            promoted.append(spc.label)
+        if promoted:
+            logging.info(
+                "Item 16: promoted %d spawned polymer daughter pool(s) into "
+                "the core at the enlarge boundary: %s",
+                len(promoted), ", ".join(promoted))
+        return promoted
 
     def add_new_surface_objects(self, obj, new_surface_species, new_surface_reactions, reaction_system):
         """
@@ -875,7 +1371,12 @@ class CoreEdgeReactionModel:
             if not self.pressure_dependence:
                 # The pressure dependence option is turned off entirely
                 pdep = False
-            elif self.pressure_dependence.maximum_atoms is not None and self.pressure_dependence.maximum_atoms < isomer_atoms:
+            elif any(isinstance(spec, Polymer) for spec in rxn.reactants + rxn.products):
+                # Polymer reactions represent per-site kinetics on a
+                # macromolecule; pressure-dependent treatment is not meaningful.
+                pdep = False
+            elif self.pressure_dependence.maximum_atoms is not None \
+                    and self.pressure_dependence.maximum_atoms < isomer_atoms:
                 # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
                 pdep = False
             elif not (rxn.is_isomerization() or rxn.is_dissociation() or rxn.is_association()):
@@ -983,6 +1484,15 @@ class CoreEdgeReactionModel:
             family = get_db("kinetics").families[reaction.family]
             reaction.reactants, reaction.products = reaction.products, reaction.reactants
             reaction.pairs = [(p, r) for r, p in reaction.pairs]
+            # The polymer flux archetype is orientation-bound (parent/daughter
+            # roles, eject sign), so the stamp written for the generation
+            # direction is stale after the swap. r92 (PP run-10): re-run the
+            # flux classification on the FLIPPED direction -- restamp when it
+            # resolves, REFUSE conduit-deferred (zero flux) when it does not.
+            # Never demote to legacy UNRESOLVED: that dispatched live
+            # unclassified mu1 flux with resolved pools (run-10 rows
+            # r8/r30-32, the r71-banned class through a generation-time door).
+            restamp_flipped_polymer_archetype(reaction)
             if family.own_reverse and hasattr(reaction, "reverse"):
                 if reaction.reverse:
                     reaction.template = reaction.reverse.template
@@ -1167,6 +1677,30 @@ class CoreEdgeReactionModel:
         # Add the species to the core
         self.core.species.append(spec)
 
+        # If the species is a Polymer, also promote its moment-tracking
+        # dummies (_mu0, _mu1, _mu2) so the solver can track the distribution.
+        # The dummies live in the edge when the Polymer went through
+        # add_species_to_edge, but a freshly-registered daughter promoted
+        # straight from new_species_list (item 16 spawn/enlarge-boundary
+        # promotion) still holds its dummies there -- pull from both, else
+        # the daughter pool would be core-resident with an incomplete mu
+        # triplet (unresolvable config; derive_daughter_pool_configs skips).
+        if isinstance(spec, Polymer):
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                m_label = f"{spec.label}{suffix}"
+                for dummy in list(self.edge.species):
+                    if dummy.label == m_label:
+                        self.edge.species.remove(dummy)
+                        if dummy not in self.core.species:
+                            self.core.species.append(dummy)
+                        break
+                else:
+                    for dummy in self.new_species_list:
+                        if dummy.label == m_label:
+                            if dummy not in self.core.species:
+                                self.core.species.append(dummy)
+                            break
+
         rxn_list = []
         if spec in self.edge.species:
             if requires_rms:
@@ -1203,8 +1737,19 @@ class CoreEdgeReactionModel:
     def add_species_to_edge(self, spec, requires_rms=False):
         """
         Add a species `spec` to the reaction model edge and optionally the RMS phase.
+        If ``spec`` is a Polymer, also place its moment-tracking dummies.
         """
         self.edge.species.append(spec)
+
+        # Promote any moment dummies that are still only in new_species_list
+        if isinstance(spec, Polymer):
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                m_label = f"{spec.label}{suffix}"
+                for dummy in self.new_species_list:
+                    if dummy.label == m_label and dummy not in self.edge.species:
+                        self.edge.species.append(dummy)
+                        break
+
         if not requires_rms:
             return
         destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"

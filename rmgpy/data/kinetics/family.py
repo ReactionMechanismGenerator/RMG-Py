@@ -32,6 +32,7 @@ This module contains functionality for working with kinetics families.
 """
 import codecs
 import itertools
+import json
 import logging
 import multiprocessing as mp
 import os.path
@@ -69,6 +70,24 @@ import rmgpy.constants as constants
 from rmgpy.data.solvation import SoluteData, add_solute_data, SoluteTSData, to_soluteTSdata
 
 ################################################################################
+
+# Gated, audited tolerance for KineticsFamily.add_reverse_attribute's "no matching reverse
+# reaction found" KineticsError. Off by default so behavior is unchanged unless explicitly
+# enabled (e.g. via the `tolerateMissingReverseReactions` input.py option).
+#
+# TOLERATE_MISSING_REVERSE:
+#   False (default) - hard error, byte-for-byte identical to historical behavior.
+#   True            - tolerate an unlimited number of dropped reactions.
+#   positive int N  - tolerate up to N total dropped reactions (summed across all families);
+#                      the (N+1)th drop raises KineticsError with a summary.
+TOLERATE_MISSING_REVERSE = False
+
+# Optional path to a JSONL file that dropped reactions get appended to (one JSON object per
+# line) when TOLERATE_MISSING_REVERSE is enabled. None disables audit logging.
+DROPPED_REVERSE_LOG_PATH = None
+
+# Per-family counts of reactions dropped via TOLERATE_MISSING_REVERSE, keyed by family label.
+_dropped_reverse_counts = {}
 
 
 class TemplateReaction(Reaction):
@@ -1606,7 +1625,8 @@ class KineticsFamily(Database):
         # Return the product structures
         return product_structures
 
-    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_atoms=True):
+    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_atoms=True,
+                                     apply_species_constraints=True):
         """
         For a given set of `reactant_structures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1617,6 +1637,13 @@ class KineticsFamily(Database):
         returns a list of the product structures.
         If ``relabel_atoms`` is ``True``, product atom labels of reversible families
         will be reversed to assist in identifying forbidden structures.
+        If ``apply_species_constraints`` is ``True`` (the default), products that exceed the
+        user's model-growth size limits are rejected via ``fails_species_constraints`` (which
+        covers both ``generatedSpeciesConstraints`` and, for polymer-proxy species,
+        ``generatePolymerConstraints``). This is relaxed (``False``) only when regenerating an
+        already-existing reaction to count its degeneracy, where the throwaway products must not
+        be filtered by any model-growth size limit. Family-specific forbidden structures
+        (``is_molecule_forbidden``) are always enforced regardless of this flag.
         """
 
         # Clear any previous atom labeling from all reactant structures
@@ -1654,13 +1681,17 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            if fails_species_constraints(struct):
+            if any(spc.is_polymer_proxy for spc in reactant_structures + product_structures):
+                for spc in reactant_structures + product_structures:
+                    spc.is_polymer_proxy = True
+            if apply_species_constraints:
                 reason = fails_species_constraints(struct)
-                raise ForbiddenStructureException(
-                    "Species constraints forbids product species {0}. Please "
-                    "reformulate constraints, or explicitly "
-                    "allow it. Reason: {1}".format(struct, reason)
-                )
+                if reason:
+                    raise ForbiddenStructureException(
+                        "Species constraints forbids product species {0}. Please "
+                        "reformulate constraints, or explicitly "
+                        "allow it. Reason: {1}".format(struct, reason)
+                    )
 
         return product_structures
 
@@ -1810,7 +1841,9 @@ class KineticsFamily(Database):
         For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
         attribute that contains the reverse reaction information (like degeneracy)
 
-        Returns `True` if successful and `False` if the reverse reaction is forbidden.
+        Returns `True` if successful and `False` if the reverse reaction is forbidden, or (when
+        module-level `TOLERATE_MISSING_REVERSE` is enabled) if no matching reverse reaction was
+        found and the drop is being tolerated.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
         if self.own_reverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
@@ -1871,8 +1904,37 @@ class KineticsFamily(Database):
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in "
                                   "reaction family {1} for forward reaction {2}."
                                   "\n".format(len(reactions), self.label, str(rxn)))
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
-                                        "{1}.".format(self.label, str(rxn)))
+                    if TOLERATE_MISSING_REVERSE is False:
+                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
+                                            "{1}.".format(self.label, str(rxn)))
+                    else:
+                        total_dropped = sum(_dropped_reverse_counts.values()) + 1
+                        if TOLERATE_MISSING_REVERSE is not True and total_dropped > TOLERATE_MISSING_REVERSE:
+                            summary = ', '.join('{0}: {1}'.format(label, n)
+                                                 for label, n in sorted(_dropped_reverse_counts.items()))
+                            raise KineticsError(
+                                "Did not find reverse reaction in reaction family {0} for reaction {1}. "
+                                "Tolerance for missing reverse reactions (tolerateMissingReverseReactions="
+                                "{2}) exceeded after {3} total dropped reactions ({4}).".format(
+                                    self.label, str(rxn), TOLERATE_MISSING_REVERSE, total_dropped, summary))
+                        _dropped_reverse_counts[self.label] = _dropped_reverse_counts.get(self.label, 0) + 1
+                        logging.error(
+                            "Dropping reaction {0} from family {1}: no matching reverse reaction found "
+                            "(tolerated by tolerateMissingReverseReactions).".format(str(rxn), self.label))
+                        if DROPPED_REVERSE_LOG_PATH:
+                            try:
+                                record = {
+                                    'family': self.label,
+                                    'reaction': str(rxn),
+                                    'reactants': [spc.molecule[0].to_smiles() for spc in rxn.reactants],
+                                    'products': [spc.molecule[0].to_smiles() for spc in rxn.products],
+                                }
+                                with open(DROPPED_REVERSE_LOG_PATH, 'a') as f:
+                                    f.write(json.dumps(record) + '\n')
+                            except Exception as e:
+                                logging.warning("Could not write to DROPPED_REVERSE_LOG_PATH {0}: {1}".format(
+                                    DROPPED_REVERSE_LOG_PATH, e))
+                        return False
             elif (len(reactions) > 1 and
                     not all([reactions[0].is_isomorphic(other, strict=False, check_template_rxn_products=True)
                              for other in reactions])):
@@ -1911,16 +1973,21 @@ class KineticsFamily(Database):
             # Not implemented yet for charge transfer reactions
             return 1
         reactants = reaction.reactants
+        is_poly_derived = any(spc.is_polymer_proxy for spc in (reaction.reactants + reaction.products))
         reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
         ensure_independent_atom_ids(reactants, resonance=resonance)
+        if is_poly_derived:
+            for spc in reactants:
+                spc.is_polymer_proxy = True
         molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      prod_resonance=resonance, react_non_reactive=True))
+                                                      prod_resonance=resonance, react_non_reactive=True,
+                                                      apply_species_constraints=False))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
@@ -1938,7 +2005,8 @@ class KineticsFamily(Database):
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False, delete_labels=True, relabel_atoms=True):
+                            react_non_reactive=False, delete_labels=True, relabel_atoms=True,
+                            apply_species_constraints=True):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1962,6 +2030,12 @@ class KineticsFamily(Database):
             delete_labels:      Delete the labeled atoms from each generated reaction (optional).
                                 Default is ``True``, atom labels are deleted.
             relabel_atoms (bool, optional)   Whether to reverse product atom labels of reversible families.
+            apply_species_constraints:       Flag to filter products that exceed model-growth size limits
+                                (generatedSpeciesConstraints and, for polymer-proxy species,
+                                generatePolymerConstraints) (optional). Default is ``True``. Set ``False``
+                                only by calculate_degeneracy so that counting the degeneracy of an existing
+                                reaction (regenerated forward) is not blocked by model-growth size limits.
+                                Family forbidden structures are always enforced regardless of this flag.
 
         Returns:
             List of all reactions containing Molecule objects with the
@@ -2019,7 +2093,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [mapping],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2062,7 +2137,8 @@ class KineticsFamily(Database):
                                     product_structures = self._generate_product_structures(reactant_structures,
                                                                                            [map_b, map_a],
                                                                                            forward,
-                                                                                           relabel_atoms)
+                                                                                           relabel_atoms,
+                                                                                           apply_species_constraints=apply_species_constraints)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
@@ -2086,7 +2162,8 @@ class KineticsFamily(Database):
                                         product_structures = self._generate_product_structures(reactant_structures,
                                                                                                [map_a, map_b],
                                                                                                forward,
-                                                                                               relabel_atoms)
+                                                                                               relabel_atoms,
+                                                                                               apply_species_constraints=apply_species_constraints)
                                     except ForbiddenStructureException:
                                         pass
                                     else:
@@ -2140,7 +2217,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2205,7 +2283,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2251,7 +2330,8 @@ class KineticsFamily(Database):
                                                     _reactantStructures,
                                                     _maps,
                                                     forward,
-                                                    relabel_atoms)
+                                                    relabel_atoms,
+                                                    apply_species_constraints=apply_species_constraints)
                                             except ForbiddenStructureException:
                                                 pass
                                             else:
@@ -2317,7 +2397,6 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
-
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
@@ -2330,6 +2409,10 @@ class KineticsFamily(Database):
 
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.get_reaction_pairs(reaction)
+            for pair in reaction.pairs:
+                if any (spc.is_polymer_proxy for spc in pair):
+                    for spc in pair:
+                        spc.is_polymer_proxy = True
             reaction.template = self.get_reaction_template_labels(reaction)
 
             if delete_labels:
@@ -2360,7 +2443,7 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 for product in reaction.products:
                     pairs.append([reactant, product])
-        elif self.label.lower() in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+        elif self.label.lower() in ('h_abstraction', 'f_abstraction', 'cl_abstraction', 'br_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
@@ -2507,6 +2590,11 @@ class KineticsFamily(Database):
         if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, '
                           'falling back to Reaction.generate_pairs'.format(self.label))
+
+        for reactant, product in pairs:
+            if reactant.is_polymer_proxy or product.is_polymer_proxy:
+                product.is_polymer_proxy = True
+                reactant.is_polymer_proxy = True
 
         return pairs
 
@@ -4845,3 +4933,147 @@ def get_site_solute_data(rxn):
         return site_data
     else:
         return None
+
+
+def _h_loss_daughter_veto_exempt(mol, polymer_reactants):
+    """Veto scoping predicate (ratified 2026-07-04, PP run-2 gate/conduit
+    diagnosis Phenomenon 1): return True iff a handshake-refused product
+    ``mol`` must NOT receive the durable gas veto because it is an H-loss
+    radical daughter of one of the ``polymer_reactants``' condensed proxies.
+
+    Stamping the veto on such daughters defeats condition (v) of the very
+    H-loss qualifier (PolymerPhase.get_h_loss_radical_daughter_bases) that
+    classifies them prospectively condensed -- the self-defeat loop that
+    vetoed seven of the eight PP C9H19 H-abstraction daughters and kept
+    Gate B closed. Scoping is by PREDICATE, not by MW window alone (the
+    durable gas veto exists precisely because alpha-methylstyrene sits ABOVE
+    the MW window): ALL of
+
+      * radical-bearing and neutral,
+      * same non-H element composition as the polymer reactant proxy,
+      * H_proxy - H_product == radical_count
+        (the shared structural core, rmgpy.polymer.is_h_loss_radical_daughter
+        -- ONE predicate with the qualifier, never duplicated), and
+      * MW >= monomer_mw + slack (chain-scale window conjunct; same slack
+        constant as the solver's reference-state window)
+
+    must hold. Closed-shell / composition-mismatched volatiles (e.g.
+    alpha-methylstyrene, propane, C3H7 fragments) keep the veto regardless
+    of MW. Fails closed on any structure query error.
+
+    r89 audit note: the MW-window conjunct here DELIBERATELY stays
+    window-based (monomer + slack) -- it is a cheap NECESSARY gate layered
+    UNDER the composition/H-count predicate, which pins the exempt set to
+    same-non-H-composition H-loss radical daughters of the ~3-unit proxy
+    (dual-axis polymer-sized by construction). DP-2 gas volatiles
+    (hexadiene, hexene) are closed-shell and composition-mismatched, so the
+    r89 dual-axis melt-gate change cannot make them veto-EXEMPT through
+    this predicate (probed: both return False against the PP pool).
+    """
+    # local imports: family.py must not import the solver at module load
+    from rmgpy.polymer import is_h_loss_radical_daughter
+    from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+    try:
+        mw_g_mol = mol.get_molecular_weight() * 1000.0
+    except Exception:
+        return False
+    for polymer_obj in polymer_reactants:
+        monomer_mw = float(getattr(polymer_obj, 'monomer_mw_g_mol', 0.0) or 0.0)
+        if monomer_mw <= 0.0 or mw_g_mol < monomer_mw + REFERENCE_STATE_MW_SLACK_G_MOL:
+            continue
+        proxy_mols = getattr(polymer_obj, 'molecule', None) or []
+        if not proxy_mols or proxy_mols[0] is None:
+            continue
+        try:
+            proxy_comp = proxy_mols[0].get_element_count()
+        except Exception:
+            continue
+        if is_h_loss_radical_daughter(mol, [proxy_comp]):
+            return True
+    return False
+
+
+def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=None,
+                          concerted_loss_gases=None):
+    """
+    Helper to scan a list of Molecules or Species (reactants or products) and
+    convert them to Polymer objects if they match an input polymer structure.
+    It mutates structure_list in-place: if an entry can be interpreted
+    as a polymer-derived fragment/modification, it replaces that entry with the
+    corresponding Polymer returned by create_reacted_copy().
+    Returns True iff at least one entry was replaced by a Polymer (the list is
+    still mutated in place regardless of the return value).
+
+    ``h_loss_verdicts`` (stage S2, feature-pool conduit arc) is an optional
+    list of bools parallel to ``structure_list`` -- the per-product H-loss
+    conduit verdicts computed by
+    :func:`rmgpy.polymer.compute_h_loss_feature_verdicts` at the
+    ``make_new_reaction`` call site, where resolved reactants and raw
+    products are both visible. A True verdict threads
+    ``h_loss_feature=True`` into ``create_reacted_copy`` so the
+    radical-feature producer path can route the daughter into its
+    ``{label}_mod`` feature pool. ``None`` (legacy callers) means all-False.
+
+    ``concerted_loss_gases`` (regen5 route) is the concerted-loss analog: an
+    optional list parallel to ``structure_list`` whose entry i is the
+    ejected-gas Molecule when entry i is the heavy closed-shell daughter of
+    an atom-balanced unimolecular concerted elimination
+    (:func:`rmgpy.polymer.compute_concerted_loss_evidence`, computed at the
+    same ``make_new_reaction`` call sites), else None. A gas entry threads
+    ``concerted_loss_gas`` into ``create_reacted_copy`` so the
+    concerted-loss producer path can route the daughter into its
+    channel-keyed ``{label}_loss{gas}`` feature pool instead of the
+    single-wing scission misbooking. ``None`` (legacy callers) means
+    all-None.
+    """
+    from rmgpy.polymer import clear_polymer_proxy, set_polymer_gas_veto
+    replaced = False
+    for i, item in enumerate(structure_list):
+        if hasattr(item, 'is_polymer') and item.is_polymer:
+            continue
+        if isinstance(item, Molecule):
+            mol = item
+        elif isinstance(item, Species):
+            mol = item.molecule[0]
+        else:
+            continue
+        h_loss_feature = bool(h_loss_verdicts[i]) if (
+            h_loss_verdicts is not None and i < len(h_loss_verdicts)) else False
+        concerted_loss_gas = (concerted_loss_gases[i]
+                              if (concerted_loss_gases is not None
+                                  and i < len(concerted_loss_gases)) else None)
+        for polymer_obj in polymer_reactants:
+            try:
+                new_polymer = polymer_obj.create_reacted_copy(
+                    mol, h_loss_feature=h_loss_feature,
+                    concerted_loss_gas=concerted_loss_gas)
+                if new_polymer:
+                    structure_list[i] = new_polymer
+                    replaced = True
+                    break
+            except (RuntimeError, ValueError):
+                pass
+        else:
+            # No polymer reactant converted this product to a Polymer (and no
+            # PolymerCrosslinkError propagated -- those exit this function and
+            # reject the reaction upstream). The product stays the original
+            # discrete Molecule/Species, so clear the stale blanket proxy stamp
+            # (family.py:1665) that make_new_species would otherwise OR onto the
+            # solver-visible Species, wrongly counting a genuine gas-phase
+            # volatile as a melt reference-state participant. Clearing alone is
+            # not durable (is_polymer_proxy is a monotonic multi-writer sticky
+            # cache, re-stamped downstream), so ALSO stamp the positive,
+            # durable gas-volatile veto in props -- this is the verdict the
+            # solver reference-state melt gate honors and that survives
+            # Species.copy / dedup.
+            clear_polymer_proxy(item)
+            # Veto scoping (ratified 2026-07-04): do NOT stamp the durable
+            # veto on an H-loss radical daughter of a condensed proxy -- the
+            # veto would defeat condition (v) of the H-loss qualifier that
+            # classifies the daughter prospectively condensed (the PP run-2
+            # self-defeat loop). Everything else refused here (closed-shell
+            # volatiles, composition mismatches, small fragments) keeps the
+            # veto regardless of MW.
+            if not _h_loss_daughter_veto_exempt(mol, polymer_reactants):
+                set_polymer_gas_veto(item)
+    return replaced

@@ -698,6 +698,14 @@ class GroupAtom(Vertex):
         """
         return self.atomtype[0] == ATOMTYPES['H+']
 
+    def is_hydrogen(self):
+        """
+        Return ``True`` if the atom represents a hydrogen atom or ``False`` if not.
+        """
+        all_hydrogens = [ATOMTYPES['H']] + ATOMTYPES['H'].specific
+        check_list = [x in all_hydrogens for x in self.atomtype]
+        return all(check_list)
+
     def is_oxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if not.

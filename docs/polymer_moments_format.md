@@ -1,0 +1,1374 @@
+# Polymer Moments Artifact — Normative Format Spec (`polymer_moments_format/3.1`)
+
+**Artifact:** `polymer_pools.json`, emitted next to `chem.yaml` at the end of an
+RMG run (`save_everything`). **Schema versions:** `2.0`–`2.9` and `3.0`–`3.1`,
+stamped per
+artifact by the strongest vocabulary present (`conventions.format_doc` mirrors
+the stamp, e.g. `polymer_moments_format/2.3`; 2.0 was the major bump over the
+1.0 pools-only sidecar — every 1.0 field is preserved verbatim).
+**Oracle:** `rmgpy/solver/polymer.pyx` (`HybridPolymerSystem`). A consumer that
+implements this document with numpy + Cantera reproduces the oracle's per-pool
+µ0/µ1/µ2 trajectories. The reference consumer lives at
+`test/rmgpy/tools/numpy_moments_consumer.py`; the reference runner (drives the
+oracle itself) at `rmgpy/tools/polymer_moments_runner.py`.
+
+**Versioning policy:** minor bump = additive term types / fields; major bump
+= breaking. Acceptance is STRICT-MINOR (ratified at 2.2, superseding the
+earlier minor-permissive rule): a consumer accepts only the schema minors it
+implements and hard-rejects anything newer — these
+are physical-ODE artifacts, and a newer minor may carry vocabulary outside
+the blocks a consumer's unknown-key guards inspect, so loading it additively
+could silently change the physics (§10). Within an accepted minor, consumers
+MUST reject unknown `archetype` values with a hard error (a CLOSED term-type
+vocabulary — hardened from the earlier SHOULD-warn after the
+silent-acceptance hazard was proven on the numpy reference consumer, §14).
+This document versions with the schema.
+
+**The 2.x line is CLOSED at 2.9.** Consumers compare stamps on the ordinal
+ladder `2.x -> x`, `3.y -> 10 + y` (3.0 sits strictly after 2.9), so a
+hypothetical `"2.10"` would collide with 3.0's ordinal and is illegal —
+every rung after 2.9 lives on the 3.x line. 3.0 was the SGH kernel-v2 MAJOR
+(breaking: state-vector shape + mass contract); subsequent 3.x minors are
+ADDITIVE again under the same strict-minor acceptance (3.1 = the
+moment-credit conduit vocabulary, §14).
+
+**2.9 is TA-only vocabulary (r42 P2 lockstep note).** The producer stamps
+`"2.9"` (thermal-analysis inputs / explicit-DP inventory, §13) but neither
+in-repo reference loader implements it: the reference runner and the numpy
+reference consumer both accept 2.x only through **2.8** and hard-reject
+2.9 — only TA's thermal certification path consumes 2.9 artifacts. This
+producer/consumer offset is deliberate, NOT a ceiling to "fix": consumers
+MUST gate acceptance with an EXPLICIT allowlist of the minors they
+actually implement (the runner's known-set check), never a tuple/ceiling
+comparison like `minor <= N` — a ceiling silently admits every future
+minor's unknown vocabulary, which is exactly the strict-minor hazard
+above.
+`schema_version` governs artifact SHAPE only; revisions to the RATE RECIPE
+(§4/§5 semantics) are tracked separately by `conventions.recipe_revision`
+(§8) and do NOT bump `schema_version`.
+
+**Schema 2.1** = 2.0 + the `channels.radical_qssa_unzip` vocabulary
+(channel-vocabulary growth ⇒ minor bump). The emitter stamps `"2.1"` exactly
+when at least one pool carries that block and `"2.0"` otherwise (legacy
+artifacts stay byte-identical). A 2.0 artifact containing a
+`radical_qssa_unzip` block is malformed; the reference loader rejects it, as
+it does a present-but-`enabled: false` block (the emitter never writes
+disabled blocks — a disabled channel is absent). Each QSSA block carries a
+normative machine-readable `recipe` sub-block that consumers MUST validate
+by exact match (reject on mismatch or absence, never adapt — same rule as
+the per-block `units` pins); the pinned values live in `rmgpy/polymer.py`
+(`RADICAL_QSSA_SIDECAR_RECIPE`) and are duplicated independently by the
+reference loader (`rmgpy/tools/polymer_moments_runner.py`,
+`_QSSA_PINNED_RECIPE`). The QSSA rate law is new channel algebra, so a QSSA
+artifact also carries a QSSA recipe revision (`"2026-07-02"`, superseded by
+`"2026-07-03-qssa-monomer-gas"` — see the monomer-gas revision note below; §8).
+
+**Schema 2.2** = 2.1 + the weak-link allyl/U-state sub-vocabulary INSIDE the
+`channels.radical_qssa_unzip` block (§10). The emitter stamps `"2.2"` exactly
+when at least one serialized pool carries that vocabulary; with QSSA pools
+but no weak-link anywhere it keeps stamping `"2.1"`, and with no QSSA at all
+`"2.0"` — both byte-identically to the pre-2.2 emitter (pinned by test). A
+mixed artifact (legacy + QSSA + weak-link pools) stamps `"2.2"`: the
+artifact-level stamp is governed by the STRONGEST vocabulary present, so a
+2.1-only consumer rejects the WHOLE artifact rather than silently integrating
+the weak-link pool without its channel. A weak-link artifact carries
+`recipe_revision = "2026-07-03-weaklink-u"` (superseded by
+`"2026-07-03-weaklink-u-monomer-gas"` — see the monomer-gas revision note
+below; §8). Version acceptance is
+STRICT-MINOR from 2.2 on: a consumer accepts exactly the minors it
+implements and rejects anything newer (§10, the ratified policy change from
+the pre-2.2 minor-permissive rule — these are physical-ODE artifacts, so
+unknown vocabulary is never ignorable; see the versioning-policy paragraph
+above). The reference loader (`rmgpy/tools/polymer_moments_runner.py`)
+implements `2.0`–`2.5` and rejects `2.6`+.
+
+**Schema 2.3** = 2.2 + the POOL-LEVEL `explicit_dp` block (§11): the capped
+DP = cutoff handshake oligomer generated by the deck flag `explicit_dp=True`
+(stage A) is serialized as pool state/topology — deliberately NOT inside
+`channels` (it is not kinetics; a 2.2-or-older consumer is stopped by the
+STRICT-MINOR envelope gate itself, not by the channel-key guard). The
+emitter stamps `"2.3"` exactly when at least one serialized pool carries the
+block; no explicit-DP anywhere keeps the 2.2/2.1/2.0 stamps byte-identically
+(golden-pinned by test). An explicit-DP artifact carries a re-stamped recipe
+revision — one token per channel family, the same 3-way composition rule as
+the monomer-gas family: `"2026-07-04-explicit-dp-monomer-gas"` (no QSSA),
+`"2026-07-04-explicit-dp-qssa-monomer-gas"` (QSSA), and
+`"2026-07-04-explicit-dp-weaklink-u-monomer-gas"` (weak-link). A `2.0`–`2.2`
+artifact containing an `explicit_dp` block is malformed; the reference
+loader rejects it, as it does a present-but-`enabled: false` block (the
+emitter never writes disabled blocks). This revision also SUPERSEDES the §5
+note that declared the oracle's explicit-oligomer handshake inert in every
+emitted artifact — run-path pools CAN now carry an explicit map.
+
+**Schema 2.4** = 2.3 + the per-row **refused marker** on `reactions[]`
+entries (§12): a reaction stamped `polymer_refused=True` at generation time
+(item 18 stamp-but-keep, §8) is zeroed WHOLESALE by the generating solver
+(`polymer.pyx` `reaction_refused`), and its row now says so with
+`"refused": true` + `"refused_reason": <census reason>`. The row STAYS
+listed — consumers need it to zero the mapped Cantera reaction — but MUST
+skip its moment flux AND its manual species dispatch entirely (§12). The
+emitter stamps `"2.4"` exactly when at least one row carries the marker
+(the presence-based rule of 2.1/2.2/2.3); no refused row anywhere keeps the
+2.3/2.2/2.1/2.0 stamps byte-identically (pinned by test), and non-refused
+rows never gain the keys (absent, not false). A `2.0`–`2.3` artifact
+carrying the marker is malformed; the reference loader rejects it, as it
+does `refused: false` (the emitter never writes it) and a marker on a row
+with no pool-mapped participant (§12). `recipe_revision` is NOT touched:
+refused rows are SHAPE vocabulary with consumption semantics, not new rate
+algebra, and STRICT-MINOR acceptance already stops pre-2.4 consumers at the
+envelope. **Erratum:** pre-2.4 sidecars generated by RMG code that already
+carried the item-18 refusal stamps list such rows UNMARKED — consumers of
+those artifacts (e.g. TA) over-integrate moment flux the generating solver
+zeroed. Regenerate; the artifact alone cannot identify the affected rows.
+
+**Schema 2.5** = 2.4 + the **spawned-pool closure** on the conventions block
+(§13): `conventions.spawned_pools` lists every registry pool that is NOT in
+the emitted `configured_pools` (runtime-spawned scission daughters and
+radical-feature `<parent>_mod` pools; under the item-16 emission/resolution
+split these mid-run daughters ARE solver-configured in the generating engine
+— see §2 and §13), disjoint from `configured_pools` by construction, and
+`conventions.condensed_species` is CLOSED over those pools' `phase_species`
+(canonical proxy + µ-dummies) so consumers classify a late-spawned pool's
+bookkeeping species CONDENSED instead of defaulting them GAS. The emitter
+stamps `"2.5"` exactly when at least one spawned pool is present in the
+registry (the presence-based rule of 2.1–2.4); no spawned pool anywhere
+keeps the key ABSENT (never an empty list) and the older stamps
+byte-identical (pinned by test). A `2.0`–`2.4` artifact carrying the key is
+malformed; the reference loader rejects it, as it does a
+`spawned_pools`/`configured_pools` overlap (the emitter never writes
+either). `recipe_revision` is NOT touched: the closure is SHAPE vocabulary
+with classification semantics, not new rate algebra (a spawned pool's solver
+semantics ride its rows — legacy spawned pools with no live coupled row stay
+solver-inert, §2/§13), and STRICT-MINOR acceptance already stops pre-2.5
+consumers at the envelope.
+
+**Recipe revision 2026-07-03-monomer-gas** (incident 2026-07-03, PS
+regeneration refusal; design "B-prime"): the `monomer_routing` release
+target is now a **GAS-phase** species. It is no longer listed in
+`pools[].phase_species` or `conventions.condensed_species`; the unzip/QSSA
+release deposits into the gas amount basis (§2 `monomer_routing` row, §5
+`unzip/1`, §9). This is a semantics change, NOT a shape change, so
+`schema_version` is untouched; `recipe_revision` is bumped instead
+(`2026-06-10` → `2026-07-03-monomer-gas`, `2026-07-02` →
+`2026-07-03-qssa-monomer-gas`, `2026-07-03-weaklink-u` →
+`2026-07-03-weaklink-u-monomer-gas`) so consumers implementing the old
+condensed-monomer semantics hard-fail instead of silently mis-phasing the
+released volatile (§8 consumer guidance).
+
+The reference loader (`rmgpy/tools/polymer_moments_runner.py`,
+`_check_recipe_revision_monomer_phase`) enforces the revision gate whenever
+an artifact routes released monomer (any configured pool with a non-null
+`monomer_routing`); artifacts without routing carry no monomer-phase
+semantics and pass whatever their revision. A **monomer-gas** revision whose
+routed monomer still appears in `conventions.condensed_species` or
+`pools[].phase_species` is internally contradictory and is REJECTED. A
+**pre-monomer-gas** (or unknown) revision that routes monomer is HARD-REFUSED
+with a "regenerate with current code (monomer-gas contract)" message — legacy
+acceptance was rejected because it would re-condense the routed monomer on
+the live solver path (the exact reference-state conflation this revision
+removed; the solver's `validate_configuration` now requires the release
+target masked GAS). The gate is revision-keyed, not semantics-sniffed:
+re-freezing an old artifact with gas-looking membership lists does not
+launder it past the refusal.
+
+Scope of the monomer-gas fix: it removes the monomer-PRODUCT reference-state
+conflation (the routed release target being force-condensed); it does NOT
+make reversible chain-scission decks initialize — a reversible
+`proxy <=> gas monomer + gas fragment` reaction (e.g.
+`polystyrene(2) <=> C8H8 + C16H18`, one net melt participant) still
+legitimately refuses via the thermo reference-state tripwire, and the
+resolution is deck/prep-level irreversibility (open-crucible physics), not a
+code change.
+
+## 1. Envelope
+
+```json
+{
+  "schema_version": "2.0",
+  "generated_at": "<ISO-8601 UTC>",
+  "rmg_commit": "<git SHA>" | null,
+  "rmg_iteration": <int>,
+  "conventions": { ... },     // §4
+  "pools": [ ... ],           // §2
+  "reactions": [ ... ]        // §3
+}
+```
+
+## 2. `pools[]`
+
+Schema-1.0 fields (unchanged): `label`, `monomer_smiles`, `monomer_adj_list`,
+`feature_monomers_smiles`, `end_groups`, `cutoff`, `parent_pool`,
+`spawn_iteration`, `spawn_event_metadata`, `mu_indices` (legacy; do not use —
+solver state-vector indices from the generating run).
+
+2.0 additions:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `moments` | `[µ0, µ1, µ2]` floats \| null | the pool's **initial conditions at t = 0 of the simulated experiment** (normative — see the provenance paragraphs below this table; item #14a), **extensive mol, DP basis** (µ1 = moles of repeat units). Input-declared pools: the input-derived state; spawned pools: `[0, 0, 0]` honest-empty |
+| `moments_provenance` | `"input_declared"` \| `"spawned_empty"` | where the `moments` initial conditions come from (see below). **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
+| `monomer_mw_g_mol` | float | repeat-unit MW [g/mol] |
+| `chain_mass_defect_g_mol` | float, optional (**additive** -- key absent means 0.0) | per-chain mass [g/mol] already shed to the gas by the events that created this pool's chains (e.g. exactly one abstracted H per chain on an H-loss `<parent>_mod` daughter: `defect_dst = defect_src + MW(H)`, accumulating if chained). NORMATIVE mass contract: condensed mass [g] = `mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol`. NORMATIVE booking contract (P1-2 atom-transfer defect, regen-#2 adjudication): a cross-pool `volatile_ejection/1` row's `params.eject_units` is the MASS defect `a_mass`; the MOMENT shift applied to the transferred bundle is `a_moment = a_mass - (defect_dst - defect_src)/monomer_mw_src` (snapped to exactly 0 when the residual is pure float roundoff). For H-loss conduits `a_moment = 0`: chains transfer with UNCHANGED mu1 while the gas co-products carry the H mass through the ordinary species path -- booking `a_mass` on the moments would land monomeric chains at `mu1/mu0 = 1 - a`, below the realizability cone `mu1 >= mu0` by construction. Rows between equal-defect pools (true monomer/chip ejection) keep `a_moment = a_mass` byte-identically. Emitted only when > 0; consumers validate it finite and non-negative when present |
+| `mn_g_mol`, `mw_g_mol` | float \| null | number-/weight-average MW at generation time |
+| `initial_mass_g` | float \| null | as configured (grams) |
+| `channels` | `{"scission": {A,n,Ea,units}, "unzip": {...}}` | Arrhenius-capable; today RMG emits `A=k, n=0, Ea=0`, `units = {"A": "s^-1", "Ea": "J/mol"}`. Channel equations: §5 (versioned `scission/1`, `unzip/1`) |
+| `phase_species` | [labels] | the pool's condensed-phase species by chem.yaml name (proxy variants, µ-dummies; explicit-DP chains). No more `<label>_muN` name-guessing. **Revision 2026-07-03-monomer-gas: the routed monomer is NOT listed here** (it is a gas-phase species; see `monomer_routing` below). Pre-revision artifacts listed it |
+| `bookkeeping_species` | [labels] | the **bookkeeping** subset of `phase_species`, in the same relative order: the pool's canonical proxy (concentration pinned to 1.0 by the site-scaling rule, §4 step 3) and the three µ-dummies (carry ~0 mol by convention; they exist to host the moments). The complement within `phase_species` is **real condensed** species carrying real moles (explicit-DP chains). This completes the `phase_species` promise above: consumers never name-guess `<label>_muN` (or the proxy) to split bookkeeping from real inventory. Always present (empty list iff nothing bookkeeping was collected); invariant `set(bookkeeping_species) ⊆ set(phase_species)`. **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
+| `explicit_dp` | object (schema 2.3, §11) | the pool's explicit-DP handshake block — present iff the generating deck set `explicit_dp=True` (the pool's explicit map is non-empty). Absent on legacy pools and on all flag-OFF artifacts (byte-identical) |
+| `monomer_routing` | label \| null | chem.yaml species receiving the unzip/QSSA released-monomer flux. **Revision 2026-07-03-monomer-gas (incident 2026-07-03): this is a GAS-phase species** — release is direct devolatilization into the gas amount basis (`dn(monomer_routing)/dt += r·V_poly` [mol/s]; the species contributes to `V_gas`/headspace and is NOT in `phase_species` or `conventions.condensed_species`). Under the superseded pre-revision text it was declared condensed ("reaches the gas only via mass transfer"); that classification conflated the release target with the deck's principal gas volatile and is exactly what the reference-state tripwire refuses — consumers reading pre-revision artifacts (recipe_revision `2026-06-10`/`2026-07-02`/`2026-07-03-weaklink-u`) must keep the old condensed semantics for those artifacts only. `null` ⇒ unzip µ-flux applies but no monomer species is credited |
+| `mu3_closure` | `"log_lagrange/1"` | §6 |
+
+**Pool classification (normative; amended by the item-16
+emission/resolution split).** `conventions.configured_pools` names the
+ROOT/SETUP-TIME load-bearing pools only: deck-declared pools plus
+setup-time-configured spawn sources (e.g. the `k_homolysis_end_radical`
+end-radical daughters, which the 2.6/2.8 closure guards REQUIRE
+configured). It is deliberately NOT the full solver-configured set.
+Mid-run engine-spawned daughters (radical-feature `<parent>_mod` pools,
+`_d<N>` spawn-intent pools, scission tails) gain solver configs through the
+enlarge-boundary promotion (item 16) — they ARE solver-configured and
+integrated by the generating RMG run — yet they are published in
+`conventions.spawned_pools`, never in `configured_pools`. A spawned pool
+MAY therefore carry live (non-refused, resolved) rows, e.g. a cross-pool
+`volatile_ejection/1` conduit into a `<parent>_mod` pool; it is
+**replay-buildable** when at least one live row is pool-coupled to it AND
+its `_mu0/_mu1/_mu2` triplet is mechanism-resident (both hold exactly for
+engine-configured daughters). A spawned pool with NO live coupled row
+(the legacy shape: pre-split emitters refused rows with unconfigured
+endpoints) remains solver-inert for consumers: its proxies behave as
+ordinary species (no site scaling, no concentration-1.0 rule, no channels
+integration by the oracle). Since schema 2.5 spawned pools are enumerated
+in `conventions.spawned_pools` and their `phase_species` join
+`conventions.condensed_species` (the spawned-pool closure, §13).
+
+**Moments are initial conditions (normative; item #14a, 2026-06-12).**
+`pools[].moments` is the pool's state at **t = 0 of the simulated
+experiment** — not a generation-end snapshot. The reference runner replays
+the oracle from t = 0 and seeds exactly these values (its
+`--initial-moments` flag overrides them for continuation runs).
+`moments_provenance` records the origin:
+
+- `"input_declared"` — the pool was declared in the input file; the moments
+  are the input-derived t = 0 state.
+- `"spawned_empty"` — the pool was created mid-run (gate-path daughter or
+  scission tail); at t = 0 of any consumer experiment it contains nothing,
+  so `[0, 0, 0]` is the physically correct initial condition, not a hole.
+
+**The honest-zero property:** after this revision, a zero in the moments
+slot is always an initial condition, never a contradiction — `[0, 0, 0]` +
+`"spawned_empty"` is a statement of fact, distinguishable from a missing
+value by the provenance field itself.
+
+**mu0 single source of truth (`input_declared` pools).** For a pool declared
+in the input file, `µ0` (moles of chains) is set from
+`initialMoles[proxy]` — the value the solver actually integrates as `y0`.
+This is authoritative. The deck's `initial_mass` + `Mn`/`Mw` are a redundant
+second statement of the same loading (`initial_mass/Mn` = moles of chains);
+they MUST agree with `initialMoles`. When they disagree,
+`compile_polymer_phase` (a) honors `initialMoles`, (b) reconciles the pool's
+moments to it so the emitted `moments` here MIRROR the solver-integrated
+state (the serializer passes `Polymer.moments` through verbatim), and
+(c) emits a `logging.warning` naming the pool and both `µ0` values. So the
+`moments` reported in this slot are always the moments the oracle integrates,
+never the `initial_mass`-implied state the run did not simulate.
+
+**Dead core channels are census-announced (consumer guidance):** a core
+reaction whose phase-gate verdict is zero is announced by a
+`PHASE-GATE FLUX CENSUS: ... static (core, init-time)` warning on every
+engine build (item 17, spec 2026-06-12 §3(e)); a gate-zeroed EDGE channel
+whose ungated flux would clear the enlargement bar is announced by the same
+sentinel with its ungated ratio. Promotion-on-phantom-flux no longer arises
+(the gates evaluate the prospective mask at edge time), but dead core
+channels CAN still appear in NEW artifacts via independent species promotion
+(each participant reaching core on other channels' flux) and via
+legacy/restart cores — for such a pool `[0, 0, 0]` is simultaneously the
+t = 0 truth and the generation-end truth, the artifact deliberately does not
+distinguish the two, and the census line is the place that says so. Diagnose
+an unexpectedly inert spawned pool by its census lines (typically a
+melt-classification / phase-gate divergence — see the consumer-guidance
+paragraph in §8), not as missing moments data.
+
+## 3. `reactions[]`
+
+One entry per pool-touching core reaction (`archetype` ≠ none or any
+participant in a configured pool). Closed term vocabulary — entries carry
+parameters only; the equations live here and only here.
+
+```json
+{
+  "id": "r<cantera.index>" | "d<family>:<equation>:<occurrence>",
+  "cantera": {"index": <int>, "equation": "<string>"} | null,
+  "kinetics": {"A":..,"n":..,"Ea":..,"units":{"A":..,"Ea":"J/mol"},"reversible":bool} | null,
+  "reactants": ["<label>", ...],        // full stoichiometry, with repeats
+  "products":  ["<label>", ...],
+  "proxy_reactants": ["<label>", ...],  // pool-mapped reactants (conc := 1.0)
+  "proxy_products":  ["<label>", ...],  // pool-mapped products  (conc := 1.0 in reverse)
+  "scaling": "mu0" | "mu1",
+  "src_pool": "<pool label>" | null,
+  "dst_pool": "<pool label>" | null,
+  "archetype": "same_pool/1" | "migration/1" | "scission_fragment/1"
+             | "discrete_chip/1" | "legacy_mu1/1",
+  "params": {"a": <int>},               // discrete_chip/1 only
+  "unresolved": bool,                   // true => legacy fallback emission
+  "refused": true,                      // schema 2.4, refused rows ONLY (absent otherwise, never false)
+  "refused_reason": "conduit-deferred" | "qssa-invalid"
+                  | "qssa-unassessable"        // schema 2.4 (+round-20), paired with refused
+}
+```
+
+- `cantera.index` is **authoritative**: the entry's position in the
+  *same-directory* `chem.yaml` `reactions:` list. The consumer must act on it
+  inside Cantera (§4 step 0). `cantera: null` ⇒ the reaction was dropped by
+  the unbalanced-proxy export filter; `kinetics` is then REQUIRED and
+  `reactants`/`products` are the only record of its stoichiometry.
+- `kinetics` is only guaranteed non-null when the underlying RMG rate is plain
+  Arrhenius; a dropped reaction with composite kinetics (MultiArrhenius/PDep)
+  emits both `cantera: null` AND `kinetics: null` and cannot be evaluated by
+  the consumer (RMG logs a warning at emission). The emitted `A` is normalized
+  to `T0 = 1 K` (`A·T^n·exp(−Ea/RT)` evaluates directly).
+- `id` is stable within one artifact and across re-reads of the same file;
+  NOT across regenerations.
+- The pool of a proxy label is the label with any trailing `(N)` stripped
+  (e.g. `epdm(2)` → pool `epdm`).
+- `unresolved: true` entries (legacy-µ1 emissions, including solver-demoted
+  stamps) MUST be integrated; consumers MAY warn. **Exception (schema 2.4):**
+  a row carrying `refused: true` MUST NOT be integrated in ANY basis — zero
+  the mapped Cantera reaction and skip the row's moment flux and manual
+  species dispatch entirely (§12).
+- For retained entries with composite kinetics, `kinetics` may be `null`; the
+  consumer then takes rates from Cantera. In post-fix chem.yaml the equation
+  arrow records reversibility (`=>` irreversible, `<=>` reversible), so the
+  consumer reads reversibility from the arrow — composite-kinetics retained
+  entries no longer need a treat-as-reversible assumption. (In PRE-FIX files,
+  written before the cantera `=>`-for-irreversible fix, every equation is
+  `<=>`, so such an entry must still be treated as reversible.)
+- **Caveat (ordinary reactions):** post-fix chem.yaml records reversibility in
+  the equation arrow (`=>` irreversible, `<=>` reversible), so reactions
+  WITHOUT an artifact entry round-trip their reversibility faithfully in every
+  consumer of the file (Cantera, the reference runner, the numpy consumer).
+  *Legacy:* chem.yaml files written by RMG BEFORE this fix print every equation
+  as `<=>` with no separate reversibility marker, so an originally-irreversible
+  ordinary reaction in such a file runs reversible in every consumer.
+  Artifact-listed entries are exempt either way — their `kinetics.reversible`
+  restores the generating solver's behavior (and now agrees with the arrow in
+  post-fix files).
+
+## 4. Rate-evaluation recipe (normative; oracle: `polymer.pyx:922-1261`)
+
+Definitions: `V_poly` = constant consumer input; `V_gas = n_gas·R·T/P`
+(ideal gas over the *gas-phase* species — those NOT in
+`conventions.condensed_species`; floor `V_gas = 1.0 m³` when `n_gas ≤ 0`).
+Pool moments are extensive mol; intensive µ ≡ y[µ]/V_poly clamped at ≥ 0.
+**`R = 8.314472 J/(mol·K)`** — the oracle's `rmgpy.constants.R`
+(CODATA-2006), used in `V_gas`, `kf`, `Keq`, and mass transfer alike. Do
+NOT substitute the 2018-SI exact value (8.31446261815324): the 1.13e-6
+relative offset shifts every gas-phase term off the oracle.
+
+0. **Disable every listed retained reaction in Cantera:** for each entry with
+   `cantera != null`, `Kinetics.set_multiplier(0, cantera.index)`. (Equation
+   strings are a human checksum only.)
+1. Per entry, per T: `kf` from Cantera (or from `kinetics`:
+   `kf = A·T^n·exp(−Ea/(R·T))`, SI). If `reversible`: `kb = kf/Keq` with
+   `Keq(T) = (P°/(R·T))^Δn · exp(−ΔG°/RT)`, `P° = 1e5 Pa`, ΔG° summed
+   from the chem.yaml NASA polynomials (`reaction.py:767-840`). Else `kb = 0`.
+   **`Δn` counts ALL species as written in `reactants`/`products`** (with
+   repeats), condensed and proxy participants included — the oracle's
+   `get_equilibrium_constant` (`reaction.py:805-821`) excludes only *surface
+   sites*, which never occur in this artifact. Do NOT compute the exponent
+   over the `condensed_species`-complement: that silently mis-scales `kb` by
+   `(P°/RT)^±k` for reversible reactions with condensed participants.
+2. **Phase + gate** (`polymer.pyx:943-989`): the event is condensed
+   (`V_rxn = V_poly`) iff ANY reactant is in `condensed_species`, else gas
+   (`V_rxn = V_gas`). Gate: a condensed event with NO condensed core product
+   is **skipped entirely** (rate 0, but still zeroed in Cantera per step 0);
+   a gas event with a condensed core product is likewise skipped.
+3. Concentration products (`polymer.pyx:1000-1020`):
+   `rf = kf · Π C(reactant)`, `rr = kb · Π C(product)`, where
+   `C(s) = 1.0` if `s` ∈ `proxy_reactants ∪ proxy_products` (pool-mapped),
+   else `n_s/V_gas` (gas) or `n_s/V_poly` (condensed), clamped ≥ 0.
+4. **Site scaling** (`polymer.pyx:1022-1063`), only when `src_pool != null`:
+   `site = max(0, y[µ_scaling])/V_poly` — NOTE: `y[µ]` here is the EXTENSIVE
+   moment (raw moles, before the preamble's intensive division), so the single
+   `/V_poly` shown is the whole conversion; do not divide twice. µ read from
+   `src_pool` (the FIRST proxy-reactant's pool, reactant-slot priority), µ0
+   when `scaling=="mu0"` else µ1 — EXCEPT chip entries
+   (`archetype=="discrete_chip/1"` ∧ `scaling=="mu0"` ∧ `a > 0`):
+   `site = min(max(0, y[µ0]), max(0, y[µ1])/a)/V_poly` (exhaustion throttle).
+   The site multiplies **once** (even with two proxy reactants) and scales
+   BOTH `rf` and `rr` (the reverse is NOT scaled by the dst pool) -- EXCEPT
+   cross-pool exchange rows (`dst_pool != null`, `dst_pool != src_pool`),
+   whose two directions scale INDEPENDENTLY by the availability of the pool
+   each direction DEBITS (run-5 Part C adjudication + P1-1 regen-#2
+   adjudication; oracle: `polymer.pyx` section-2 scaling and its
+   `get_reaction_rates` mirror):
+
+   - forward (`rf`) debits `src_pool`: `S_base` = the µ0/µ1 site above
+     (including the end-group `a>0` VE throttle `min(µ0, µ1/a)` where it
+     applies);
+   - reverse (`rr`) debits `dst_pool`: `S_base` = the SAME moment order read
+     from the dst pool's own moments (for end-group `a<0` VE, with the
+     mirror `min(µ0, µ1/|a|)` throttle);
+   - **near-exhaustion bundle limiter (tail-only smoothstep; C1 soft-min,
+     cone-margin drain guard)** (P1-1 as re-adjudicated round-27 P1-A,
+     regularized round-29 N2, cone gate made independent round-30 N1;
+     `volatile_ejection/1` and `migration/1` cross-pool rows): each
+     direction's site runs TWO structurally independent gates in series.
+
+     Stage 1 — exhaustion tail limiter (E band):
+
+     ```
+     softmin_p(x_i) = (Σ x_i^(−p))^(−1/p)        reciprocal p-norm soft-min
+                                                 over positive terms,
+                                                 p = 8 (normative)
+     S_cap  = softmin_p(µ0/b0, µ1/b1, µ2/b2) / V_poly
+                                                 over POSITIVE bundle terms
+     E      = softmin_p(µ0/f0, µ1/f1, µ2/f2)     accepted-state floor distance
+     w      = smoothstep(E; E_lo, E_hi) = 3e² − 2e³,
+              e = clamp((E − E_lo)/(E_hi − E_lo), 0, 1)
+     S_free = w·S_base + (1 − w)·softmin_p(S_base, S_cap)
+     ```
+
+     Stage 2 — cone-margin drain gate (M band; normative round-30: this
+     gate is INDEPENDENT of `E` — it applies to cone-shrinking debits
+     (`b1 > b0`) even when `E ≥ E_hi`, and it is never diluted by the
+     `w` blend):
+
+     ```
+     Q10    = µ1 − µ0                            realizability cone margin
+     Q10 ≤ 0                    ⇒ S_eff = 0      REGARDLESS of E
+     M      = Q10 / max(f0, f1)                  margin distance, floor units
+     M ≥ M_hi                   ⇒ S_eff = S_free EXACTLY
+     S_cone = Q10 / (V_poly·(b1 − b0))           event-site density that would
+                                                 spend the whole margin
+     M ≤ M_lo                   ⇒ S_eff = softmin_p(S_free, S_cone)
+     between                    ⇒ v-smoothstep blend of the two laws
+     ```
+
+     over the debited pool's per-event bundle `(b0, b1, b2)` (step-6
+     bundles; a `b_k` that is 0 or skipped contributes no cap; an empty
+     bundle, `b0 = 0`, means `S_cap = 0`, and empty pools skip stage 2 —
+     stage 1 already throttled them; debits with `b1 ≤ b0` pass stage 2
+     untouched). `f_k` is the debited pool's r81 accepted-state floor
+     `max(SMALL_EPS, 100·atol[state])` (the same per-moment floor the
+     negative-moment tripwire uses), so `E` and `M` are the DIMENSIONLESS
+     numbers of floors the thinnest debited moment / the cone margin sit
+     above their singular manifolds — deck-independent and scale-aware.
+     Band edges (normative): `E_lo = 1e2`, `E_hi = 1e4`; `M_lo = 1e2`,
+     `M_hi = 1e4` (same numbers, separate constants — independent jobs).
+
+     Regimes: for healthy IN-CONE bulk pools both early returns fire and
+     `S_eff == S_base` EXACTLY (bit-for-bit the plain µ0/µ1 site law
+     above — healthy pools NEVER feel the limiter or the cone gate; for
+     healthy polydisperse pools the µ1-scaled cap `µ1/b1 = µ1²/µ2 < µ1`
+     would otherwise bind in bulk whenever PDI > 1, which is why the
+     original global hard-min form was rejected: it rewrote healthy
+     cross-pool kinetics and displaced reversible-row detailed balance by
+     PDI ratios). `E ≤ E_lo` ⇒ the soft cap `softmin_p(S_base, S_cap)` is
+     fully active. Rationale for the stage-1 cap (normative): one event
+     debits the FULL per-chain bundle, so a µ1-scaled leg drains µ1 at
+     `ev*b1 ~ k*C*µ2` -- the per-event `µ2/µ1` debit cancels the linear
+     µ1-site self-limit and goes constant-rate once the out-of-cone µ3
+     closure freezes; the soft cap bounds EVERY moment's drain by
+     `~k*C*µ_k` (softmin_p ≤ every term) so it vanishes linearly near
+     exhaustion (the regen-#2 crash fix). Rationale for stage 2
+     (normative, round-30): a length-biased debit with `b1 > b0` shrinks
+     the realizability cone margin `Q10` by `(b1 − b0)` per event and
+     self-accelerates as µ1 → 0 (`d(b1)/dµ1 = −µ2/µ1²`), so the gate
+     throttles the EVENT RATE by cone-margin availability — the bundle
+     itself stays length-biased (per-event moment ratios and mass
+     bookkeeping unchanged) and a pool at or outside the cone (`Q10 ≤ 0`)
+     has its cone-deepening drain turned OFF outright, whatever its
+     moment scale (the regen-#3 crash fix; folding `S_cone` into the
+     stage-1 blend was rejected round-30 because the `w` blend diluted it
+     in-band and the `E ≥ E_hi` early return skipped it entirely).
+     Soft-min rationale (round-29 N2): every in-band hard min is the
+     reciprocal p-norm soft-min (positive, scale-homogeneous of degree 1
+     — NOT log-sum-exp, which needs a dimensional temperature and can go
+     negative), so `S_eff` is C1 inside both bands: the hard-min argmin
+     switches were C0 kinks that fed quasi-Newton integrators
+     intermittent convergence failures (the regen-#3 IDID=-7).
+     Quantitative tie bias (normative consequence of p = 8): where cap
+     terms tie, `softmin_p` sits BELOW the hard min — `2^(−1/8) ≈ 0.917·min`
+     at a two-term tie, `3^(−1/8) ≈ 0.872·min` at a three-term tie. This
+     is numerical regularization of near-exhaustion / near-cone states,
+     NOT physical kinetics: ties can only bind inside the bands; bulk is
+     exact. The band edges introduce no derivative cliff (w′ = v′ = 0 at
+     all four edges, and none at the r81 floor, which sits at
+     `E ≤ 1 << E_lo`); the single accepted C0 kink is at `Q10 = 0`
+     exactly, where `softmin_p(S_free, S_cone) → 0` meets the hard zero
+     continuously with a bounded one-sided slope. `S_eff` applies to the
+     direction's event rate BEFORE `r = rf - rr`, so species flux,
+     reported reaction rates and the step-6 moment dispatch all see the
+     SAME limited directional rate (gas flux and moment flux must never
+     diverge). Detailed balance: in bulk a reversible cross-pool row
+     balances at `C_G* = Keq·S_base(A)/S_base(B)` (the advertised law);
+     only inside the depletion/cone bands does it move to
+     `C_G* = Keq·S_eff(A)/S_eff(B)` with the regularized `S_eff`.
+
+   `legacy_mu1/1` entries that look chip-shaped are deliberately NOT
+   throttled (bit-exact legacy contract).
+5. **Gas/explicit stoichiometric flux:** `r = rf − rr`, `r_mol = r·V_rxn`.
+   For every NON-pool-mapped species: reactants `dn/dt −= r_mol` (per
+   occurrence), products `dn/dt += r_mol`. (This is how chips, abstraction
+   partners and co-products move — Cantera no longer does it after step 0.)
+6. **Archetype bundle** (per direction; `ev_mol_f = rf·V_rxn`,
+   `ev_mol_r = rr·V_rxn`):
+
+   Chain bundle `B(pool, end_group)` (`polymer.pyx:805-828`): with intensive
+   µ of that pool — end_group=true (uniform pick): if µ0 ≤ 1e-30 → empty;
+   else `(b0,b1,b2,ok) = (1, µ1/µ0, µ2/µ0, true)`. end_group=false
+   (length-biased): if µ1 ≤ 1e-30 → empty; µ3 from §6;
+   `(1, µ2/µ1, µ3/µ1, true)` if µ3 finite else `(1, µ2/µ1, 0, false)`.
+
+   - `same_pool/1`: no moment flux (fold-back is net-zero by construction).
+   - `migration/1` (`polymer.pyx:1128-1155`): only if src ≠ dst, both non-null.
+     For (ev_mol, from, to) ∈ {(ev_mol_f, src, dst), (ev_mol_r, dst, src)} with
+     ev_mol > 0: `B(from, scaling=="mu0")`; skip if empty;
+     `µ0/µ1[from] −= ev_mol·(b0,b1)`, `µ0/µ1[to] += ev_mol·(b0,b1)`;
+     if ok, same for µ2 with b2.
+   - `scission_fragment/1` (`polymer.pyx:1156-1195`): only if src ≠ dst, both
+     non-null. Net `r_mol`; parent µ intensive. Guard: µ1_src > 1e-30, and if
+     `r_mol < 0` additionally µ0_dst > 1e-30 and µ1_dst > 1e-30, else skip.
+     `E[n] = µ2_src/µ1_src`:
+     `µ1[src] −= r_mol·E[n]/2`; `µ0[dst] += r_mol`; `µ1[dst] += r_mol·E[n]/2`;
+     if µ3_src finite: `E[n²] = µ3_src/µ1_src`,
+     `µ2[src] −= r_mol·(2/3)·E[n²]`, `µ2[dst] += r_mol·E[n²]/3`.
+     (Complement stays in parent: parent µ0 net 0; µ1 conserves exactly.)
+   - `discrete_chip/1` (`polymer.pyx:1196-1244`): src only (complement folds
+     back; the chip species moves via step 5). `B(src, scaling=="mu0")`; skip
+     if empty; `E[n] = b1`, `a = params.a`.
+     Forward (rf>0), `rf_mol = rf·V_rxn`: `µ1[src] −= rf_mol·a`;
+     `Δµ2 = 2a·E[n] − a²`; if `Δµ2 > 0`: `µ2[src] −= rf_mol·Δµ2` (clamped
+     decrement — no write when ≤ 0).
+     Reverse (rr>0), `rr_mol = rr·V_rxn`: `µ1[src] += rr_mol·a`;
+     `µ2[src] += rr_mol·(2a·E[n] + a²)` (exact extension form, no clamp).
+   - `legacy_mu1/1` (`polymer.pyx:1245-1261`): net `r_mol`. For EACH label in
+     `proxy_reactants`: `µ1[pool(label)] −= r_mol`. For EACH label in
+     `proxy_products`: `µ1[pool(label)] += r_mol`. (Only configured pools.)
+
+7. **Channels** (per configured pool, §5), then **mass transfer** (§7).
+
+### 4b. Solver `atol` is a MODEL knob (deck-author contract; rounds 28/31)
+
+The polymer kernel anchors its numerical-regularization envelope to the
+solver's absolute tolerance, so `atol` is NOT just an integrator accuracy
+setting — it parameterizes the model near exhaustion and near the
+realizability cone:
+
+- the r81 accepted-state floors are `f_k = max(SMALL_EPS, 100·atol[state])`
+  (the negative-moment tripwire, the exhaustion censuses, and the
+  limiter's distance measures all read them);
+- the exhaustion tail band engages at `E = softmin_p(µ_k/f_k)` in
+  `[E_lo, E_hi] = [1e2, 1e4]` floors, i.e. absolute moments in
+  `[1e4·atol, 1e6·atol]` mol on the thinnest moment;
+- the cone-margin gate band engages at `M = Q10/max(f0, f1)` in
+  `[M_lo, M_hi] = [1e2, 1e4]` floors, i.e. cone margins
+  `Q10 = µ1 − µ0` in `[1e4·atol, 1e6·atol]` mol.
+
+Deck-author rule of thumb (normative guidance): set `atol` at least FOUR
+decades below the smallest pool moment you intend to treat as physically
+meaningful. poly_102 uses `atol = 1e-12` (floors `1e-10` mol, bands up to
+`1e-6` mol) against pool moments of order `1e-3`–`1e0` mol. A loose
+`atol` (e.g. `1e-6`) raises the floors to `1e-4` mol and pushes the
+regularization envelope INTO physically real pool scales: healthy pools
+would feel the tail limiter and the cone gate in ordinary operation,
+which changes reported kinetics (bulk-exactness only holds ABOVE the
+bands). Conversely an ultra-tight `atol` shrinks the envelope and leaves
+near-singular states (the regen-#2/#3 crash families) protected only in
+a very thin shell.
+
+`rtol` clause (rounds 35/37/41 — NO regen deck tolerance is CERTIFIED,
+but forensic regen is UNBLOCKED): `rtol = 1e-4` remains convicted on
+near-floor minimal fixtures (round-35 K2: the ACCEPTED trajectory
+decouples from its own RHS by ~4 decades — a pool retaining ~90% of its
+inventory at t = 100 s against an RHS that empties it in ~0.5 s; the
+conviction is unchanged by the round-40 softclamp, which is not K2's
+mechanism). With the round-40/41 SOFTCLAMP of the max(0,y) state-clamp
+kink field, `rtol = 1e-4` + `atol = 1e-12` traverses EVERY measured
+deck-tolerance replay: the exact-crash 79-species window runs
+22.936 → 100 s in 114.8 s wall (~3.4× faster than pre-softclamp), and
+the from-deck 79/82 window — which previously died IDID=-7 at
+t = 14.2445 — completes its first-ever full 0 → 100 s traversal
+(1858 s wall; a transient near-floor dip of a daughter pool to ~0.02
+floors recovers after t ≈ 15). `rtol = 1e-6` survives the exact-crash
+window under the softclamp (t = 100 at 207.9 s; the old t = 24.639
+death is gone) but still grinds the from-deck window (~30+ min per
+sim-second through t = 13-14.5) and is NOT recommended for regen.
+FORENSIC REGEN PROTOCOL (round-41): `rtol = 1e-4`, `atol = 1e-12`,
+softclamp (always on; identity for y ≥ 0), watchdog diagnostics — the
+near-floor episode tracker (`rmgpy.polymer.NearFloorEpisodeTracker`,
+wired in the reference runner) surfaces every sub-floor episode; a
+WARNING-class episode (positive/in-band transient dip with recovery) is
+survivable, and any HARD-FAIL condition (accepted value beyond −floor,
+no recovery, conservation failure, IDID/resurrection) aborts the run.
+poly_102 (regen #1-3) ran `rtol = 1e-4` without these guards.
+
+Replay parity (round-31): a consumer replaying a run MUST use the
+generating deck's tolerances or its regularization envelope will not
+match the generating solver's. The reference runner exposes them as
+`--atol` / `--rtol` (`rmgpy/tools/polymer_moments_runner.py`,
+propagated to `initialize_model`); the numpy oracle consumer takes the
+same `atol` at construction (its `mu_floor` anchoring). Defaults
+(`1e-16`/`1e-8`) preserve historical runner behavior; they are NOT the
+poly_102 deck values (`1e-12`/`1e-4`).
+
+## 5. Channel equations (versioned; oracle `polymer.pyx:1318-1340`; see also
+`docs/multi_pool_design.md` §5)
+
+Intensive µ; rates volumetric [mol/m³/s], multiplied by `V_poly` into mol/s.
+`k_s`, `k_u` from `channels` (Arrhenius at T; today constant `A`).
+
+- `scission/1` (Ziff–McGrady discrete-bond):
+  `dµ0/dt += k_s·(µ1 − µ0)`; `dµ1/dt += 0`;
+  `dµ2/dt += k_s·(µ1 − µ3)/3` only when µ3 (§6) is finite.
+- `unzip/1`: `r = k_u·µ0`; `dµ1/dt −= r`; `dµ2/dt −= k_u·(2µ1 − µ0)`;
+  if `monomer_routing != null`: `dn(monomer_routing)/dt += r·V_poly`
+  (GAS phase since revision 2026-07-03-monomer-gas — the deposit law is
+  unchanged mol-for-mol, but the credited species is a gas volatile; under
+  pre-revision recipe_revision values it was condensed). µ0 unchanged.
+
+> **SUPERSEDED (schema 2.3, revision 2026-07-04-explicit-dp).** This note
+> previously read: *"The oracle's explicit-oligomer 'handshake' is NOT part
+> of the artifact: run-path pools carry no explicit oligomer map, so it is
+> inert in every emitted artifact. (If a future schema adds explicit
+> oligomers, that will be a versioned addition.)"* That versioned addition
+> is schema 2.3's pool-level `explicit_dp` block (§11): a deck with
+> `explicit_dp=True` produces run-path pools whose explicit map is
+> non-empty, and the handshake law is normative for such artifacts. The old
+> text remains true for 2.0–2.2 artifacts (and for 2.3 pools without the
+> block).
+
+## 6. µ3 closure — `log_lagrange/1` (oracle `polymer.pyx:141-160`)
+
+`µ3 = µ0·(µ2/µ1)³` computed in log space, with a realizability guard:
+- if µ0 ≤ 1e-30 or µ1 ≤ 1e-30 or µ2 ≤ 1e-30 → µ3 = 0
+- if µ1 < µ0 (unrealizable) → µ3 = 0
+- `ln µ3 = 3·ln µ2 − 3·ln µ1 + ln µ0`; if `ln µ3 > 700` → µ3 = +inf
+  (callers treat infinite µ3 by skipping the µ2 component, §4/§5)
+
+## 7. Mass transfer (consumer-supplied operating condition, NOT artifact content)
+
+`J = kLa·(C_poly − K·C_gas)` [mol/m³/s], `dn = J·V_poly`;
+`dn(gas species) += dn`, `dn(condensed species) −= dn`
+(oracle `polymer.pyx:1390-1402`; `K = C_poly_eq/C_gas_eq`, `kLa` [1/s]).
+kLa/K are apparatus properties and enter via the runner/consumer inputs.
+
+**Generation provenance (NON-normative).** The values above remain
+consumer-supplied. Since revision 2026-07-04, an artifact whose generating
+deck declared `mass_transfer` entries — and any artifact from a run with a
+polymer phase — MAY additionally record what the *generating run itself*
+used, in `conventions.generation_defaults` (§8): the deck's kLa/K per
+species pair and the `V_poly` the engine integrated
+(`PolymerPhase.calculate_volume`). This block is informative provenance
+only — a consumer's own experiment config always takes precedence (the
+block's in-band `note` says exactly that), it imposes no TA-normative
+semantics, and it is purely additive: nothing declared ⇒ key absent,
+artifacts byte-identical; no schema or recipe_revision consequences either
+way.
+
+## 8. Conventions block
+
+`conventions` carries (informative duplicates of this doc, plus normative
+lists): `configured_pools` (root/setup-time load-bearing pool labels —
+deck-declared plus setup-configured spawn sources; NOT the full
+solver-configured set — §2/§3 semantics), `condensed_species` (chem.yaml
+labels with phase = condensed; everything else is gas), and — schema 2.5,
+presence-based — `spawned_pools` (labels of runtime-spawned registry pools;
+mid-run engine-spawned daughters are solver-configured in the generating
+engine under the item-16 split — §2/§13). Consumers MUST use these lists,
+not name heuristics.
+
+`conventions.stale_topology` (optional boolean, **additive** — absent on
+fresh artifacts; P1-4, regen-#2 stale-sidecar adjudication; enforcement
+hardened round-27 P1-C): `true` means the generating RMG wrote this
+artifact AFTER the model topology changed (enlarge/promotion) but BEFORE
+the next solver rebuild, so every engine-derived surface in it —
+`configured_pools`, the gas-mask-derived `condensed_species`, per-pool
+index maps, and the `refused`/`dst_pool` state on `reactions[]` rows —
+describes the PRE-rebuild model and may lie about liveness (regen #2: all
+8 conduit rows emitted `refused: true` / `dst_pool: null` while the
+post-rebuild solver ran 5 of them live). Staleness is decided by
+comparing an ENGINE REBUILD SIGNATURE captured at `initialize_model`
+(stable `(label, index)` identity keys of the core species + core
+reactions the engine was built against) with the same signature of the
+current core at sidecar write — bare count equality is not enough (a
+same-count species/reaction swap between rebuilds is stale). On a stale
+emission the generating side replaces the unqualified POOL LIVENESS ALARM
+with a qualified WARNING (grep token: `POOL LIVENESS ALARM
+(STALE_TOPOLOGY)`) — the census numbers are reported but disclaimed as
+pre-rebuild. Consumers MUST treat a stale artifact's refusal/liveness
+census as advisory, never load-bearing; pool identity/moments remain
+usable. The reference runner (`rmgpy/tools/polymer_moments_runner.py`)
+REJECTS a stale artifact outright unless the explicit debug flag
+`--allow-stale` (API: `allow_stale=True`) is passed. Mid-run
+per-iteration saves are stale by construction; the final artifact of a
+normally-converged run is fresh (key absent).
+
+`conventions.generation_defaults` (optional, **NON-normative** — see §7):
+generation-run provenance for consumer-supplied operating conditions.
+Shape: `{"mass_transfer": [{"gas_species", "poly_species", "K", "kLa",
+"units": {"K": "dimensionless", "kLa": "s^-1"}}, ...], "V_poly_m3": <float>,
+"note": "generation-run values; consumer experiment config takes
+precedence"}`. `mass_transfer` is present only when the generating deck
+declared entries; `V_poly_m3` only when a live engine's condensed volume
+was resolvable; the whole key is absent when neither is (byte-identity
+pinned). Consumers that don't recognize the key ignore it (unknown
+conventions keys have never been guarded — verified against the TA loader
+and the reference loader, 2026-07-04).
+
+`conventions.recipe_revision` (string, date token; current values
+`"2026-07-03-monomer-gas"` for artifacts without any `radical_qssa_unzip`
+channel, `"2026-07-03-qssa-monomer-gas"` for artifacts carrying one, and
+`"2026-07-03-weaklink-u-monomer-gas"` for weak-link artifacts — all three
+superseding, respectively, the pre-monomer-gas values `"2026-06-10"`,
+`"2026-07-02"` and `"2026-07-03-weaklink-u"`; see the
+2026-07-03-monomer-gas revision note in §2. Artifacts carrying any
+`explicit_dp` block instead stamp the explicit-DP re-stamps of the same
+3-way family: `"2026-07-04-explicit-dp-monomer-gas"`,
+`"2026-07-04-explicit-dp-qssa-monomer-gas"`,
+`"2026-07-04-explicit-dp-weaklink-u-monomer-gas"` — §11) marks the revision
+of the RATE RECIPE the emitting RMG implements. It bumps (gets a new date) **only** when rate semantics change —
+site scaling, the chip exhaustion throttle, the kb/Keq recipe, or channel /
+flux-archetype algebra (§4/§5) — and is independent of `schema_version`,
+which governs artifact shape only (a recipe bump is NOT a schema bump, and
+vice versa). Consumer guidance: validate `recipe_revision` when present and
+**hard-fail on unknown values** (an unrecognized revision means the rates in
+this artifact follow a recipe the consumer does not implement); accept its
+absence in artifacts written before this marker existed (treat as the
+pre-marker recipe).
+
+Consumer guidance — melt-class reconstruction is fail-loud-incomplete: a
+consumer rebuilding the physically-melt class (the `is_polymer_proxy` tags)
+from `reactions[]` entries recovers it ONLY for participants of entry-listed
+reactions. Tags whose generation-world source is not an entry-listed reaction
+(explicit-oligomer reactions, legacy spawned daughter proxies with no live
+entry-listed row — an item-16 mid-run daughter's live conduit rows DO
+entry-list its proxy, so its tag restores — and edge-reaction tag sources)
+are lost, and the loss is FAIL-LOUD: the thermo
+reference-state tripwire refuses (U ≈ 11 decades, false-unpaired chains) on a
+deck whose generation run was silent — never a silent acceptance. Diagnose
+such a consumer-only REFUSAL as a melt-classification divergence (compare the
+consumer's reconstructed melt class against the generating run's), not as a
+thermo problem — do not respond by touching reference states. This paragraph
+exists so the next such refusal is not misdiagnosed.
+
+### FEATURE mid-chain radicals: refused, not routed (item 18)
+
+A mid-chain H-abstraction produces a same-length radical (classified `FEATURE`) that
+beta-scissions (chain-shortening). When the handshake cannot conservingly represent it,
+item 18 REFUSES the reaction (no-raise `Reaction.polymer_refused` flag, set at stamp time
+and captured by the solver, which suppresses the reaction's entire flux contribution) so no
+MW-weighted backbone mass is fabricated. The reaction stays in the model ("stamp-but-keep").
+Each refusal emits a `FEATURE-RADICAL REFUSED CENSUS:` log line tagged with the radical class
+(`eliminating`/`accumulating`) and reason (`conduit-deferred`/`qssa-invalid`). Since schema
+2.4 the refusal ALSO crosses the artifact boundary: the row is emitted with `refused: true`
++ `refused_reason` so consumers reproduce the suppression (§12).
+
+This is **deferred, not missing**: the route-don't-refuse upgrade — a QSSA flux-conduit that
+emits the radical's beta-scission fragment spectrum via the SCISSION_FRAGMENT/DISCRETE_CHIP
+archetypes — is **item 20**, gated on a diene-faithful proxy (item 20) and the phenomenological-
+reconciliation item (item 19). The refusal census is the priority signal for item 20, not a defect.
+
+## 9. Conservation invariants (assertable, per-channel qualified)
+
+Over the discrete-reaction subset only (no channels active):
+`Σ_pools µ1 + Σ_chip_species a_i·n_i` is constant.
+With unzip active, add `+ n(monomer_routing)` per routed pool (since
+revision 2026-07-03-monomer-gas that inventory term is GAS-phase moles; the
+invariant's numerical form is unchanged). Random
+scission conserves `Σ µ1` exactly. Mass transfer conserves total moles of the
+transferred species pair.
+
+## 10. Weak-link U-state channel (schema 2.2)
+
+Oracles: config validation `validate_radical_qssa_unzip`
+(`rmgpy/solver/polymer.pyx`), the weak-link branch of the residual's pool
+loop and the U0 census in `set_initial_conditions` (same file), emitter
+`_serialize_radical_qssa_channel` + stamping in
+`build_polymer_moments_artifact` (`rmgpy/polymer.py`), reference loader
+`_parse_radical_qssa_channel` / `_check_schema_version_known` /
+`_check_qssa_schema_version` (`rmgpy/tools/polymer_moments_runner.py`).
+
+### Vocabulary (inside `channels.radical_qssa_unzip`)
+
+Four new keys, ALL-OR-NOTHING as a group and MUTUALLY EXCLUSIVE with the
+legacy summed `termination` block (U is produced by the disproportionation
+branch specifically, so a summed kt cannot source U — the split blocks are
+structurally required; a config carrying both, or a partial group, is
+rejected by name):
+
+| Key | Shape | Units pin |
+|---|---|---|
+| `initiation_allyl` | Arrhenius triplet `{A, n, Ea, units}` | `A`: `"s^-1"`, `Ea`: `"J/mol"` |
+| `termination_recombination` | Arrhenius triplet | `A`: `"m^3/(mol*s)"`, `Ea`: `"J/mol"` |
+| `termination_disproportionation` | Arrhenius triplet | `A`: `"m^3/(mol*s)"`, `Ea`: `"J/mol"` |
+| `unsaturated_tail_ends_initial` | `{"value": <float ≥ 0>, "units": <pinned note>}` | `"mol — tail-distribution state; consumer divides by V_poly"` |
+
+`initiation_allyl` is unimolecular in the active unsaturated end; the split
+termination triplets carry the bimolecular units of the summed block they
+replace. `unsaturated_tail_ends_initial` is STATE, not a rate constant — a
+`{value, units}` pair, not a triplet — and its units note is pinned
+byte-for-byte (a bare `"mol"` is rejected; reject, never convert). In a
+weak-link block the emitter writes the summed slot explicitly as
+`termination: null` — legal ONLY under 2.2 (the split triplets replace it;
+the loader does not forward the key). A channel with NONE of the weak-link
+keys normalizes exactly as before this vocabulary existed (legacy freeze).
+
+### Recipe pin (`RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK`)
+
+A weak-link block carries the WEAK-LINK recipe, not the legacy one (either
+recipe on the wrong block kind is rejected). Same contract as §intro/2.1:
+every entry is a LITERAL the consumer validates by exact match — reject on
+mismatch, omission, or unknown keys, never adapt. Pinned values live in
+`rmgpy/polymer.py` (`RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK`) and are
+duplicated independently by the reference loader
+(`rmgpy/tools/polymer_moments_runner.py`, `_QSSA_PINNED_RECIPE_WEAKLINK`).
+Keys: `bond_basis`, `channel_gate`, `u_state`, `u_active`,
+`radical_generation`, `kt_split`, `rate_no_transfer`, `rate_with_transfer`,
+`du_dt`, `u0_census`, `u_transport`, `moment_signature`, `small_eps`,
+`volume_note`.
+The algebra they pin (transcribed from the implemented RHS):
+
+- `kt_total = kt_rec + kt_disp` replaces the legacy summed kt everywhere
+  (halved radical-disappearance convention unchanged).
+- `u_active = min(max(U, 0)/V_poly, B)` — active-site clamp, mol/m³.
+- `G_R = 2*efficiency*ki*B + 1*efficiency*ki_allyl*u_active` (ν = 1: one
+  unzipping radical per weak-link fission; the allylic co-fragment does not
+  unzip).
+- The channel gates on `B > 0`: at `B = 0` it is INERT even at `U > 0`.
+- `du_dt` (normative string, quoted in full because the two µ0 references
+  differ and the zero-capacity branch is explicit): `dU/dt =
+  kt_disp*R_ss^2*max(0, 1 - U/(2*mu0))*V_poly -
+  efficiency*ki_allyl*u_active*V_poly; production is the disproportionation
+  EVENT rate with NO efficiency factor (R_ss already carries the escape
+  efficiency) under a linear capacity throttle exactly zero at the TAIL
+  chain-end capacity 2*mu0 [mol], where mu0 is the INSTANTANEOUS
+  tail-distribution mu0(t) amount read from the current state at each RHS
+  evaluation (NOT the frozen initial mu0 of the u0_census bound); at
+  mu0(t) <= 0 the throttle is EXACTLY 0 by explicit branch (no ends, no
+  capacity, no U production; no division is performed and no small_eps
+  floor is applied); the sink is efficiency-SYMMETRIC with the G_R allyl
+  term (a caged recombination restores the allylic bond)`
+- `u0_census` (normative string): `U0 = unsaturated_tail_ends_initial [mol]
+  is rejected at solver init when U0 > 2*mu0_tail evaluated on the INITIAL
+  (t = 0) tail mu0 (TAIL-only chain-end capacity, amount basis); the loader
+  passes the value through`
+- `u_transport` (normative string — pins explicitly what is otherwise only
+  the absence of code): `U is NEVER advected or transferred by any
+  inter-pool or ejection flux archetype (migration, scission_fragment,
+  discrete_chip and volatile_ejection move pool moments and species amounts
+  only); the ONLY writers of U are this recipe's du_dt law and the t = 0
+  initial condition, and daughter pools spawn with U0 = 0 (constants
+  inherit, state resets)`
+
+### U-state semantics
+
+- `U` is a PER-POOL amount state [mol], appended to the ODE layout as one
+  trailing slot per weak-link pool (in pool order, after the core block).
+- `U` is MASSLESS: it never enters condensed mass or any Mn/Mw/PDI consumer
+  (pinned by the `u_state` recipe entry).
+- TAIL-DISTRIBUTION basis throughout: `B`, the runtime capacity throttle and
+  the t = 0 census all count the tail moments only — explicit-species chain
+  ends do not back `U` (mixed semantics would make a basis typo a silent
+  hidden initiation source).
+- Two distinct µ0 references, deliberately disambiguated: the t = 0 census
+  bound `U0 ≤ 2*mu0_tail` uses the INITIAL tail µ0 (solver
+  `set_initial_conditions`; `U0 = 0` always passes), while the dU/dt
+  production throttle `max(0, 1 - U/(2*mu0))` uses the INSTANTANEOUS
+  tail-distribution µ0(t) at every RHS evaluation. The census guards the
+  IC; the throttle guards the trajectory.
+- Daughter pools spawn with `U0 = 0`: channel CONSTANTS inherit, STATE
+  resets (`_inherit_unzip_channel` zeroes `unsaturated_tail_ends_initial`
+  in the deep-copied inherited config, `rmgpy/polymer.py` — copying the
+  parent's would fabricate the same initial U on every daughter, a hidden
+  initiation source).
+
+### Stamp + version-acceptance semantics
+
+- The emitter stamps `schema_version` by the STRONGEST vocabulary present:
+  `"2.2"` iff at least one pool block carries the weak-link vocabulary
+  (`initiation_allyl` membership is the complete discriminator — the
+  validator pins the group all-or-nothing before serialization), else
+  `"2.1"` iff any QSSA block, else `"2.0"`. `conventions.format_doc` mirrors
+  the stamp (`polymer_moments_format/2.2`) and
+  `conventions.recipe_revision = "2026-07-03-weaklink-u-monomer-gas"` (the
+  weak-link law is new rate algebra; the `-monomer-gas` suffix carries the
+  2026-07-03 gas-monomer routing revision, see the header note). No weak-link anywhere ⇒ the 2.1/2.0 artifacts
+  stay byte-identical to the pre-2.2 emitter.
+- Mixed artifacts stamp `"2.2"` while the legacy pools' channel blocks
+  serialize byte-identically to their 2.1 form; a 2.1-only consumer
+  therefore rejects the whole artifact loudly instead of laundering the
+  weak-link pool.
+- STRICT-MINOR acceptance (ratified policy change, was minor-permissive):
+  the reference loader implements `2.0 ≤ 2.x ≤ 2.2` and hard-rejects
+  anything else, including `2.3`+ — a newer minor may carry vocabulary
+  OUTSIDE the channel blocks (new conventions, new pool fields) that the
+  unknown-key guards never inspect, and for physical-ODE artifacts loading
+  it additively would silently change the physics.
+- Vocabulary/version cross-check: a `2.1`-stamped artifact carrying any
+  weak-link key (scanned across ALL pool entries, configured or not) is
+  rejected as malformed, exactly as a `2.0` artifact carrying a QSSA block
+  is.
+
+## 11. Explicit-DP handshake block (schema 2.3)
+
+Oracles: species generation `Polymer.generate_explicit_dp_species` +
+registration in the `polymer()` input block (`rmgpy/rmg/input.py`, step 4c);
+map wiring `compile_polymer_phase` / `PolymerPool.to_config`
+(`rmgpy/rmg/polymer_input.py`); the hybrid handshake flux in the solver's
+pool loop and the t = 0 seeding in `set_initial_conditions`
+(`rmgpy/solver/polymer.pyx`); emitter `_serialize_explicit_dp_block` +
+stamping in `build_polymer_moments_artifact` (`rmgpy/polymer.py`); reference
+loader `_parse_explicit_dp_block` / `_check_explicit_dp_schema_version`
+(`rmgpy/tools/polymer_moments_runner.py`).
+
+### Vocabulary (POOL-LEVEL `pools[].explicit_dp`)
+
+The block is pool state/topology, deliberately NOT inside `channels`: it
+names what the handshake deposits INTO, while the flux law itself is carried
+by the block's normative `recipe`. It is emitted **iff the pool's explicit
+map is non-empty** (the generating deck set `explicit_dp=True`, which
+auto-generated and attached the capped DP = cutoff oligomer); the emitter
+refuses to serialize a flag-ON pool with no attached species (a structurally
+inert handshake) and a species outside the artifact's core universe.
+
+```json
+"explicit_dp": {
+  "enabled": true,
+  "species": {"3": "PS_dp3(42)"},
+  "initial_moles": {"3": 0.0},
+  "handshake_target_dp": 3,
+  "recipe_revision": "2026-07-04-explicit-dp",
+  "recipe": { ... }               // normative, pinned — see below
+}
+```
+
+- `enabled` — always `true`; the emitter never writes disabled blocks (a
+  disabled handshake is absent). Present-but-false is malformed (rejected).
+- `species` — `{dp: chem.yaml label}`. **Labels, not indices** (same
+  `label(index)` rule as every other species reference). v1 carries exactly
+  ONE entry, at DP == `handshake_target_dp` == the pool's `cutoff` (`xs`).
+  The handshake species is **not inherited in v1**: daughter pools spawned
+  mid-run carry no `explicit_dp` block and no handshake — their
+  boundary-crossing chains still leave the tracked distribution
+  statistically, exactly as for any non-explicit pool (no physical parity
+  with the parent is implied).
+- `initial_moles` — `{dp: mol}`, keyed identically to `species`: the t = 0
+  loading from the deck's initial_explicit channel (the solver contract
+  `initial_explicit_species = {pool_label: {dp: moles}}`, seeded as species
+  amounts by `set_initial_conditions` step 2, clamped ≥ 0). `0.0` when the
+  deck declared none — never a hole. NOTE the tail-split rule below: these
+  amounts are ALSO subtracted from the seeded pool moments (the declared
+  moments are total-inclusive).
+- `handshake_target_dp` — integer, == the pool's `cutoff`. Consumers MUST
+  reject a mismatch (the flux law below is evaluated at `xs`).
+- `recipe_revision` — the block-local token `"2026-07-04-explicit-dp"`
+  (pinned byte-for-byte), independent of which channel family the
+  artifact-level `conventions.recipe_revision` composes with.
+- `recipe` — normative machine-readable strings, pinned by exact match
+  (reject on mismatch or absence, never adapt — the same rule as the QSSA
+  `recipe` sub-block). Pinned values: `rmgpy/polymer.py`
+  `EXPLICIT_DP_SIDECAR_RECIPE`, duplicated independently by the reference
+  loader (`_EXPLICIT_DP_PINNED_RECIPE`). Keys:
+  - `tail_split` — the t = 0 accounting. **Normative rule: declared
+    `pools[].moments` are TOTAL-INCLUSIVE** (explicit chains counted in).
+    The solver seeds the explicit species' `initial_moles` as species
+    amounts (step 2, clamped ≥ 0), seeds the declared moments (step 3),
+    and then subtracts each mapped DP's contribution — `(N_dp, dp·N_dp,
+    dp²·N_dp)` on concentration moments — from µ0/µ1/µ2, clamped ≥ 0 with
+    a clamp WARNING (`set_initial_conditions` step 6, the Moment
+    Consistency Check; `_explicit_moment_contributions`). The integrated
+    tail moments are therefore `total − explicit` (behaviorally pinned:
+    declared `[1, 5, 30]` with 0.25 mol at DP = 3 seeds
+    µ = `[0.75, 4.25, 27.75]`). The generation-side V_poly mass split
+    (`PolymerPhase.calculate_volume`) applies the same subtraction and
+    HARD-ERRORS when the explicit µ1 exceeds the declared µ1 beyond
+    −1e-12 (the solver side clamps-and-warns; the generation side
+    refuses).
+  - `boundary_flux` — the handshake law: gated on
+    `µ0 > 1e-9 mol/m³ AND µ1/µ0 > xs + 1e-9`; `p_cond = P(DP = xs+1 |
+    DP > xs)` under the gamma distribution moment-matched to (µ0, µ1, µ2)
+    (`k = 1/(PDI−1)`, `θ = mean/k`, half-integer bins on the regularized
+    lower incomplete gamma), with a triangular fallback on
+    `tail_mean ∈ (xs+1, xs+2)` peaking at `xs+1.5` when the gamma is
+    unrealizable; `p_cond` clamped to [0, 1];
+    `N_boundary = min(µ0·p_cond, µ0, µ1/xs, µ2/xs²)` [mol/m³];
+    `F = k_chain·N_boundary`; `dn(species[xs])/dt += F·V_poly`;
+    `dµ0 −= F; dµ1 −= xs·F; dµ2 −= xs²·F`.
+  - `k_chain` — per-chain handshake frequency: `k_unzip` when
+    `k_unzip > 0`, else `r_qssa/max(µ0, 1e-30)` when the QSSA channel is
+    active (mutually exclusive upstream; at most one arm fires).
+  - `transport` — one-way: statistical moment tail → explicit real
+    condensed species; no reverse flux.
+
+### Phase membership (normative)
+
+The explicit-DP species is **real condensed inventory**: it is listed in
+`conventions.condensed_species` AND in the pool's `phase_species`, and it is
+exactly NOT in `bookkeeping_species` — this is the §2 carve-out
+("the complement within `phase_species` is real condensed species carrying
+real moles (explicit-DP chains)") made live. Pre-2.3 artifacts from
+explicit-DP-capable code listed the species in `condensed_species` only
+(pool `phase_species` collection was label-pattern-keyed); 2.3 emitters list
+it in both, by species identity.
+
+### Stamp + version-acceptance semantics
+
+The artifact-level stamp is governed by the STRONGEST vocabulary present: a
+mixed artifact (legacy + QSSA + explicit-DP pools) stamps `"2.3"`, so a
+2.2-only consumer rejects the WHOLE artifact rather than silently
+integrating the pool without its handshake target (whose boundary drain of
+µ0/µ1/µ2 would then be unaccounted). With explicit-DP pools present the
+recipe token is the explicit-dp re-stamp of the strongest channel family
+present (§8); without any, both stamps are byte-identical to the 2.2
+emitter (golden-pinned). A `2.0`–`2.2` artifact carrying an `explicit_dp`
+block is rejected as malformed, exactly as a `2.0` artifact carrying a QSSA
+block is.
+
+## 12. Refused rows (schema 2.4)
+
+### Vocabulary (ROW-LEVEL, on `reactions[]` entries)
+
+| key | value | semantics |
+| --- | --- | --- |
+| `refused` | `true` | the generating solver zeroed this reaction's ENTIRE flux (item 18 stamp-but-keep, §8: `Reaction.polymer_refused` → `polymer.pyx` `reaction_refused`). Emitted ONLY as literal `true`; a non-refused row carries NO key (absent, never `false`) |
+| `refused_reason` | `"conduit-deferred"` \| `"qssa-invalid"` \| `"qssa-unassessable"` | the census reason: `conduit-deferred` = QSSA-eliminating radical awaiting the item-20 flux conduit; `qssa-invalid` = accumulating radical the QSSA closure cannot represent; `qssa-unassessable` (round-20 increment 7) = accumulating refusal whose lost radical / consuming reactions were NOT visible at the solver rebuild's rate-derived k_out census -- missing evidence is never spelled `qssa-invalid` ('slow'). Single-sourced: the rebuild census writes `Reaction.polymer_refused_reason` and the emitter reads that same attr. Informative for consumers (the suppression is identical); REQUIRED on refused rows (non-empty string) |
+
+### Consumer semantics (normative)
+
+A `refused: true` row MUST contribute **exactly zero** in every basis:
+
+- **step 0 (unchanged):** the row STAYS listed, so the consumer's step-0
+  sweep still zeroes its mapped Cantera reaction (`cantera.index`) — this is
+  WHY the row is emitted at all. De-listing it would hand the reaction back
+  to Cantera's gas integrator at full rate.
+- **steps 1–6 (new):** the consumer MUST skip the row entirely — no moment
+  flux, no manual gas-side species dispatch, no reverse leg. This mirrors the
+  generating solver, whose `reaction_refused` suppression skips every
+  reactant/product/moment write for the reaction.
+
+The marker is legal ONLY on pool-mapped rows (non-empty `proxy_reactants`
+or `proxy_products`): honoring it elsewhere would silently zero ordinary
+gas chemistry, so a marker on a non-pool-mapped row is artifact corruption —
+reject at load. The emitter guarantees this (a refused reaction whose pool
+is not solver-configured emits UNMARKED, warn-loud). Consumers likewise
+reject `refused: false` (never emitter-produced), a refused row without a
+valid `refused_reason`, and a `refused_reason` without the marker.
+The `refused_reason` vocabulary is CLOSED — exactly `"conduit-deferred"`,
+`"qssa-invalid"` and `"qssa-unassessable"` (round-20) — and consumers MUST
+reject any other value at load (consumers reconstruct the accumulating class
+from the reason — `qssa-invalid` and `qssa-unassessable` are both
+accumulating — so an unknown reason would silently change solver semantics).
+
+### Stamp + version-acceptance semantics
+
+Presence-based, the 2.1/2.2/2.3 rule exactly: the emitter stamps `"2.4"`
+exactly when at least one `reactions[]` row carries the marker; no refused
+row anywhere keeps the 2.3/2.2/2.1/2.0 stamps AND the whole artifact
+byte-identical to the pre-2.4 emitter (pinned by test). Refused presence is
+the strongest SHAPE stamp (2.4 > 2.3 > …); `conventions.format_doc` mirrors
+it. `recipe_revision` is untouched — refused rows add shape vocabulary with
+consumption semantics, not new rate algebra, and STRICT-MINOR acceptance
+already hard-stops pre-2.4 consumers at the envelope (pin: a pre-2.4 TA
+rejects any 2.4 artifact via its minor gate). A `2.0`–`2.3` artifact
+carrying the marker anywhere is malformed and rejected, exactly as a `2.0`
+artifact carrying a QSSA block is. The reference loader implements
+`2.0`–`2.5` and rejects `2.6`+, restoring the marker onto the reconstructed
+reaction (`polymer_refused`, with the accumulating class recovered from the
+reason) so the consumer-world oracle suppresses the row identically.
+
+### Erratum (pre-2.4 artifacts)
+
+RMG code between the item-18 refusal stamps and schema 2.4 emitted refused
+rows as plain unresolved/legacy-µ1 entries with NO marker. Consumers of
+those artifacts (e.g. TA) integrate moment flux the generating solver
+zeroed — over-integration that can drain µ1 and fabricate chain-radical
+moles the oracle never produced. The artifact alone cannot identify the
+affected rows; regenerate with a 2.4-capable emitter.
+
+## 13. Spawned-pool closure (schema 2.5)
+
+### Vocabulary (CONVENTIONS-level)
+
+| key | value | semantics |
+| --- | --- | --- |
+| `conventions.spawned_pools` | `[labels]` | every `pools[]` entry whose `label` is NOT in the emitted `conventions.configured_pools` — runtime-spawned scission daughters (`<parent>_d<N>`, gate-path drain) and radical-feature pools (`<parent>_mod`, S1a/S2 producer path), in registry order. Under the item-16 emission/resolution split these mid-run daughters ARE solver-configured in the generating engine (§2); `configured_pools` keeps naming root/setup-time pools only. Disjoint from `configured_pools` by construction. Emitted ONLY when non-empty (never an empty list) |
+
+Rows referenced by `spawned_pools` keep full §2 semantics: mid-run
+engine-spawned daughters are solver-configured and integrated in the
+generating run and MAY carry live rows (replay-buildable when a live row
+couples to them and their µ triplet is mechanism-resident, §2); legacy
+spawned pools with no live coupled row stay solver-inert (no site scaling,
+no concentration-1.0 rule, no channels integration). All spawned pools:
+`moments = [0, 0, 0]` with `moments_provenance = "spawned_empty"` (honest
+t = 0 initial conditions, item #14a), spawn provenance preserved
+(`parent_pool`, `spawn_iteration`, `spawn_event_metadata`), and
+`monomer_mw_g_mol` present (pinned from the parent at spawn time).
+
+### `condensed_species` closure (normative)
+
+A spawned pool's `phase_species` (its canonical proxy + `_mu0/_mu1/_mu2`
+dummies, collected from the same core universe as every other pool's — they
+are declared condensed ROW-side already) additionally join
+`conventions.condensed_species`. Rationale: consumers key phase
+classification on the normative lists ("MUST use these lists, not name
+heuristics", §8); before the closure, a pool spawned mid-run (a late
+radical-feature pool in particular) had its proxy and µ-dummies classified
+GAS by every configured-pools-keyed consumer path, silently corrupting the
+condensed-phase mass balance (the item-16 hazard shape). This mirrors the
+generating solver's own posture since spec 2026-06-29: qualifying spawned
+daughters are condensed-masked (edge-daughter condensed-mask,
+`PolymerPhase.get_condensed_edge_daughter_bases`) so Gate B passes their
+real flux. The membership change ships only inside 2.5-stamped artifacts,
+which the STRICT-MINOR envelope hides from every pre-2.5 consumer.
+
+### Consumer semantics (normative; amended by the item-16 emission/resolution split)
+
+* `configured_pools` = the ROOT/SETUP-TIME load-bearing pools only:
+  deck-declared pools plus setup-time-configured spawn sources (e.g. the
+  `k_homolysis_end_radical` end-radical daughters). `spawned_pools` =
+  mid-run engine-spawned daughters, which ARE solver-configured and
+  integrated in the generating RMG run once promoted at the enlarge
+  boundary (item 16) and MAY carry live rows (e.g. cross-pool
+  `volatile_ejection/1` conduits into a `<parent>_mod` pool).
+* Classify every `spawned_pools` row's `phase_species` /
+  `bookkeeping_species` CONDENSED (they arrive via
+  `conventions.condensed_species`, so a consumer honoring §8 needs no new
+  code path beyond accepting the 2.5 envelope).
+* A spawned pool is REPLAY-BUILDABLE iff (a) at least one live
+  (non-refused, resolved) row is pool-coupled to it AND (b) its
+  `_mu0/_mu1/_mu2` triplet is mechanism-resident. The reference runner
+  builds such pools alongside the configured set and reports their moment
+  columns in its output. A legacy spawned pool with no live coupled row
+  stays solver-inert for consumers: do NOT integrate moment ODEs, apply
+  site scaling, or honor channels for it (§2).
+* Consumers MUST NOT treat spawned pools as certification-root pools —
+  e.g. a born-empty daughter with no outgoing edge is NOT "structurally
+  dead configured" (the split exists precisely so root-pool liveness
+  checks never fire on engine-spawned daughters). Consumers MUST NOT
+  treat `configured_pools` as the full solver-configured set — it
+  deliberately subtracts mid-run spawned daughters, whose live rows
+  resolve against the generating solver's FULL configured set.
+* Reject (never adapt): `spawned_pools` on a `2.0`–`2.4` stamp (the emitter
+  stamps `"2.5"` whenever it writes the key), and any
+  `spawned_pools`/`configured_pools` overlap (the two lists are disjoint by
+  construction; a label in both is contradictory).
+
+### Stamp + version-acceptance semantics
+
+Presence-based, the 2.1–2.4 rule exactly: the emitter stamps `"2.5"`
+exactly when at least one spawned pool is present in the registry; no
+spawned pool anywhere keeps the older stamps AND the whole artifact
+byte-identical to the pre-2.5 emitter (pinned by test). Spawned presence is
+the strongest SHAPE stamp (2.5 > 2.4 > …); `conventions.format_doc` mirrors
+it. `recipe_revision` is untouched — the closure is shape vocabulary with
+classification semantics, not new rate algebra. The legacy default-label
+builder call (`configured_pool_labels` omitted/None ⇒ configured defaults
+to ALL registry labels) has an empty complement and emits nothing,
+mirroring the documented legacy-default limitation of `moments_provenance`
+(§2). The sentinel is None, NOT emptiness: an explicitly EMPTY configured
+set means "nothing is root-configured" (a daughters-only artifact) and
+classifies every registry pool into `spawned_pools` with the 2.5 stamp.
+
+## 14. Moment-credit conduit rows (schema 3.1) — `moment_credit_conduit/1`
+
+**Schema 3.1** = 3.0 + the `moment_credit_conduit/1` `reactions[]` row
+vocabulary + the `conventions.conduit_flux_census` block. ADDITIVE on the
+3.x line (row-local params + one conventions block; nothing existing
+changes shape). The election is presence-based, evaluated LAST (the
+strongest rung): the emitter stamps `"3.1"` exactly when at least one
+serialized `reactions[]` row carries `archetype: "moment_credit_conduit/1"`
+**OR** the artifact carries the `conduit_flux_census` block — the block is
+itself 3.1 vocabulary: a run whose admitted conduit flux was entirely
+edge-unserialized has ZERO conduit rows but must still stamp 3.1 so the
+census (and the certification refusal it feeds) can never hide under an
+older stamp. A conduit-free artifact keeps its older stamp byte-identically
+(golden-pinned). A `2.0`–`2.9`/`3.0` artifact carrying a conduit row or the
+census block anywhere is MALFORMED; both reference loaders reject it (the
+2.1-QSSA precedent). **`conventions.recipe_revision` is NOT bumped**: the
+bundle law is carried by the versioned archetype name plus the 3.1 envelope
+(the `volatile_ejection/1` precedent); an in-place amendment of the conduit
+LAW is `/2` on the archetype name, never a recipe token.
+
+A 3.1 artifact lives in the SGH-v2 world by construction (major-3
+dispatch): the producer HARD-REFUSES to serialize conduit vocabulary
+together with SGH kernel-v1 vocabulary (a `side_group_homolysis` block
+naming `side_group_homolysis/1`); such a deck must migrate to the v2
+kernel first.
+
+### Row contract (normative; reject on ANY violation, never adapt)
+
+One `reactions[]` entry per CORE admitted reaction (edge rows never
+serialize; their flux is bounded by the census block below). Shared
+top-level keys keep their §3 semantics; conduit vocabulary rides `params`:
+
+```json
+{
+  "id": "r<cantera.index>",
+  "cantera": {"index": 412, "equation": "CHAIN(5) => phenol_formaldehyde(1) + CH2O(12)"},
+  "kinetics": {"A": 1.0, "n": 0.0, "Ea": 0.0,
+               "units": {"A": "s^-1", "Ea": "J/mol"}, "reversible": false},
+  "reactants": ["CHAIN(5)"],
+  "products":  ["phenol_formaldehyde(1)", "CH2O(12)"],
+  "proxy_reactants": [],
+  "proxy_products":  ["phenol_formaldehyde(1)"],
+  "scaling": "mu0",
+  "src_pool": null,
+  "dst_pool": "phenol_formaldehyde",
+  "archetype": "moment_credit_conduit/1",
+  "params": {
+    "admission_direction": "chain_to_pool",
+    "chain_units": 3.42,
+    "gas_products": [{"species": "CH2O(12)", "stoich": 1, "mw_g_mol": 30.026}],
+    "gas_units": 0.224,
+    "candidate_key": "CHAIN(5)<>CH2O(12)+phenol_formaldehyde(1)",
+    "candidate_key_note": "run-scoped provenance only; species indices are not stable across regenerations -- never join across artifacts"
+  }
+}
+```
+
+Reject rules (every one enforced by both reference loaders):
+
+* `cantera` MUST be non-null — the chem.yaml export is load-bearing; a
+  conduit row the generating run could not export is artifact corruption.
+* `cantera.equation` MUST use the irreversible arrow `=>` and
+  `kinetics.reversible` MUST be `false`: every admitted reaction is made
+  irreversible IN PLACE at admission time (`reversible = False` is the ONE
+  mutation — the generating solver then computes kb = 0, chem.yaml prints
+  `=>`, and the sidecar mirrors it, all from the same bit). A non-conforming
+  loader that never reads the sidecar therefore CANNOT integrate the killed
+  reverse. Reversible sources aligned with the admitted direction are
+  admitted WITH this rewrite; anti-aligned reversible sources are DENIED
+  (`direction-requires-flip-rewrite`) until a fitted reverse-Arrhenius
+  rewrite is adjudicated (v2).
+* `src_pool` MUST be null (the conduit debits NO pool moments; the event
+  rate is driven by the real chain-species concentration). `proxy_reactants`
+  MUST be `[]`; `proxy_products` MUST be non-empty (the credited pool
+  participant). `dst_pool` is REQUIRED and must name a pool present in
+  `pools[]` AND in `conventions.configured_pools`.
+* `scaling` is the pinned literal `"mu0"` and is INERT (no site scaling is
+  ever applied — null src; kept only so the shared row shape stays uniform).
+* `params.admission_direction` is CLOSED to `"chain_to_pool"`.
+* `params.chain_units` (`u`) MUST be finite and `>= 1.0` — the landing-cone
+  guard (below). `params.gas_products` MUST be EXACTLY ONE
+  `{species, stoich, mw_g_mol}` entry with `stoich` EXACTLY 1; the species
+  must be a chem.yaml species NOT in `conventions.condensed_species`, with
+  `mw_g_mol <= 1.5 x monomer_mw_g_mol(dst)`. At least one reactant must be
+  condensed (the event is a melt event; the consumer's §4 step 2 selects
+  `V_rxn = V_poly` through the melt-classified chain).
+* `refused` is MUTUALLY EXCLUSIVE with this archetype.
+* Cross-pins (reference-runner side, which holds the chem.yaml
+  compositions): `chain_units` and `gas_units` recomputed from the row's
+  own species MWs must agree within 0.01 monomer-equivalents ABSOLUTE; the
+  `mw_g_mol` stamp within 1e-3 RELATIVE. Disagreement rejects.
+* `candidate_key` is RUN-SCOPED PROVENANCE ONLY (label(index) strings do
+  not survive regeneration): consumers MUST NOT use it for cross-artifact
+  identity, dedup, or any load-bearing decision — the note travels in-band
+  so the caveat cannot be lost. WITHIN the artifact it is load-bearing
+  (the `conduit_flux_census` partition below is keyed on it), so both
+  reference loaders recompute it from the row's OWN serialized
+  reactants/products (each side's labels sorted and `+`-joined, the two
+  sides ordered lexicographically around `<>`) and reject an empty or
+  non-matching stamp (r42 P1-5); the emitter enforces the same pin at
+  serialization.
+* Serialization-time stamp cross-checks (producer side, r42 P1-2/P1-3):
+  the emitter RAISES (never demotes) unless the row's ACTUAL product side
+  carries exactly one non-pool product, the stamped `mw_g_mol` agrees with
+  that product's recomputed MW (1e-3 relative), the recomputed gas MW
+  satisfies the G3 admission bound, and the stamped
+  `chain_units`/`gas_units` agree with the emitter's own landing-cone
+  recompute within 0.01 monomer-equivalents ABSOLUTE — a stale or foreign
+  admission stamp must never serialize.
+
+### Consumer rate/flux law (§4 extension; step-6 bundle)
+
+Per accepted row, §4 steps 0–5 run unchanged (step 0 zeroes the Cantera
+multiplier; steps 1–3 give `rf` with `kb = 0` by the irreversibility
+contract; step 5 dispatches every non-pool-mapped species — the chain is
+consumed and the gas released there). New step 6:
+
+* event rate `r = rf`, FORWARD-ONLY (any nonzero reverse contribution is
+  impossible-by-construction); `ev_mol = rf * V_rxn` with `V_rxn = V_poly`;
+* moment credit to `dst_pool` ONLY:
+  `mu0 += ev_mol`, `mu1 += ev_mol * u`, `mu2 += ev_mol * u^2`;
+* NO site scaling, NO exhaustion-tail limiter, NO cone-margin drain gate:
+  the conduit never debits pool moments, and its consumed species is a real
+  amount clamped >= 0 by the ordinary step-3 concentration clamp. The
+  credited point mass `(1, u, u^2)` with `u >= 1` is inside the
+  realizability cone by construction (`mu1 - mu0` change `= u - 1 >= 0`;
+  `mu2*mu0 >= mu1^2` with equality for a point mass).
+
+### Landing-cone guard (three enforcement points)
+
+With dst pool `d = chain_mass_defect_g_mol(dst)`, `M = monomer_mw_g_mol(dst)`:
+
+```
+u_raw = (MW(chain) + sum MW(disc reactants)) / M
+a     = mw_gas / M
+u     = u_raw - a + d/M          # credited units (defect-aware)
+```
+
+Guard: `u >= 1.0` (equivalently `u_raw - (a + 1) >= -d/M`), enforced (1) at
+admission, (2) at serialization — the emitter RECOMPUTES from the row's own
+species MWs and RAISES on violation (never demotes), and (3) at load —
+consumers reject `chain_units < 1` and cross-pin. The `>=` is CLOSED at
+exactly 1.0: the ratified equality-boundary fixture (`u == 1.0` exactly, a
+point mass ON the cone) passes admission, serialization and replay cleanly
+(equal credits across mu0/mu1/mu2; whole-pool `Q10 = mu1 - mu0` unchanged;
+mu3 closure finite) — no boundary stiffness was observed, so the closed
+semantics stand.
+
+### `conventions.conduit_flux_census` (run-level; edge-unserialized flux)
+
+Admitted-EDGE conduit rows shape the generating trajectory while absent
+from chem.yaml and the sidecar — flux NO consumer can replay. The
+generating engine accumulates, per admitted row, the cumulative gas-mass
+throughput `∫ ev_mol * MW(gas) dt` [g] (additive across rebuild epochs; a
+REVOKED row's mass stays counted), and the artifact writer partitions it:
+
+```json
+"conventions": {
+  "conduit_flux_census": {
+    "serialized_gas_mass_g":   1.9,
+    "unserialized_gas_mass_g": 0.02,
+    "revoked_gas_mass_g":      0.0,
+    "units": "g",
+    "note": "cumulative admitted-conduit gas mass over the generating run; unserialized mass is flux no consumer can replay"
+  }
+}
+```
+
+Present whenever the artifact serializes at least one conduit row OR the
+run-level accumulator is non-empty (so also when every admitted row stayed
+edge — zero conduit rows, block present, stamp 3.1). The emitter writes
+the block beside serialized conduit rows even when the accumulator is
+empty (all three masses truthfully 0.0 — the only M18.3 state, where the
+accumulator's writer is the M18.4 solver dispatch arm): an artifact
+carrying conduit rows but MISSING the block is MALFORMED — reject at load
+— so the producer must never emit that shape (r42 P1-1). Absent when no
+conduit vocabulary exists at all (byte-identity preserved, golden-pinned). Consumer guidance: the reference runner WARNS (never
+refuses) whenever `unserialized_gas_mass_g > 0`, so the number is visible
+in every replay; the hard refusal on the unserialized FRACTION lives at
+external-kMC certification, not in the loaders.
+
+### Reference-consumer status note
+
+* The **numpy reference consumer** (`test/rmgpy/tools/
+  numpy_moments_consumer.py`) implements the full step-6 bundle. WARNING
+  for anyone who template-copied its PRE-3.1 shape: before this section
+  landed, that module had NO `schema_version` gate and an if/elif archetype
+  dispatch with NO else — a one-row artifact with an unknown archetype
+  under any stamp was accepted silently and its step-5 species dispatch
+  still ran, fabricating gas mass with zero condensed debit (proven by a
+  committed synthetic test: ~2 mol of gas over a 0.2 s window with every
+  pool moment bit-identical, no error, no warning). Any consumer derived
+  from the pre-3.1 module MUST adopt the envelope gate + the closed
+  archetype vocabulary (hard else-refusal) before touching 3.1 artifacts.
+* The **reference runner** (`rmgpy/tools/polymer_moments_runner.py`)
+  validates every reject rule above (including the cross-pins) but REFUSES
+  to replay a live conduit row until the generating solver's conduit
+  dispatch arm lands: its compiled oracle's moment-isolation invariant
+  ("moments evolve only via tail kinetics") forbids any consumer-side
+  moment write, and integrating the row without the pool credit would
+  fabricate condensed-mass loss. The refusal is loud and names the missing
+  arm.

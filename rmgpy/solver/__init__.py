@@ -30,5 +30,6 @@
 from rmgpy.solver.base import ReactionSystem, TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.polymer import HybridPolymerSystem
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.mbSampled import MBSampledReactor

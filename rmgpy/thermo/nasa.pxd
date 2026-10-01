@@ -56,7 +56,9 @@ cdef class NASAPolynomial(HeatCapacityModel):
 cdef class NASA(HeatCapacityModel):
 
     cdef public NASAPolynomial poly1, poly2, poly3
-    
+
+    cdef bint _extrapolation_warned
+
     cpdef NASAPolynomial select_polynomial(self, double T)
 
     cpdef dict as_dict(self)

@@ -115,6 +115,7 @@ ext_modules = [
     'rmgpy/solver/simple.pyx',
     'rmgpy/solver/liquid.pyx',
     'rmgpy/solver/mbSampled.pyx',
+    'rmgpy/solver/polymer.pyx',
     'rmgpy/solver/surface.pyx',
 ]
 
@@ -153,6 +154,7 @@ setup(
         'console_scripts': [
             'rmg.py = rmgpy.__main__:main',
             'Arkane.py = arkane.__main__:main',
+            'polymer_moments_runner.py = rmgpy.tools.polymer_moments_runner:main',
         ],
     },
     include_package_data=True,

@@ -418,6 +418,88 @@ class TestCoreEdgeReactionModel:
         assert len(cerm.species_dict) == len(spcs) - 1
         assert len(cerm.index_species_dict) == len(spcs) - 1
 
+    def test_make_new_species_transfers_gas_volatile_veto(self):
+        """
+        The durable gas-volatile veto (props key set by the polymer handshake
+        on a discrete gas product) must reach the solver-visible Species.
+        make_new_species builds/returns that Species, so it must transfer the
+        veto (1) onto a NEWLY created Species and (2) onto an already-existing
+        Species when a later duplicate carries the veto -- dedup short-circuits
+        before the proxy logic, so without an explicit transfer the verdict is
+        dropped (the trap that defeated the earlier clear-based fixes).
+
+        RED before the fix: neither the new nor the deduped Species carries the
+        veto key.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        # (1) NEW species: incoming molecule carries the veto in props
+        cerm = CoreEdgeReactionModel()
+        spc = Species().from_smiles("C=C(C)c1ccccc1")
+        spc.props[VETO] = True
+        made, _ = cerm.make_new_species(spc)
+        assert made.props.get(VETO) is True, (
+            "make_new_species must transfer the gas veto onto a new Species"
+        )
+
+        # (2) EXISTING species: first register WITHOUT veto, then a duplicate
+        # WITH veto must stamp the already-existing (solver-visible) Species.
+        cerm = CoreEdgeReactionModel()
+        first = Species().from_smiles("C=C(C)c1ccccc1")
+        made1, is_new1 = cerm.make_new_species(first)
+        assert is_new1
+        assert made1.props.get(VETO) in (False, None)
+        dup = Species().from_smiles("C=C(C)c1ccccc1")
+        dup.props[VETO] = True
+        made2, is_new2 = cerm.make_new_species(dup)
+        assert is_new2 is False, "duplicate should dedup to the existing species"
+        assert made2 is made1, "dedup must return the existing Species object"
+        assert made1.props.get(VETO) is True, (
+            "make_new_species must transfer the veto onto the existing "
+            "(deduped) Species -- else the verdict is lost at first-write-wins"
+        )
+
+    def test_polymer_never_acquires_gas_veto_via_make_new_species(self):
+        """
+        Load-bearing invariant guard (code-review IMPORTANT #2): a Polymer
+        (a melt chain) must NEVER acquire the durable gas-volatile veto through
+        make_new_species. Correctness of the whole veto scheme rests on melt
+        chains being Polymers routed to _register_polymer (fingerprint dedup)
+        BEFORE the Species veto-transfer logic runs -- so a genuine chain can
+        never be false-vetoed and silently dropped from the melt sum. This test
+        pins that guarantee: even with a stray veto contaminating the chain's
+        constituent molecule, the registered Polymer's props stay veto-free.
+
+        RED if a future refactor removes the Polymer early-return and routes
+        chains through the molecule-reading veto-transfer path.
+        """
+        from rmgpy.polymer import (Polymer,
+                                   POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO)
+
+        cerm = CoreEdgeReactionModel()
+        poly = Polymer(
+            label="PS", monomer="[CH2][CH]c1ccccc1",
+            end_groups=["[CH3]", "[H]"], cutoff=3,
+            Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+        )
+        # Contaminate the chain's constituent molecule(s) with a stray veto,
+        # the exact hazard a molecule-dedup refactor would expose.
+        for m in getattr(poly, "molecule", None) or []:
+            if not isinstance(getattr(m, "props", None), dict):
+                m.props = {}
+            m.props[VETO] = True
+
+        made, _ = cerm._register_polymer(poly, generate_thermo=False)
+        # Route through the public entry too (Polymers early-return to
+        # _register_polymer before any veto logic).
+        made2, _ = cerm.make_new_species(poly, generate_thermo=False)
+        for obj in (made, made2):
+            assert isinstance(obj, Polymer)
+            assert obj.props.get(VETO) in (False, None), (
+                "a Polymer melt chain must never acquire the gas-volatile veto "
+                "through make_new_species / _register_polymer"
+            )
+
     def test_append_unreactive_structure(self):
         """
         Test that CERM.make_new_species correctly recognizes a non-representative resonance structure
@@ -951,3 +1033,776 @@ class TestEnlarge:
         import shutil
 
         shutil.rmtree(cls.dirname)
+
+
+# ---------------------------------------------------------------------------
+# Helper and test class for Task 2: _convert_bm_kinetics_with_dHrxn
+# ---------------------------------------------------------------------------
+
+import copy
+
+import numpy as np
+from rmgpy.thermo import ThermoData
+from rmgpy.kinetics import ArrheniusBM
+from rmgpy.reaction import Reaction
+
+
+def _spc_with_h298(smiles, h298_kJ):
+    s = Species(molecule=[Molecule().from_smiles(smiles)])
+    s.thermo = ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([50, 60, 70, 80, 95, 105, 120], "J/(mol*K)"),
+        H298=(h298_kJ, "kJ/mol"), S298=(300.0, "J/(mol*K)"),
+        Cp0=(33.2578, "J/(mol*K)"), CpInf=(232.805, "J/(mol*K)"))
+    return s
+
+
+class TestPolymerPoolRegistryDedup:
+    def test_spawn_pass_registry_dedups_freshly_promoted_daughter(self, monkeypatch):
+        """Regression: a freshly-promoted daughter Polymer sits in BOTH
+        core.species and new_species_list until the next enlarge clears it,
+        so the pool_registry built by _apply_multipool_spawn_pass (core +
+        edge + new_species_list) contained the SAME object twice (observed
+        live as duplicated sidecar pools [PS, tail, tail_2, tail, tail_2]).
+        The registry must be identity-deduped, order-preserving.
+
+        RED before the fix: the captured registry has 2 entries."""
+        import rmgpy.polymer as rmgpy_polymer
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        poly = Polymer(
+            label="PS", monomer="[CH2][CH]c1ccccc1",
+            end_groups=["[CH3]", "[H]"], cutoff=3,
+            Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+        )
+        # The both-lists condition of a freshly-promoted daughter:
+        cerm.core.species.append(poly)
+        cerm.new_species_list.append(poly)
+
+        captured = {}
+
+        def fake_multipool(*args, **kwargs):
+            captured["registry"] = list(kwargs["pool_registry"])
+            return [], []  # (processed, no spawn intents)
+
+        monkeypatch.setattr(rmgpy_polymer,
+                            "process_polymer_candidates_multipool",
+                            fake_multipool)
+
+        proxy = Species().from_smiles("C=Cc1ccccc1")
+        proxy.is_polymer_proxy = True
+        cerm._apply_multipool_spawn_pass([proxy])
+
+        registry = captured["registry"]
+        assert len(registry) == 1, (
+            f"pool_registry must dedup the same Polymer object appearing in "
+            f"both core.species and new_species_list; got {len(registry)} "
+            f"entries: {[p.label for p in registry]}"
+        )
+        assert registry[0] is poly
+
+
+class TestApplyKineticsFlipRestamp:
+    def test_flip_restamps_polymer_archetype_live_path(self, monkeypatch):
+        """r92 wiring (PP run-10 killer): when apply_kinetics_to_reaction
+        flips a reaction in place (kinetics estimated in reverse), the
+        polymer flux classification must be RE-RUN on the flipped direction
+        (restamp-or-refuse) at the live call site -- never blindly demoted
+        to legacy UNRESOLVED (which dispatched live legacy-mu1 flux with
+        RESOLVED pools, run-10 artifact rows r8/r30-32).
+
+        Here the flipped orientation (gas -> pool) is unrestampable, so the
+        row must come out REFUSED conduit-deferred."""
+        import rmgpy.data.rmg as rmg_data
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer, PolymerFluxArchetype
+
+        pool = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        gas = Species().from_smiles("CC")
+        rxn = TemplateReaction(
+            reactants=[pool], products=[gas], pairs=[(pool, gas)],
+            family="fake_family")
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+        kin = Arrhenius(A=(1.0, "s^-1"), n=0.0, Ea=(0.0, "J/mol"),
+                        T0=(1.0, "K"))
+        cerm = CoreEdgeReactionModel()
+        monkeypatch.setattr(
+            cerm, "generate_kinetics",
+            lambda reaction: (kin, "test", None, False), raising=False)
+
+        class _FakeFamily:
+            own_reverse = False
+
+        class _FakeDb:
+            families = {"fake_family": _FakeFamily()}
+
+        monkeypatch.setattr(rmg_data, "get_db", lambda name: _FakeDb())
+
+        cerm.apply_kinetics_to_reaction(rxn)
+
+        assert rxn.reactants == [gas] and rxn.products == [pool]  # flipped
+        assert rxn.kinetics is kin
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False   # conduit-deferred
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+
+
+class TestPolymerBMRealDHrxn:
+    def test_convert_bm_matches_fix_barrier_height(self):
+        cerm = CoreEdgeReactionModel()
+        r = _spc_with_h298("CCO", 50.0)
+        p1 = _spc_with_h298("C=CO", 120.0)
+        p2 = _spc_with_h298("[H][H]", 0.0)
+        bm = ArrheniusBM(A=(1.293332e12, "s^-1"), n=0.0,
+                         w0=(968.0, "kJ/mol"), E0=(182.946, "kJ/mol"))
+        rxn_ours = Reaction(reactants=[r], products=[p1, p2], kinetics=copy.deepcopy(bm))
+        rxn_ref = Reaction(reactants=[r], products=[p1, p2], kinetics=copy.deepcopy(bm))
+        dH = rxn_ref.get_enthalpy_of_reaction(298)
+        cerm._convert_bm_kinetics_with_dHrxn(rxn_ours, dH)
+        rxn_ref.fix_barrier_height()
+        from rmgpy.kinetics import Arrhenius
+        assert isinstance(rxn_ours.kinetics, Arrhenius)
+        assert np.isclose(rxn_ours.kinetics.A.value_si, rxn_ref.kinetics.A.value_si, rtol=1e-12)
+        assert np.isclose(rxn_ours.kinetics.n.value_si, rxn_ref.kinetics.n.value_si, rtol=1e-12)
+        assert np.isclose(rxn_ours.kinetics.Ea.value_si, rxn_ref.kinetics.Ea.value_si, rtol=1e-10)
+
+    def test_real_dHrxn_reuses_existing_species_thermo(self):
+        """When snapshot products are Species carrying thermo, _polymer_real_dHrxn
+        reuses it (no estimation) -> deterministic ΔH, DB-free."""
+        cerm = CoreEdgeReactionModel()
+        react = _spc_with_h298("CCO", 50.0)            # reactant H298 = 50 kJ/mol
+        prod1 = _spc_with_h298("C=CO", 120.0)          # real product H298 = 120 kJ/mol
+        prod2 = _spc_with_h298("[H][H]", 0.0)          # real product H298 = 0 kJ/mol
+        dH = cerm._polymer_real_dHrxn([react], [prod1, prod2])
+        # ΔH = (120 + 0) - 50 = 70 kJ/mol = 70000 J/mol
+        assert np.isclose(dH, 70000.0, rtol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# Task 3: _thermo_for_snapshot_product estimation path (DB-backed)
+# ---------------------------------------------------------------------------
+
+
+class TestPolymerRealDHrxnEstimation:
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.rmg.main import RMG
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+        cls.cerm = CoreEdgeReactionModel()
+
+    def test_estimation_path_matches_independent_estimate(self):
+        from rmgpy.molecule import Molecule
+        # real product as a bare Molecule (no thermo) -> forces estimation
+        styrene = Molecule().from_smiles("C=Cc1ccccc1")
+        snap = [styrene.copy(deep=True)]
+        spc = self.cerm._thermo_for_snapshot_product(snap[0])
+        assert spc.has_thermo()
+        # independent estimate of the same molecule via the model thermo path
+        ref = Species(molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+        ref.generate_resonance_structures()
+        self.cerm.generate_thermo(ref)
+        assert np.isclose(spc.get_enthalpy(298), ref.get_enthalpy(298), rtol=1e-6)
+
+
+class TestMakeNewReactionBMGate:
+    """
+    Guard/skip tests: the BM pre-conversion gate must NOT over-fire.
+
+    (c) Non-polymer reaction with ArrheniusBM: polymer_reactants is empty,
+        so real_products_snapshot / relabeled stay at defaults; our block
+        never runs.  Spy count == 0.
+
+    (d1) Polymer reaction where _handshake_structures returns False (small
+         gas products CO2 that cannot become polymer objects): relabeled
+         stays False; gate skips.  Spy count == 0.
+    """
+
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.data.thermo import NASA, NASAPolynomial
+        from rmgpy.rmg.main import RMG
+        from rmgpy.polymer import Polymer
+
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+
+        cls.cerm = CoreEdgeReactionModel()
+        cls.ps = Polymer(
+            label='PSGate',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        cls.cerm._register_polymer(cls.ps, generate_thermo=False)
+        # Inject fake thermo so fix_barrier_height can call get_enthalpy on the
+        # polymer reactant (Polymer objects have no real thermo by default).
+        fake_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(200.0, 'K'), Tmax=(1000.0, 'K')
+                ),
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(1000.0, 'K'), Tmax=(6000.0, 'K')
+                ),
+            ],
+            Tmin=(200.0, 'K'),
+            Tmax=(6000.0, 'K'),
+        )
+        cls.ps.thermo = fake_thermo
+
+    def test_non_polymer_bm_reaction_untouched(self):
+        """(c) Non-polymer ArrheniusBM reaction: pre-conversion must not fire."""
+        from rmgpy.kinetics import ArrheniusBM
+
+        # Install spy
+        called = {"n": 0}
+        orig = self.cerm._convert_bm_kinetics_with_dHrxn
+        def spy(*args, **kwargs):
+            called["n"] += 1
+            return orig(*args, **kwargs)
+        self.cerm._convert_bm_kinetics_with_dHrxn = spy
+
+        try:
+            rxn = TemplateReaction(
+                reactants=[Molecule().from_smiles('CCO')],
+                products=[Molecule().from_smiles('C=CO'), Molecule().from_smiles('[H][H]')],
+                family='Retroene',
+                is_forward=True,
+                kinetics=ArrheniusBM(
+                    A=(1.0e12, 's^-1'), n=0.0,
+                    w0=(968.0, 'kJ/mol'), E0=(150.0, 'kJ/mol'),
+                ),
+            )
+            result, is_new = self.cerm.make_new_reaction(
+                rxn,
+                check_existing=False,
+                generate_thermo=True,
+                generate_kinetics=True,
+            )
+            assert result is not None, "make_new_reaction returned None unexpectedly"
+            assert called["n"] == 0, (
+                f"_convert_bm_kinetics_with_dHrxn called {called['n']} time(s); "
+                "expected 0 for non-polymer reaction"
+            )
+        finally:
+            self.cerm._convert_bm_kinetics_with_dHrxn = orig
+
+    def test_unrelabeled_polymer_bm_stays_on_generic_path(self):
+        """(d1) Polymer reaction where handshake does NOT relabel: pre-conversion skipped."""
+        from rmgpy.kinetics import ArrheniusBM
+        from rmgpy.polymer import Polymer
+
+        # Fresh model so state from (c) doesn't interfere
+        cerm2 = CoreEdgeReactionModel()
+        ps2 = Polymer(
+            label='PSGate2',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        cerm2._register_polymer(ps2, generate_thermo=False)
+        # Inject fake thermo so fix_barrier_height can get enthalpy
+        from rmgpy.data.thermo import NASA, NASAPolynomial
+        fake_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(200.0, 'K'), Tmax=(1000.0, 'K')
+                ),
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(1000.0, 'K'), Tmax=(6000.0, 'K')
+                ),
+            ],
+            Tmin=(200.0, 'K'),
+            Tmax=(6000.0, 'K'),
+        )
+        ps2.thermo = fake_thermo
+
+        # Install spy on cerm2
+        called = {"n": 0}
+        orig = cerm2._convert_bm_kinetics_with_dHrxn
+        def spy(*args, **kwargs):
+            called["n"] += 1
+            return orig(*args, **kwargs)
+        cerm2._convert_bm_kinetics_with_dHrxn = spy
+
+        proxy_mol = ps2.baseline_proxy.molecule[0].copy(deep=True)
+        # CO2: _handshake_structures returns False (cannot become a polymer fragment)
+        co2 = Molecule().from_smiles('O=C=O')
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[co2],
+            family='Retroene',
+            is_forward=True,
+            kinetics=ArrheniusBM(
+                A=(1.0e12, 's^-1'), n=0.0,
+                w0=(968.0, 'kJ/mol'), E0=(150.0, 'kJ/mol'),
+            ),
+        )
+        result, is_new = cerm2.make_new_reaction(
+            rxn,
+            check_existing=False,
+            generate_thermo=True,
+            generate_kinetics=True,
+        )
+        assert result is not None, "make_new_reaction returned None unexpectedly"
+        assert called["n"] == 0, (
+            f"_convert_bm_kinetics_with_dHrxn called {called['n']} time(s); "
+            "expected 0 for unrelabeled polymer reaction"
+        )
+
+
+class TestGasAssociationRefusalAtMakeNewReaction:
+    """PP v1 campaign refusal at the LIVE classification chokepoint
+    (adjudicated adversarial round 63): ``make_new_reaction`` must stamp
+    ``polymer_refused`` (conduit-deferred) on an R_Recombination-style row
+    that bridges pure gas-phase radicals into a condensed pool proxy. The
+    association orientation has NO polymer reactant, so the pre-existing
+    ``polymer_reactants`` stamping block never sees it -- the stamp must run
+    at the one point where BOTH resolved sides are visible (after
+    ``forward.reactants/products`` are assigned). RED at b917becd7: the row
+    comes back unstamped and later dies at the solver's thermo
+    reference-state tripwire (run 5, U = 10.39 decades)."""
+
+    def test_run5_gas_association_shape_is_stamped_refused(self):
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        proxy_mol = pp.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH2]C(C)C'),
+                       Molecule().from_smiles('C[CH]CCC')],
+            products=[proxy_mol],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')),
+        )
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS PIN -- BEFORE the red assertion: the recombination product
+        # must resolve onto the registered pool Polymer via species_dict
+        # isomorphism (the premise that makes the shape detectable at all).
+        # A failure HERE means the fixture is dead, not a valid red.
+        assert any(isinstance(p, Polymer) for p in out.products), (
+            "FIXTURE BROKEN, not a valid red: the recombination product did "
+            "not resolve onto the registered pool Polymer")
+        assert all(not isinstance(r, Polymer)
+                   and r.molecule[0].get_radical_count() > 0
+                   for r in out.reactants)
+        # THE red assertions: at b917becd7 the row passes classification
+        # unstamped (polymer_refused is False).
+        assert out.polymer_refused is True
+        assert out.polymer_refused_accumulating is False  # conduit-deferred
+
+    def test_gas_termination_shape_is_not_stamped_refused(self):
+        """Negative control at the same chokepoint: gas+gas->gas
+        R_Recombination termination (no condensed proxy side) must come back
+        unstamped even with a Polymer registered in the model."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        # NOTE: isobutyl + 2-pentyl recombination IS the PP 3-mer proxy
+        # structure (2,4-dimethylheptane) -- that is exactly why run 5
+        # generated the refused row. The termination control must therefore
+        # use radicals whose adduct is NOT proxy-isomorphic.
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH3]'),
+                       Molecule().from_smiles('C[CH2]')],
+            products=[Molecule().from_smiles('CCC')],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')),
+        )
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        assert not any(isinstance(p, Polymer) for p in out.products)
+        assert out.polymer_refused is False
+        assert out.polymer_refused_accumulating is False
+
+
+class TestRefusalStampMergeOnCanonicalDedup:
+    """r71 FIX 1 (PP run-5 stall, forensics
+    /home/alon/Projects/polymer/PP/rmg/run5): ``check_for_existing_reaction``
+    can DISCARD a freshly stamped candidate and return a pre-existing
+    UNSTAMPED equivalent -- silently dropping the polymer adjudication
+    (polymer_refused & co) from the model. ``make_new_reaction`` must merge
+    the discarded candidate's adjudication-bearing stamps onto the canonical
+    returned object, with qssa-invalid (accumulating) winning over
+    conduit-deferred.
+
+    RED-FIRST: the red assertions below were quoted FAILING on pre-fix HEAD
+    (b0de7dde8) before the merge landed."""
+
+    @classmethod
+    def setup_class(cls):
+        """R_Recombination from the testing database: check_for_existing_reaction
+        resolves the family object (get_family_library_object)."""
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        path = os.path.join(settings["test_data.directory"], "testing_database")
+        rmg.database.load_kinetics(
+            os.path.join(path, "kinetics"),
+            kinetics_families=["R_Recombination"],
+            reaction_libraries=[],
+        )
+        for family in rmg.database.kinetics.families.values():
+            family.forbidden = ForbiddenStructures()
+        rmg.database.forbidden_structures = ForbiddenStructures()
+
+    @classmethod
+    def teardown_class(cls):
+        """Reset the loaded database."""
+        import rmgpy.data.rmg
+
+        rmgpy.data.rmg.database = None
+
+    @staticmethod
+    def _pp_cerm():
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        return cerm, pp
+
+    @staticmethod
+    def _candidate():
+        from rmgpy.kinetics import Arrhenius
+
+        # Run-5 shape: isobutyl + 2-pentyl recombination IS the PP 3-mer
+        # proxy structure, so the product resolves onto the registered pool
+        # Polymer via species_dict isomorphism in make_new_species.
+        return TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH2]C(C)C'),
+                       Molecule().from_smiles('C[CH]CCC')],
+            products=[Molecule().from_smiles('CC(C)CC(C)CCC')],
+            family='R_Recombination', is_forward=True, reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+
+    def _canonical_and_dedup(self, canonical_mutator=None,
+                             candidate_mutator=None):
+        """Register the row once (canonical), optionally doctor its stamps,
+        then run a second identical candidate through the check_existing=True
+        dedup and return (canonical, candidate, returned, is_new)."""
+        cerm, _pp = self._pp_cerm()
+        first = self._candidate()
+        rxn0, is_new = cerm.make_new_reaction(
+            first, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert is_new and rxn0.polymer_refused is True   # liveness pin
+        if canonical_mutator is not None:
+            canonical_mutator(rxn0)
+        second = self._candidate()
+        if candidate_mutator is not None:
+            candidate_mutator(second)
+        out, is_new2 = cerm.make_new_reaction(
+            second, check_existing=True, generate_thermo=False,
+            generate_kinetics=False)
+        return rxn0, second, out, is_new2
+
+    def test_red_b_stamp_merged_onto_unstamped_canonical(self):
+        """RED-B: stamped forward + pre-existing UNSTAMPED equivalent ->
+        the returned canonical object must carry the refusal stamp."""
+
+        def lose_stamp(rxn0):
+            # The run-5 canonical arrival state (r71): the adjudication is
+            # an ad-hoc attribute, deliberately NOT serialized in __reduce__
+            # -- lost on any canonical object that predates or bypasses the
+            # generation-time stamp.
+            rxn0.polymer_refused = False
+            rxn0.polymer_refused_accumulating = False
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=lose_stamp)
+        # LIVENESS PINS: the canonical-dedup path was actually taken, and the
+        # discarded candidate WAS stamped at generation.
+        assert out is rxn0 and not is_new2
+        assert second.polymer_refused is True
+        # THE RED assert (FIX 1): adjudication merged onto the canonical.
+        assert out.polymer_refused is True, (
+            "check_for_existing_reaction discarded the stamped candidate and "
+            "returned the unstamped canonical -- adjudication lost")
+        assert out.polymer_refused_accumulating is False   # conduit-deferred
+
+    def test_qssa_invalid_precedence_survives_merge(self):
+        """Precedence control: a canonical already refused qssa-invalid
+        (accumulating=True) must NOT be demoted to conduit-deferred by a
+        merged conduit-deferred candidate -- qssa-invalid wins."""
+
+        def qssa_canonical(rxn0):
+            rxn0.polymer_refused = True
+            rxn0.polymer_refused_accumulating = True   # qssa-invalid
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=qssa_canonical)
+        assert out is rxn0 and not is_new2
+        assert second.polymer_refused_accumulating is False  # candidate: conduit-deferred
+        assert out.polymer_refused is True
+        assert out.polymer_refused_accumulating is True, (
+            "qssa-invalid canonical was demoted to conduit-deferred by merge")
+
+    def test_qssa_invalid_candidate_upgrades_canonical(self):
+        """RED: a qssa-invalid candidate merged onto a conduit-deferred
+        canonical upgrades it (qssa-invalid wins in both directions)."""
+
+        def conduit_canonical(rxn0):
+            rxn0.polymer_refused = True
+            rxn0.polymer_refused_accumulating = False
+
+        def qssa_candidate(second):
+            # Refused upstream as qssa-invalid (the item-18 detector);
+            # stamp_gas_association_refusal keeps the earlier census reason.
+            second.polymer_refused = True
+            second.polymer_refused_accumulating = True
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=conduit_canonical,
+            candidate_mutator=qssa_candidate)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_refused_accumulating is True, (
+            "qssa-invalid candidate stamp did not win over the canonical's "
+            "conduit-deferred reason")
+
+    def test_red_b_archetype_and_unit_stamps_merged(self):
+        """RED: archetype / chip / eject / end-group adjudication carried by
+        the discarded candidate fills the canonical's unstamped slots (never
+        overwrites a live canonical stamp)."""
+
+        def lose_all(rxn0):
+            rxn0.polymer_refused = False
+            rxn0.polymer_refused_accumulating = False
+            rxn0.polymer_flux_archetype = 0
+            rxn0.polymer_chip_units = 0
+            rxn0.polymer_eject_units = 0.0
+            rxn0.is_end_group_reaction = False
+
+        def stamp_candidate(second):
+            second.polymer_flux_archetype = 6   # VOLATILE_EJECTION
+            second.polymer_eject_units = 1.135
+            second.polymer_chip_units = 2
+            second.is_end_group_reaction = True
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=lose_all, candidate_mutator=stamp_candidate)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_flux_archetype == 6
+        assert out.polymer_eject_units == 1.135
+        assert out.polymer_chip_units == 2
+        assert out.is_end_group_reaction is True
+        assert out.polymer_refused is True   # gas-association stamp merged too
+
+    def test_negative_control_merge_invents_no_stamps(self):
+        """Negative control: ordinary gas termination deduped against an
+        ordinary canonical stays unstamped -- the merge never invents
+        adjudication."""
+        from rmgpy.kinetics import Arrhenius
+
+        cerm, _pp = self._pp_cerm()
+
+        def gas_rxn():
+            return TemplateReaction(
+                reactants=[Molecule().from_smiles('[CH3]'),
+                           Molecule().from_smiles('C[CH2]')],
+                products=[Molecule().from_smiles('CCC')],
+                family='R_Recombination', is_forward=True, reversible=True,
+                kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                                   Ea=(0.0, 'kJ/mol')))
+
+        rxn0, is_new = cerm.make_new_reaction(
+            gas_rxn(), check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert is_new and rxn0.polymer_refused is False   # liveness
+        out, is_new2 = cerm.make_new_reaction(
+            gas_rxn(), check_existing=True, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_refused is False
+        assert out.polymer_refused_accumulating is False
+        assert int(out.polymer_flux_archetype) == 0
+
+
+class TestSameProxyRefusalAtMakeNewReaction:
+    """r74 adjudication (PP run-5 "H fountain", forensics
+    /home/alon/Projects/polymer/PP/rmg/run5 +
+    /home/alon/Projects/polymer/PP/ta-diag-run5): run-5's core carried two
+    degenerate dR_Recombination rows of the form ``H(1) + rad_end <=>
+    rad_end`` -- the SAME resolved pool proxy Species on BOTH sides (the
+    H-capped adduct folds back onto the rad_end pool in the handshake, and
+    make_new_species resolves it to the identical registered object).
+    Because the polymer participant is identical across the row, Keq
+    collapses to G(H) alone and the thermo-reversed direction becomes a
+    unimolecular H source: the TA diagnostic volatilized the entire 10 mg PP
+    sample as pure H2 at 889 C -- element-impossible (carbon leaving as
+    hydrogen). The row is a moment identity wearing a reaction's clothes;
+    its Keq is meaningless BY CONSTRUCTION.
+
+    Adjudicated fix (class (a), refusal): ``stamp_gas_association_refusal``
+    -- the SAME function every r71 chokepoint rides (make_new_reaction
+    stamping, canonical-dedup merge, rebuild restamp) -- must stamp the shape
+    polymer_refused/"conduit-deferred" when (1) the polymer participants
+    pair off IDENTICALLY across the row, (2) the non-polymer (gas) sides
+    genuinely differ, and (3) the net gas-side mass change is ATOM-scale
+    (|a| < 0.5 source-monomer-equivalents): a sub-monomer change claims a
+    chemical end-state transition that same-pool resolution cannot
+    represent. A monomer-scale change IS a within-pool DP transition
+    (depropagation / unzip / chip -- the VE/chip dispatch's design domain)
+    and is NOT refused (pinned bitwise by r71's
+    test_negative_control_live_ve_row_with_real_polymer_keeps_flux).
+
+    RED-FIRST: the red assertions below were quoted FAILING on pre-fix HEAD
+    (9a7530b8b)."""
+
+    @staticmethod
+    def _rad_end_cerm():
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        prim, sec = pp.generate_end_radical_daughters()
+        cerm._register_polymer(prim, generate_thermo=False)
+        cerm._register_polymer(sec, generate_thermo=False)
+        return cerm, pp, prim, sec
+
+    def test_red_run5_same_proxy_degenerate_row_is_refused(self):
+        """RED: the run-5 degenerate shape built through the REAL generation
+        route (family-tagged TemplateReaction -> make_new_reaction handshake
+        -> fold-back -> species_dict resolution) must come out refused.
+        Pre-fix it comes out LIVE: polymer_refused False, archetype
+        VOLATILE_EJECTION with a = -MW(H)/monomer = -0.0240 -- the H
+        fountain's forward leg."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        rad = sec.molecule[0].copy(deep=True)
+        capped = rad.copy(deep=True)
+        capped.saturate_radicals()
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[H]'), rad],
+            products=[capped],
+            family='R_Recombination', is_forward=True, reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS PINS -- BEFORE the red assertions: the H-capped adduct
+        # must have resolved back onto the SAME rad_end pool object on the
+        # product side (the run-5 laundering mechanism itself). A failure
+        # HERE means the fixture is dead, not a valid red.
+        polymer_r = [s for s in out.reactants if isinstance(s, Polymer)]
+        polymer_p = [s for s in out.products if isinstance(s, Polymer)]
+        assert len(polymer_r) == 1 and len(polymer_p) == 1 and \
+            polymer_r[0] is polymer_p[0], (
+                "FIXTURE BROKEN, not a valid red: the H-capped product did "
+                "not resolve back onto the SAME rad_end pool proxy")
+        assert any(not isinstance(s, Polymer) for s in out.reactants), (
+            "FIXTURE BROKEN: no gas participant -- nothing is laundered")
+        # THE red assertions (r74): the degenerate same-proxy row must be
+        # stamped refused (conduit-deferred), exactly like the r63 refusal
+        # class -- pre-fix it is False (the row runs live).
+        assert out.polymer_refused is True, (
+            "same-proxy degenerate row (H + rad_end <=> rad_end) came out "
+            "of make_new_reaction UNREFUSED -- the run-5 H-fountain shape "
+            "is live")
+        assert out.polymer_refused_accumulating is False  # conduit-deferred
+
+    def test_distinct_target_pool_h_capping_is_not_refused(self):
+        """Negative (r74 mandate): real H-capping -- the polymer moves to a
+        DISTINCT target pool state -- must NOT be refused by the same-proxy
+        predicate. Exercised at the exact function every chokepoint rides
+        (the r71 FIX 2 rebuild restamp calls it on every core AND edge
+        row)."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        h_spc = Species(molecule=[Molecule().from_smiles('[H]')])
+        h_spc.label = 'H'
+        rxn = Reaction(
+            reactants=[h_spc, sec], products=[pp],
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False, (
+            "distinct-target-pool H-capping shape was wrongly refused")
+
+    def test_pure_identity_row_is_not_refused(self):
+        """Negative (conjunct 2): a row with NO net gas change (identical
+        non-polymer participants both sides) is not the laundered shape --
+        nothing appears or disappears."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        h_spc = Species(molecule=[Molecule().from_smiles('[H]')])
+        h_spc.label = 'H'
+        rxn = Reaction(
+            reactants=[h_spc, sec], products=[h_spc, sec],
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False
+
+    def test_monomer_scale_same_pool_ejection_is_not_refused(self):
+        """Negative (conjunct 3, DP-scale): same-pool VOLATILE_EJECTION at
+        monomer scale (P -> P + propene, a = 1.0) is a genuine within-pool
+        DP transition (depropagation/unzip) handled by the solver's VE
+        dispatch -- NOT refused. Mirrors (and must never contradict) r71's
+        bitwise-pinned test_negative_control_live_ve_row_with_real_polymer_
+        keeps_flux."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        propene = Species(molecule=[Molecule().from_smiles('C=CC')])
+        propene.label = 'propene'
+        rxn = Reaction(
+            reactants=[pp], products=[pp, propene],
+            kinetics=Arrhenius(A=(2.0, '1/s'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=False)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False, (
+            "monomer-scale same-pool depropagation was wrongly refused -- "
+            "this contradicts the r71 bitwise-pinned VE negative control")

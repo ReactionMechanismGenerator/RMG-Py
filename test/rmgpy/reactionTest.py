@@ -35,8 +35,6 @@ import math
 
 import cantera as ct
 import numpy
-import numpy as np
-import yaml
 from copy import deepcopy
 
 import pytest
@@ -785,6 +783,60 @@ class TestReaction:
             kinetics=Arrhenius(A=(2.4e7, "cm^3/(mol*s)"), n=1.38, Ea=(15.38, "kcal/mol"), T0=(1, "K")),
         )
         self.reaction4_pairs = [(PO3, HOPO2), (H2, H_atom)]
+
+    def test_is_end_group_reaction_default_and_kwarg(self):
+        """
+        Reaction carries an ``is_end_group_reaction`` flag (default False) used by
+        the polymer hybrid solver to scale terminal/end-group reactions by chain-end
+        density (mu0) instead of monomer-unit density (mu1).
+        """
+        assert Reaction().is_end_group_reaction is False
+        assert Reaction(is_end_group_reaction=True).is_end_group_reaction is True
+
+    def test_polymer_flux_archetype_default_and_kwarg(self):
+        """
+        Reaction carries a ``polymer_flux_archetype`` int (default 0 = NONE)
+        stamped by the polymer handshake; the hybrid solver dispatches pool
+        moment flux on it (values mirror rmgpy.polymer.PolymerFluxArchetype).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype
+
+        assert Reaction().polymer_flux_archetype == int(PolymerFluxArchetype.NONE)
+        assert (Reaction(polymer_flux_archetype=PolymerFluxArchetype.SCISSION_FRAGMENT)
+                .polymer_flux_archetype == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_polymer_chip_units_default_and_kwarg(self):
+        """
+        Reaction carries ``polymer_chip_units`` (default 0): the repeat-unit
+        count of the discrete chip ejected by a DISCRETE_CHIP reaction,
+        stamped by chip product surgery at generation time. Like
+        is_end_group_reaction / polymer_flux_archetype it is deliberately NOT
+        serialized in __reduce__ -- unstamped arrivals demote at solver init.
+        """
+        import pickle
+
+        assert Reaction().polymer_chip_units == 0
+        assert Reaction(polymer_chip_units=2).polymer_chip_units == 2
+
+        round_trip = pickle.loads(pickle.dumps(Reaction(polymer_chip_units=2)))
+        assert round_trip.polymer_chip_units == 0
+
+    def test_polymer_refused_fields_default_false_and_settable(self):
+        """
+        Reaction carries ``polymer_refused`` / ``polymer_refused_accumulating``
+        flags (default False, set later via attribute assignment) used by the
+        polymer hybrid solver for radical conservation (refuse-not-leak). Like
+        is_end_group_reaction they are deliberately NOT serialized in
+        __reduce__ -- the solver re-derives them at initialize_model.
+        """
+        from rmgpy.reaction import Reaction
+        rxn = Reaction()
+        assert rxn.polymer_refused is False
+        assert rxn.polymer_refused_accumulating is False
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = True
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is True
 
     def test_is_isomerization(self):
         """
@@ -2917,9 +2969,9 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
 
     def test_multi_arrhenius(self):
         """
@@ -2939,9 +2991,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert np.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
-                assert np.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
-                assert np.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
+                assert numpy.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
+                assert numpy.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
+                assert numpy.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
 
     def test_pdep_arrhenius(self):
         """
@@ -3175,8 +3227,8 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert np.isclose(kf_1, 43870506959779.0)
-        assert np.isclose(kf_1, kf_2)
+        assert numpy.isclose(kf_1, 43870506959779.0)
+        assert numpy.isclose(kf_1, kf_2)
 
         # kf_2 should be greater than kf_1
         kf_1 = self.rxn_oxidation.get_rate_coefficient(298,potential=0)

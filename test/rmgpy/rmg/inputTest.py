@@ -29,7 +29,9 @@
 
 from unittest.mock import patch
 
+import rmgpy.rmg.input
 import rmgpy.rmg.input as inp
+from rmgpy.exceptions import InputError
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.ml.estimator import ADMONITION
@@ -447,3 +449,91 @@ class TestInputPressureDependence:
         
         # Check that no networks were added
         assert len(rmg.reaction_model.completed_pdep_networks) == 0
+
+
+class TestGeneratePolymerConstraints:
+    """Unit tests for the generatePolymerConstraints input block parser."""
+
+    def setup_method(self):
+        self.rmg = RMG()
+        inp.set_global_rmg(self.rmg)
+
+    def teardown_method(self):
+        inp.set_global_rmg(None)
+
+    def test_valid_block_stores(self):
+        inp.generate_polymer_constraints(maximumCarbonAtoms=30)
+        assert self.rmg.polymer_constraints == {"maximumCarbonAtoms": 30}
+
+    def test_mixed_block_with_nonbounding_key_accepted(self):
+        inp.generate_polymer_constraints(maximumCarbonAtoms=30, allowSingletO2=True)
+        assert self.rmg.polymer_constraints == {"maximumCarbonAtoms": 30, "allowSingletO2": True}
+
+    def test_unknown_key_raises(self):
+        with pytest.raises(InputError):
+            inp.generate_polymer_constraints(bogusKey=3)
+
+    def test_zero_keys_raises(self):
+        with pytest.raises(InputError, match="at least one finite"):
+            inp.generate_polymer_constraints()
+
+    def test_only_nonbounding_keys_raises(self):
+        with pytest.raises(InputError, match="at least one finite"):
+            inp.generate_polymer_constraints(allowSingletO2=True, speciesCuttingThreshold=20)
+
+    def test_all_maxima_unlimited_raises(self):
+        with pytest.raises(InputError, match="at least one finite"):
+            inp.generate_polymer_constraints(maximumCarbonAtoms=-1, maximumHeavyAtoms=-1)
+
+
+class TestPolymerSizeThresholdParsing:
+    def setup_method(self):
+        self.rmg = RMG()
+        rmgpy.rmg.input.rmg = self.rmg
+
+    def teardown_method(self):
+        rmgpy.rmg.input.rmg = None
+
+    def test_polymer_size_threshold_parsed(self):
+        rmgpy.rmg.input.generate_polymer_constraints(
+            maximumHeavyAtoms=30, polymerSizeThreshold=15,
+        )
+        assert self.rmg.polymer_constraints["polymerSizeThreshold"] == 15
+        assert self.rmg.polymer_constraints["maximumHeavyAtoms"] == 30
+
+    def test_polymer_size_threshold_alone_still_requires_a_bound(self):
+        with pytest.raises(InputError):
+            rmgpy.rmg.input.generate_polymer_constraints(polymerSizeThreshold=15)
+
+
+class TestPolymerConduitAdmissionParsing:
+    """M18.4 opt-in: options(polymerConduitAdmission=...) parsing + the
+    fail-closed type guard. Input files are exec'd, so a truthy non-bool
+    (bool("off") is True) must RAISE, never silently enable this
+    prediction-changing feature."""
+
+    def setup_method(self):
+        self.rmg = RMG()
+        rmgpy.rmg.input.rmg = self.rmg
+
+    def teardown_method(self):
+        rmgpy.rmg.input.rmg = None
+
+    def test_default_is_none_inherits_fallback(self):
+        rmgpy.rmg.input.options()
+        assert self.rmg.polymer_conduit_admission is None
+
+    def test_true_and_false_parsed(self):
+        rmgpy.rmg.input.options(polymerConduitAdmission=True)
+        assert self.rmg.polymer_conduit_admission is True
+        rmgpy.rmg.input.options(polymerConduitAdmission=False)
+        assert self.rmg.polymer_conduit_admission is False
+
+    def test_string_value_rejected_fails_closed(self):
+        # bool("off") is True -> would silently ENABLE admission; must raise.
+        with pytest.raises(InputError, match="polymerConduitAdmission"):
+            rmgpy.rmg.input.options(polymerConduitAdmission="off")
+
+    def test_int_value_rejected(self):
+        with pytest.raises(InputError, match="polymerConduitAdmission"):
+            rmgpy.rmg.input.options(polymerConduitAdmission=1)

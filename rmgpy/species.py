@@ -110,6 +110,8 @@ class Species(object):
         self.aug_inchi = aug_inchi
         self.symmetry_number = symmetry_number
         self.is_solvent = False
+        self.is_moment_dummy = False
+        self._is_polymer_proxy = False
         self.creation_iteration = creation_iteration
         self.explicitly_allowed = explicitly_allowed
         self._fingerprint = None
@@ -138,8 +140,13 @@ class Species(object):
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
-                    raise SpeciesError('Multiplicities of molecules in species {species} '
-                                       'do not match.'.format(species=label))
+                    raise SpeciesError(f'Multiplicities of molecules in species {label} do not match.')
+
+        self._is_polymer_proxy = False
+        if molecule and any(getattr(m, "is_polymer_proxy", False) for m in molecule):
+            self._is_polymer_proxy = True
+            for m in molecule:
+                m.is_polymer_proxy = True
 
     def __repr__(self):
         """
@@ -278,6 +285,20 @@ class Species(object):
     def molecular_weight(self, value):
         self._molecular_weight = quantity.Mass(value)
 
+    @property
+    def is_polymer_proxy(self):
+        if self._is_polymer_proxy:
+            return True
+        if self.molecule and any(getattr(m, "is_polymer_proxy", False) for m in self.molecule):
+            self._is_polymer_proxy = True
+            self.propagate_polymer_proxy_to_molecules()
+        return self._is_polymer_proxy
+
+    @is_polymer_proxy.setter
+    def is_polymer_proxy(self, val):
+        self._is_polymer_proxy = bool(val)
+        self.propagate_polymer_proxy_to_molecules()
+
     def get_net_charge(self):
         """
         Iterate through the atoms in the structure and calculate the net charge
@@ -288,9 +309,9 @@ class Species(object):
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True, save_order=False):
         """
-        Generate all of the resonance structures of this species. The isomers are
+        Generate all the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
-        `molecule` is already greater than one, it is assumed that all of the
+        `molecule` is already greater than one, it is assumed that all the
         resonance structures have already been generated.
         If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
@@ -299,8 +320,15 @@ class Species(object):
                 self.molecule[0].assign_atom_ids()
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures,
-                                                                           save_order=save_order
+                                                                           save_order=save_order,
                                                                            )
+        self.propagate_polymer_proxy_to_molecules()
+
+    def propagate_polymer_proxy_to_molecules(self):
+        """Propagate the is_polymer_proxy flag to the molecule objects if it is set on the species."""
+        if self.is_polymer_proxy and self.molecule:
+            for m in self.molecule:
+                m.is_polymer_proxy = True
 
     def is_isomorphic(self, other, generate_initial_map=False, save_order=False, strict=True):
         """
@@ -312,6 +340,8 @@ class Species(object):
             save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
+        if hasattr(other, 'moments'):
+            return False
         if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
