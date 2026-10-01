@@ -442,4 +442,4 @@ cdef class NASA(HeatCapacityModel):
         coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial
 
         # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs)
-        return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 10000.0, coeffs)
+        return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 1e5, coeffs)
