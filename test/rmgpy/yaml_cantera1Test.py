@@ -34,8 +34,10 @@ Tests for rmgpy.yaml_cantera1 module.
 import os
 import pytest
 import numpy as np
+import cantera as ct
 
 from cantera_yaml_comparer import CanteraYamlFileComparer
+from rmgpy.quantity import SurfaceConcentration
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.thermo import NASA, NASAPolynomial
@@ -57,6 +59,7 @@ from rmgpy.yaml_cantera1 import (
     get_phases_with_surface,
     get_mech_dict_nonsurface,
     get_mech_dict_surface,
+    write_cantera,
 )
 
 
@@ -504,13 +507,24 @@ class TestYamlCantera1Functions:
         """Surface phases block includes state for both gas and surface phases."""
         phases_block = get_phases_with_surface(
             [self.h2, self.x, self.hx],
-            surface_site_density=2.5e-9,  # mol/cm^2-equivalent SI
+            surface_site_density=2.5e-5,  # mol/m^2 (SI)
             elements_line='elements: [H, X]',
         )
         # Should have two phase definitions each with state
         assert phases_block.count('state:') == 2
         assert 'T: 300.0' in phases_block
         assert 'P: 1 atm' in phases_block
+
+    def test_write_cantera_site_density_as_loaded(self, tmp_path):
+        """Cantera reads back the site density RMG was given."""
+        from rmgpy.molecule.element import H, X
+
+        site_density = SurfaceConcentration(2.483e-9, "mol/cm^2")  # Pt(111)
+        path = str(tmp_path / "chem.yaml")
+        write_cantera([self.h2, self.x, self.hx], [], {H, X},
+                      surface_site_density=site_density.value_si, path=path)
+        surface = ct.Interface(path, "surface")
+        assert surface.site_density == pytest.approx(2.483e-8)  # Cantera reports kmol/m^2
 
     def test_species_to_dict_surface_sites_count(self):
         """species_to_dict reports correct 'sites' count for multi-site surface species."""
