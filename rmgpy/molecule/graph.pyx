@@ -469,7 +469,10 @@ cdef class Graph(object):
     cpdef sort_vertices(self, bint save_order=False):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
-        the isomorphism functions, much more efficient.
+        the isomorphism functions, much more efficient.  Vertices that have a
+        ``sorting_key`` attribute (e.g. :class:`Atom`) will use it as a chemical
+        tiebreaker for vertices with identical connectivity values, ensuring
+        deterministic ordering.
         """
         cdef Vertex vertex
         cdef int index
@@ -485,7 +488,30 @@ cdef class Graph(object):
         # If we need to sort then let's also update the connecitivities so
         # we're sure they are right, since the sorting labels depend on them
         self.update_connectivity_values()
-        self.vertices.sort(key=get_vertex_connectivity_value)
+
+        # Build sort keys with optional chemical tiebreaker (sorting_key attribute)
+        # for when connectivity values are identical.
+        # Sort (key, index) pairs, then use the resulting index order to reorder.
+        paired = []
+        for index, vertex in enumerate(self.vertices):
+            conn = get_vertex_connectivity_value(vertex)
+            sort_key = getattr(vertex, 'sorting_key', None)
+            paired.append(
+                (
+                    # the sorting key is a tuple of keys which are consumed in order.
+                    # we first attempt to sort by conn (always defined).
+                    # in the case of a tie, sort by the contents of the second element:
+                    #  - sort_key, which is a tuple of sortable things defined elsewhere, if it is defined
+                    #  - empty tuple, if sort_key is not defined
+                    # the latter results in a tie, which we 'break' by just not changing the order (stable sort)
+                    (conn, (sort_key if sort_key is not None else tuple())),
+                    index
+                )
+            )
+
+        paired.sort()
+        ordered = [self.vertices[idx] for _, idx in paired]
+        self.vertices = ordered
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 

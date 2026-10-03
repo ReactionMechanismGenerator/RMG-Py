@@ -291,7 +291,6 @@ GLOBALS2 = {
     'removeThermoData': 'remove_thermo_data',
     'averageThermoData': 'average_thermo_data',
     'commonAtoms': 'common_atoms',
-    'combineCycles': 'combine_cycles',
     'isAromaticRing': 'is_aromatic_ring',
     'isBicyclic': 'is_bicyclic',
     'findAromaticBondsFromSubMolecule': 'find_aromatic_bonds_from_sub_molecule',
