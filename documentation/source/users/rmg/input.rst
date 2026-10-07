@@ -289,6 +289,12 @@ the full job.
 .. note::
 	The ``'auto'`` keyword is opt-in. If you do not use it you must list every library explicitly.
 
+.. warning::
+	Auto-selection embeds the RMG team's recommendations, but it is a heuristic keyed on a
+	small number of coarse features (the elements present, the phase, whether a surface is
+	present, and the maximum reactor temperature). It should be treated as an **initial
+	suggestion** to be reviewed and refined for your system, not as a substitute for
+	inspecting the database.
 
 .. _species_list:
 
