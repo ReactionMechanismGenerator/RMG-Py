@@ -34,6 +34,7 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 import os
 
 import shutil
+from unittest import mock
 
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
 from arkane.modelchem import LevelOfTheory
@@ -126,6 +127,45 @@ class TestReferenceSpecies:
 
         # Finally, delete this newly created file
         os.remove(load_path)
+
+    def test_save_yaml_keeps_existing_file_when_as_dict_raises(self, tmp_path):
+        """
+        Test that save_yaml leaves an existing YAML file byte-identical if the species cannot be converted to a
+        dictionary
+        """
+        label = "test_reference_species"
+        ref_spcs = ReferenceSpecies(species=self.ethane, label=label)
+        existing_file = tmp_path / f"{label}.yml"
+        existing_content = b"class: ReferenceSpecies\nsmiles: CC\n"
+        existing_file.write_bytes(existing_content)
+
+        with mock.patch.object(ReferenceSpecies, "as_dict", side_effect=AttributeError("as_dict failed")):
+            with pytest.raises(AttributeError):
+                ref_spcs.save_yaml(path=str(tmp_path))
+
+        assert existing_file.read_bytes() == existing_content
+        assert os.listdir(tmp_path) == [f"{label}.yml"]
+
+    def test_save_and_load_ref_with_level_of_theory_keys(self, tmp_path):
+        """
+        Test that a ReferenceSpecies whose calculated data is keyed by LevelOfTheory objects can be saved to a YAML
+        file and loaded back
+        """
+        label = "test_reference_species"
+        level_of_theory = LevelOfTheory(method="wb97mv", basis="def2tzvpd", software="qchem")
+        calculated_data = {level_of_theory: CalculatedDataEntry(self.thermo_data, xyz_dict=self.xyz_dict)}
+        ref_spcs = ReferenceSpecies(species=self.ethane, label=label, calculated_data=calculated_data)
+        ref_spcs.save_yaml(path=str(tmp_path))
+
+        loaded_ref = ReferenceSpecies.__new__(ReferenceSpecies)
+        loaded_ref.load_yaml(path=str(tmp_path / f"{label}.yml"))
+
+        assert loaded_ref.smiles == "CC"
+        assert list(loaded_ref.calculated_data.keys()) == [level_of_theory]
+        loaded_entry = loaded_ref.calculated_data[level_of_theory]
+        assert isinstance(loaded_entry, CalculatedDataEntry)
+        assert loaded_entry.thermo_data.H298.value_si == 100000.0
+        assert loaded_entry.xyz_dict["symbols"] == ["H", "H"]
 
     def test_reference_data_entry(self):
         """

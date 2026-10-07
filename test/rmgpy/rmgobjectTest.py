@@ -54,6 +54,16 @@ class PseudoRMGObject(RMGObject):
         self.d = d
 
 
+@dataclass(frozen=True)
+class HashablePseudoRMGObject(RMGObject):
+    """
+    Frozen, and therefore hashable, child class of RMGObject that can serve as a dictionary key,
+    in the same way that ``arkane.modelchem.LevelOfTheory`` keys ``ReferenceSpecies.calculated_data``.
+    """
+
+    a: str
+
+
 class TestRMGObject:
     """
     Contains unit tests for the RMGObject class
@@ -433,6 +443,20 @@ class TestExpandAndMakeFromDictionaries:
         """
         assert expand_to_dict(self.highly_nested_object) == self.highly_nest_dictionary
         assert self.highly_nested_object.as_dict() == self.highly_nest_dictionary
+
+    def test_expanding_hashable_object_keys(self):
+        """
+        Test that a dictionary keyed by hashable objects which themselves expand to dictionaries is expanded
+        with the repr of each key as the new key, and that recursive_make_object recreates the original keys
+        """
+        key = HashablePseudoRMGObject(a="test")
+        expanded_key = "HashablePseudoRMGObject(a='test')"
+
+        assert expand_to_dict({key: 5.0}) == {expanded_key: 5.0}
+        assert PseudoRMGObject(a={key: 5.0}).as_dict() == {"class": "PseudoRMGObject", "a": {expanded_key: 5.0}}
+
+        class_dictionary = {"HashablePseudoRMGObject": HashablePseudoRMGObject}
+        assert recursive_make_object({expanded_key: 5.0}, class_dictionary) == {key: 5.0}
 
     def test_make_object_from_dict(self):
         """

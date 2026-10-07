@@ -36,6 +36,7 @@ import os.path
 import shutil
 import string
 import time
+import uuid
 from typing import List, Union
 
 import numpy as np
@@ -255,8 +256,7 @@ class ArkaneSpecies(RMGObject):
         filename = os.path.join('species',
                                 ''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
-        with open(full_path, 'w') as f:
-            yaml.dump(data=self.as_dict(), stream=f)
+        save_yaml_file(full_path, self.as_dict())
         logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
 
     def load_yaml(self, path, label=None, pdep=False):
@@ -351,6 +351,33 @@ def replace_yaml_syntax(content, label=None):
     if replaced_keys:
         logging.info('\n')
     return content
+
+
+def save_yaml_file(path, data):
+    """
+    Dump ``data`` as YAML to the file at ``path`` without truncating or partially overwriting an existing file.
+
+    The YAML text is generated first and written to a temporary file in the same directory, which then atomically
+    replaces ``path`` via ``os.replace``. If generating or writing the YAML raises, any existing file at ``path`` is
+    left unchanged and the temporary file is removed. An existing file's permission bits are carried over, and if
+    ``path`` is a symbolic link, the file it points to is the one replaced.
+
+    Args:
+        path (str): The path of the YAML file to write.
+        data (dict): The data to dump.
+    """
+    content = yaml.dump(data=data)
+    path = os.path.realpath(path)
+    tmp_path = f'{path}.{uuid.uuid4().hex}.tmp'
+    try:
+        with open(tmp_path, 'x') as f:
+            f.write(content)
+        if os.path.exists(path):
+            shutil.copymode(path, tmp_path)
+        os.replace(tmp_path, path)
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def is_pdep(job_list):
