@@ -297,8 +297,8 @@ def warn_about_coverage(profile: ChemistryProfile,
     if RMSConstV is not None and any(isinstance(r, RMSConstV) for r in reaction_systems):
         logging.warning(
             f'  An adiabatic reactor is present, so the detected maximum temperature '
-            f'({profile.max_temperature:.0f} K) is the initial temperature and the true '
-            f'peak temperature will be higher. Temperature-gated library sets were '
+            f'({profile.max_temperature:.0f} K) is only the initial temperature; the '
+            f'adiabatic peak may be higher. Temperature-gated '
             f'evaluated at the initial temperature; if the peak is expected to exceed '
             f'{CH_PYROLYSIS_T_THRESHOLD:.0f} K, consider requesting the high-temperature '
             f'libraries explicitly.'
