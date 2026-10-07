@@ -424,6 +424,8 @@ cdef class NASA(HeatCapacityModel):
     def to_cantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.
+
+        The reference pressure is set to 1 atm (101325 Pa), not 1 bar.
         """
         
         from cantera import NasaPoly2
@@ -441,5 +443,5 @@ cdef class NASA(HeatCapacityModel):
         coeffs[1:8] = polys[1].coeffs # 7 coefficients of the high temperature polynomial
         coeffs[8:15] = polys[0].coeffs # 7 coefficients of the low temperature polynomial
 
-        # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs)
-        return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 1e5, coeffs)
+        # initialize cantera.NasaPoly2(T_low, T_high, P_ref, coeffs), with P_ref = 1 atm
+        return NasaPoly2(polys[0].Tmin.value_si, polys[1].Tmax.value_si, 101325.0, coeffs)

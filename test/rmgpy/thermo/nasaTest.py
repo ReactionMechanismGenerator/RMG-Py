@@ -315,7 +315,7 @@ class TestNASA:
         # NasaPoly2 units use J/kmol rather than J/mol
         assert round(abs(self.nasa.get_enthalpy(900) - nasapoly2.h(900) / 1000), 1) == 0
         assert round(abs(self.nasa.get_entropy(700) - nasapoly2.s(700) / 1000), 1) == 0
-        assert nasapoly2.reference_pressure == 1e5
+        assert nasapoly2.reference_pressure == 101325.0  # 1 atm, as in Chemkin
 
     def test_to_nasa(self):
         """
