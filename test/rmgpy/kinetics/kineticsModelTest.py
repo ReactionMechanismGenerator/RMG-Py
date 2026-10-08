@@ -32,6 +32,9 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.model` module.
 """
 
 
+import pytest
+import quantities as pq
+
 from rmgpy.kinetics.model import (
     get_reaction_order_from_rate_coefficient_units,
     get_rate_coefficient_units_from_reaction_order,
@@ -148,6 +151,25 @@ class TestOrder:
         assert 3 == get_reaction_order_from_rate_coefficient_units("m^6/(molecule^2*s)")
         assert 3 == get_reaction_order_from_rate_coefficient_units("cm^6/(molecule^2*s)")
 
+    def test_to_order_fifth(self):
+        """
+        Test the conversion of fifth-order rate coefficient units to an integer
+        reaction order.
+        """
+        assert 5 == get_reaction_order_from_rate_coefficient_units("m^12/(mol^4*s)")
+        assert 5 == get_reaction_order_from_rate_coefficient_units("cm^12/(mol^4*s)")
+        assert 5 == get_reaction_order_from_rate_coefficient_units("m^12/(molecule^4*s)")
+        assert 5 == get_reaction_order_from_rate_coefficient_units("cm^12/(molecule^4*s)")
+
+    def test_to_order_invalid(self):
+        """
+        Test that units which do not belong to a whole, non-negative reaction
+        order raise a ValueError, and are not rounded to the nearest order.
+        """
+        for kunits in ["m^4/(mol*s)", "m^1.5/(mol^0.5*s)", "mol^2/(m^6*s)", "m^12/(mol^4*s^2)"]:
+            with pytest.raises(ValueError):
+                get_reaction_order_from_rate_coefficient_units(kunits)
+
     def test_to_units_zeroth(self):
         """
         Test the conversion of a reaction order of zero to rate coefficient
@@ -175,3 +197,58 @@ class TestOrder:
         units.
         """
         assert "m^6/(mol^2*s)" == get_rate_coefficient_units_from_reaction_order(3)
+
+    def test_to_units_fifth(self):
+        """
+        Test the conversion of a reaction order of five to rate coefficient
+        units, as for the reverse of a reaction with five gas-phase products.
+        """
+        assert "m^12/(mol^4*s)" == get_rate_coefficient_units_from_reaction_order(5)
+
+    def test_to_units_surface(self):
+        """
+        Test the conversion of gas and surface species counts that have no
+        explicit case to rate coefficient units.
+        """
+        assert "m^12/(mol^4*s)" == get_rate_coefficient_units_from_reaction_order(4, 1)
+        assert "m^14/(mol^5*s)" == get_rate_coefficient_units_from_reaction_order(4, 2)
+        assert "m^6/(mol^3*s)" == get_rate_coefficient_units_from_reaction_order(0, 4)
+
+    def test_to_units_negative(self):
+        """
+        Test that a negative number of gas or surface species raises a
+        ValueError.
+        """
+        with pytest.raises(ValueError):
+            get_rate_coefficient_units_from_reaction_order(-1)
+        with pytest.raises(ValueError):
+            get_rate_coefficient_units_from_reaction_order(2, -1)
+
+    def test_to_units_any_order(self):
+        """
+        Test that the units for any number of gas and surface species are those
+        of the rate, mol/(m^3*s) or mol/(m^2*s) once a surface species takes
+        part, divided by the concentration of each species, mol/m^3 for a gas
+        and mol/m^2 for a surface species. This covers the explicit cases and
+        the general formula.
+        """
+        for n_gas in range(8):
+            for n_surf in range(6):
+                kunits = get_rate_coefficient_units_from_reaction_order(n_gas, n_surf)
+                rate_m = -3 if n_surf == 0 else -2
+                expected = {
+                    pq.m: rate_m + 3 * n_gas + 2 * n_surf,
+                    pq.mol: 1 - n_gas - n_surf,
+                    pq.s: -1,
+                }
+                expected = {unit: power for unit, power in expected.items() if power != 0}
+                assert expected == dict(pq.Quantity(1.0, kunits).simplified.dimensionality), kunits
+
+    def test_round_trip(self):
+        """
+        Test that the units for a gas-phase reaction order convert back to the
+        same order.
+        """
+        for order in range(10):
+            kunits = get_rate_coefficient_units_from_reaction_order(order)
+            assert order == get_reaction_order_from_rate_coefficient_units(kunits)
