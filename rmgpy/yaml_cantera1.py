@@ -297,10 +297,9 @@ phases:
   species: [{', '.join(surface_species_to_write)}]
   kinetics: surface
   reactions: [site0-reactions]
-  site-density: {surface_site_density * 1e-4 }
+  site-density: {surface_site_density * 1e-3} kmol/m^2
   state: {{T: 300.0, P: 1 atm}}
 """
-    # surface_site_density * 1e-4 #in units of mol/cm^2
 
     return phases_block
 

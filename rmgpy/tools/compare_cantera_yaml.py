@@ -316,6 +316,7 @@ def compare_yaml_files(file1: str, file2: str, atol: float = 1e-12,
         ym.pop('cantera-version', None)
         ym.pop('input-files', None)
         ym.pop('date', None)
+        _normalize_site_densities(ym)
 
     differences.extend(compare_values(yaml_meta1, yaml_meta2, "metadata", atol, rtol))
     
@@ -446,6 +447,20 @@ def _extract_yaml_metadata(yaml_data: dict) -> dict:
             raise ValueError(f"Phase mentioned reactions block '{block}' not found in top-level YAML keys")
         metadata.pop(block)
     return metadata
+
+
+def _normalize_site_densities(metadata: dict):
+    """Convert each phase's 'site-density' to a float in kmol/m^2, in place.
+
+    A site density may be a bare number, interpreted in the file's default
+    'units' (e.g. mol/cm^2 for ck2yaml output), or a string with explicit
+    units such as '2.483e-08 kmol/m^2'. Converting both to SI lets them be
+    compared numerically.
+    """
+    units = ct.UnitSystem(metadata.get('units', {}))
+    for phase in metadata.get('phases', []):
+        if 'site-density' in phase:
+            phase['site-density'] = units.convert_to(phase['site-density'], 'kmol/m^2')
 
 
 def _compare_species(phase1, phase2, phase_name: str, atol: float, rtol: float) -> List[str]:
