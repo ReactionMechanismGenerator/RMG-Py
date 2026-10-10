@@ -31,6 +31,7 @@
 This module contains unit tests of the rmgpy.reaction module.
 """
 
+import logging
 import math
 
 import cantera as ct
@@ -1705,6 +1706,90 @@ class TestReaction:
             korig = original_kinetics.get_rate_coefficient(T, P)
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             assert round(abs(korig / krevrev - 1.0), 0) == 0
+
+    def _vibration_only(self, reaction, label):
+        """Strip `label`'s conformer down to vibrations, as an estimated well would be described."""
+        from rmgpy.statmech.torsion import Torsion
+        from rmgpy.statmech.vibration import Vibration
+
+        for spec in reaction.reactants:
+            if spec.label == label:
+                spec.conformer.modes = [
+                    mode for mode in spec.conformer.modes if isinstance(mode, (Vibration, Torsion))
+                ]
+                return
+        raise AssertionError("no reactant labelled {0!r}".format(label))
+
+    def test_tst_warns_when_transition_state_has_external_modes_and_reactant_does_not(self, caplog):
+        """
+        A transition state carrying translation and rotation over a well described as
+        vibration-only should warn: the TST expression assumes those cancel between Q_TS and
+        Q_reactant, and here they do not.
+        """
+        from rmgpy.reaction import _DOF_MISMATCH_WARNED
+
+        reaction = deepcopy(self.reaction)
+        self._vibration_only(reaction, "C2H4")
+
+        _DOF_MISMATCH_WARNED.clear()
+        with caplog.at_level(logging.WARNING, logger="root"):
+            reaction.calculate_tst_rate_coefficient(1000.0)
+
+        messages = [record.getMessage() for record in caplog.records]
+        assert any("translational/rotational modes" in message for message in messages), messages
+
+    def test_tst_does_not_warn_when_degrees_of_freedom_match(self, caplog):
+        """
+        The consistent case must stay silent -- a warning on every well-formed network is noise,
+        and noise is what would stop the mismatched case from being noticed.
+        """
+        from rmgpy.reaction import _DOF_MISMATCH_WARNED
+
+        _DOF_MISMATCH_WARNED.clear()
+        with caplog.at_level(logging.WARNING, logger="root"):
+            self.reaction.calculate_tst_rate_coefficient(1000.0)
+
+        messages = [record.getMessage() for record in caplog.records]
+        assert not any("translational/rotational modes" in message for message in messages), messages
+
+    def test_tst_does_not_warn_for_a_monatomic_reactant(self, caplog):
+        """
+        An atom has translation and no rotation, and a polyatomic transition state has both.
+        That difference is physics, not a defect, so it must not warn -- this reaction has an
+        H atom as a reactant and is exactly the case a mode-class comparison gets wrong.
+        """
+        from rmgpy.reaction import _DOF_MISMATCH_WARNED
+        from rmgpy.statmech.rotation import Rotation
+
+        hydrogen = next(spec for spec in self.reaction.reactants if spec.label == "H")
+        assert not any(isinstance(mode, Rotation) for mode in hydrogen.conformer.modes)
+
+        _DOF_MISMATCH_WARNED.clear()
+        with caplog.at_level(logging.WARNING, logger="root"):
+            self.reaction.calculate_tst_rate_coefficient(1000.0)
+
+        messages = [record.getMessage() for record in caplog.records]
+        assert not any("translational/rotational modes" in message for message in messages), messages
+
+    def test_tst_dof_warning_is_not_repeated_per_temperature(self, caplog):
+        """
+        The check runs once per calculate_tst_rate_coefficient() call, and that is called once
+        per temperature -- so a mismatched reaction must still warn only once.
+        """
+        from rmgpy.reaction import _DOF_MISMATCH_WARNED
+
+        reaction = deepcopy(self.reaction)
+        self._vibration_only(reaction, "C2H4")
+
+        _DOF_MISMATCH_WARNED.clear()
+        with caplog.at_level(logging.WARNING, logger="root"):
+            for T in (500.0, 1000.0, 1500.0, 2000.0):
+                reaction.calculate_tst_rate_coefficient(T)
+
+        warnings = [
+            record for record in caplog.records if "translational/rotational modes" in record.getMessage()
+        ]
+        assert len(warnings) == 1, [w.getMessage() for w in warnings]
 
     def test_tst_calculation(self):
         """
