@@ -16,6 +16,7 @@
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -174,6 +175,14 @@ in the yaml data. Not all differences are necessarily problematic.  Results are 
 <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">RMG-Py GitHub repository</a>
 and include the <code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> and a minimal reproducing <code class="docutils literal notranslate"><span class="pre">input.py</span></code>.</p>
 </section>
+<section id="thermochemistry-reference-pressure">
+<h3><span class="section-number">7.5.5. </span>Thermochemistry Reference Pressure<a class="headerlink" href="#thermochemistry-reference-pressure" title="Permalink to this heading">¶</a></h3>
+<p>The NASA polynomials in the Cantera YAML outputs presume a standard-state (reference)
+pressure of 1 atm (101325 Pa) for gas-phase species, the same as Chemkin files.
+Much of RMG’s thermochemistry (Benson group additivity, Arkane, and libraries imported from
+Chemkin files) is also on a 1 atm basis. Some modern compilations use 1 bar instead; for
+gas-phase entropies the difference is <span class="math notranslate nohighlight">\(R \ln(1.01325) \approx 0.026\)</span> cal/(mol·K).</p>
+</section>
 </section>
 <section id="the-rms-yaml-folder">
 <h2><span class="section-number">7.6. </span>The RMS YAML Folder<a class="headerlink" href="#the-rms-yaml-folder" title="Permalink to this heading">¶</a></h2>
@@ -225,6 +234,7 @@ every iteration, unless configured otherwise by <code class="docutils literal no
 <li><a class="reference internal" href="#cantera1-beta">7.5.2. <code class="docutils literal notranslate"><span class="pre">/cantera1</span></code> <em>(beta)</em></a></li>
 <li><a class="reference internal" href="#cantera2-beta">7.5.3. <code class="docutils literal notranslate"><span class="pre">/cantera2</span></code> <em>(beta)</em></a></li>
 <li><a class="reference internal" href="#comparison-reports">7.5.4. Comparison Reports</a></li>
+<li><a class="reference internal" href="#thermochemistry-reference-pressure">7.5.5. Thermochemistry Reference Pressure</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#the-rms-yaml-folder">7.6. The RMS YAML Folder</a></li>
