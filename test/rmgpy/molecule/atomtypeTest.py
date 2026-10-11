@@ -46,7 +46,7 @@ class TestAtomType:
     """
 
     def setup_class(self):
-        self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES["Cd"]
+        self.atomtype = rmgpy.molecule.atomtype.ATOMTYPES["Cdb"]
 
     def test_pickle(self):
         """
@@ -106,13 +106,35 @@ class TestAtomType:
         """
         Test the AtomType.equivalent() method.
         """
-        assert self.atomtype.equivalent(rmgpy.molecule.atomtype.ATOMTYPES["Cd"])
+        assert self.atomtype.equivalent(rmgpy.molecule.atomtype.ATOMTYPES["Cdb"])
 
     def test_is_specfic_case_of(self):
         """
         Test the AtomType.is_specific_case_of() method.
         """
         assert self.atomtype.is_specific_case_of(rmgpy.molecule.atomtype.ATOMTYPES["C"])
+
+    def test_has_intersection_with(self):
+        """
+        Test the AtomType.has_intersection_with() method.
+        """
+        # An atom type always has an intersection with itself
+        assert self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Cdb"])
+        # Mutually exclusive sibling atom types (both specific cases of "C") have no intersection
+        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Css"])
+        assert not self.atomtype.has_intersection_with(rmgpy.molecule.atomtype.ATOMTYPES["Ct"])
+        # A specific atom type and one of its generic ancestors intersect (in either order),
+        # since every atom matching the specific type also matches the generic one
+        c = rmgpy.molecule.atomtype.ATOMTYPES["C"]
+        assert self.atomtype.is_specific_case_of(c)
+        assert self.atomtype.has_intersection_with(c)
+        assert c.has_intersection_with(self.atomtype)
+        # An unrelated generic atom type does not intersect with a specific atom type
+        # that isn't one of its specific cases
+        n = rmgpy.molecule.atomtype.ATOMTYPES["N"]
+        assert not self.atomtype.is_specific_case_of(n)
+        assert not self.atomtype.has_intersection_with(n)
+        assert not n.has_intersection_with(self.atomtype)
 
     def test_set_actions(self):
         """
@@ -207,6 +229,50 @@ class TestAtomType:
                 logging.exception(f"Couldn't make sample molecule for atomType {name}")
                 failed.append(name)
         assert not failed, f"Couldn't make correct sample molecules for types {', '.join(failed)}"
+
+    def test_surface_element_atom_types_registered(self):
+        """
+        Test that every element without a dedicated atom type (mostly metals, used e.g. for
+        heterogeneous catalyst surfaces/dopants) gets a generic Rx-derived atom type registered
+        under its own element symbol, and that doing so doesn't silently clobber an existing
+        organic-chemistry atom type of the same name -- a real risk since some element symbols
+        (e.g. Ca, Cs, Cd for calcium, cesium, cadmium) collide textually with legacy RMG atom type
+        labels for carbon (though the current, renamed organic labels are Css/Cdb/etc., not the
+        bare two-letter forms, so there is no live collision today).
+        """
+        from rmgpy.molecule.atomtype import surface_elements
+
+        assert surface_elements, "Expected at least one element without a dedicated atom type"
+        surface_element_symbols = {el.symbol for el in surface_elements}
+        organic_atomtype_names = {
+            name for name, atomtype in rmgpy.molecule.atomtype.ATOMTYPES.items()
+            if 'Rx' not in [g.label for g in atomtype.generic] and name not in surface_element_symbols
+        }
+        for element in surface_elements:
+            assert element.symbol in rmgpy.molecule.atomtype.ATOMTYPES, (
+                f"No atom type registered for surface element {element.symbol}")
+            atomtype = rmgpy.molecule.atomtype.ATOMTYPES[element.symbol]
+            # A collision would silently replace an organic atom type's entry with this generic
+            # one; catch that by requiring the registered type to actually be the generic kind.
+            assert element.symbol not in organic_atomtype_names, (
+                f"Surface element symbol {element.symbol} collides with an existing "
+                "organic-chemistry atom type")
+            assert 'Rx' in [g.label for g in atomtype.generic]
+            assert atomtype.specific == []
+
+    def test_get_atomtype_for_surface_element(self):
+        """
+        Test that get_atomtype() resolves a dynamically-registered surface-element atom (one with
+        no dedicated atom type, e.g. a metal used as a dopant/catalyst surface atom) to its generic
+        Rx-derived atom type.
+        """
+        from rmgpy.molecule.atomtype import surface_elements
+        from rmgpy.molecule.molecule import Atom
+
+        element = surface_elements[0]
+        atom = Atom(element=element)
+        atomtype = get_atomtype(atom, {})
+        assert atomtype is rmgpy.molecule.atomtype.ATOMTYPES[element.symbol]
 
 
 class TestGetAtomType:
@@ -849,9 +915,9 @@ class TestGetAtomType:
         """
         Test that get_atomtype() returns appropriate carbon atom types.
         """
-        assert self.atom_type(self.mol1, 0) == "Cs"
+        assert self.atom_type(self.mol1, 0) == "Css"
         assert self.atom_type(self.mol52, 5) == "Csc"
-        assert self.atom_type(self.mol1, 5) == "Cd"
+        assert self.atom_type(self.mol1, 5) == "Cdb"
         assert self.atom_type(self.mol60, 1) == "Cdc"
         assert self.atom_type(self.mol1, 2) == "CO"
         assert self.atom_type(self.mol19, 0) == "CS"
@@ -1021,7 +1087,7 @@ class TestGetAtomType:
         """
         Test that get_atomtype() works for vacant surface sites and for regular atoms in the complex.
         """
-        assert self.atom_type(self.mol77, 0) == "Cs"
+        assert self.atom_type(self.mol77, 0) == "Css"
         assert self.atom_type(self.mol77, 1) == "H0"
         assert self.atom_type(self.mol77, 3) == "Xv"
         assert self.atom_type(self.mol78, 0) == "Xv"

@@ -161,7 +161,7 @@ entry(
     label="S2s-CsH",
     group="""
 1 * S2s u0 {2,S} {3,S}
-2   Cs u0 {1,S}
+2   Css u0 {1,S}
 3   H  u0 {1,S}
 """,
     solute=SoluteData(

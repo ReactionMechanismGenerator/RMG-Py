@@ -52,8 +52,8 @@ entry(
     group="""
 1 * C       u0 {2,D} {3,S} {4,S}
 2   C       u0 {1,D} {5,D}
-3   [Cs,Cd] u0 {1,S} {6,S}
-4   [Cs,Cd] u0 {1,S} {7,S}
+3   [Css,Cdb] u0 {1,S} {6,S}
+4   [Css,Cdb] u0 {1,S} {7,S}
 5   O       u0 {2,D}
 6   C       u0 {3,S}
 7   C       u0 {4,S}
@@ -76,7 +76,7 @@ entry(
     group="""
 1 * C       u0 {2,D} {3,S} {4,S}
 2   C       u0 {1,D} {5,D}
-3   [Cs,Cd] u0 {1,S} {6,S}
+3   [Css,Cdb] u0 {1,S} {6,S}
 4   C       u0 {1,S} {7,S} {8,S} {9,S}
 5   O       u0 {2,D}
 6   C       u0 {3,S}

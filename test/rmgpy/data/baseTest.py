@@ -57,7 +57,7 @@ class TestBaseDatabase:
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2    C  u0 {1,D}
-                3 *5 Cd u0 {1,S} {4,D}
+                3 *5 Cdb u0 {1,S} {4,D}
                 4    C  u0 {3,D}
                 """
             )
@@ -68,7 +68,7 @@ class TestBaseDatabase:
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2 *5 C  u0 {1,D}
-                3    Cd u0 {1,S} {4,D}
+                3    Cdb u0 {1,S} {4,D}
                 4    C  u0 {3,D}
                 """
             )
@@ -79,7 +79,7 @@ class TestBaseDatabase:
                 """
                 1 *3 C  u1 {2,D} {3,S}
                 2    C  u0 {1,D}
-                3    Cd u0 {1,S} {4,D}
+                3    Cdb u0 {1,S} {4,D}
                 4    C  u0 {3,D}
                 """
             )

@@ -77,7 +77,7 @@ entry(
     index=14,
     label="N3d_guanidine",
     group="""
-1   Cd  u0 {2,D} {3,S} {4,S}
+1   Cdb  u0 {2,D} {3,S} {4,S}
 2 * N3d u1 {1,D}
 3   N3s u0 {1,S} {5,S} {6,S}
 4   N3s u0 {1,S} {7,S} {8,S}
