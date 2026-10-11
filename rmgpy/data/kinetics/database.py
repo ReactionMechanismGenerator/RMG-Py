@@ -695,7 +695,7 @@ and immediately used in input files without any additional changes.
         A reaction can only be estimated using one of these methods.
         
         source = {'RateRules': (Family_Label, OriginalTemplate, RateRules),
-                  'Library': String_Name_of_Library_Used,
+                  'Library': (String_Name_of_Library_Used, Library_Entry),
                   'PDep': Network_Index,
                   'Training':  (Family_Label, Training_Reaction_Entry),
                   }
@@ -715,7 +715,25 @@ and immediately used in input files without any additional changes.
                 source['Rate Rules'] = data_source
         elif isinstance(reaction, LibraryReaction):
             # This reaction comes from a reaction library or seed mechanism
-            source['Library'] = reaction.library
+            if reaction.library not in self.libraries:
+                raise ValueError(f'Library {reaction.library} not found in kinetics database. Make sure libraries match input file used to generate kinetics.')
+            library_reactions = self.generate_reactions_from_library(
+                library=self.libraries[reaction.library],
+                reactants=reaction.reactants,
+                products=reaction.products
+            )
+            if not library_reactions:
+                raise ValueError(f'Could not find reaction {reaction} in library {reaction.library} when trying to extract source data from comments.')
+            entry = self.libraries[reaction.library].entries[library_reactions[0].entry.index]
+            if len(library_reactions) > 1:
+                # Library contains multiple reactions of the same type, so pick the one with matching kinetics
+                for rxn in library_reactions:
+                    if rxn.entry.data.is_similar_to(reaction.kinetics):  # units might have been changed, so use is_similar_to instead of direct comparison
+                        entry = self.libraries[reaction.library].entries[rxn.entry.index]
+                        break
+                else:
+                    raise ValueError(f'Found multiple instances of reaction {reaction} in library {reaction.library}, but none of them have kinetics identical to the reaction kinetics.')
+            source['Library'] = (reaction.library, entry)
 
         elif isinstance(reaction, PDepReaction):
             # This reaction is a pressure-dependent reaction

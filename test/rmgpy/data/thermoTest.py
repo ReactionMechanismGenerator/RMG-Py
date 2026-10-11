@@ -289,96 +289,50 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert len(source["GAV"]["longDistanceInteraction_cyclic"]) == 1
         assert len(source["GAV"]["ring"]) == 1
 
-        # Pure library thermo
-        dipk = Species(
+        propane = Species(
             index=1,
-            label="DIPK",
+            label="propane",
             thermo=NASA(
                 polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            3.35002,
-                            0.017618,
-                            -2.46235e-05,
-                            1.7684e-08,
-                            -4.87962e-12,
-                            35555.7,
-                            5.75335,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(888.28, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            6.36001,
-                            0.00406378,
-                            -1.73509e-06,
-                            5.05949e-10,
-                            -4.49975e-14,
-                            35021,
-                            -8.41155,
-                        ],
-                        Tmin=(888.28, "K"),
-                        Tmax=(5000, "K"),
-                    ),
+                    NASAPolynomial(coeffs=[0.4987,0.0308692,-7.94064e-06,-5.75209e-09,3.10575e-12,-14122,21.6027], Tmin=(298,'K'), Tmax=(1036.31,'K')),
+                    NASAPolynomial(coeffs=[2.0491,0.0302287,-1.47485e-05,3.60335e-09,-3.51534e-13,-14730.3,12.6832], Tmin=(1036.31,'K'), Tmax=(3000,'K'))
                 ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                comment="""Thermo library: DIPK""",
+                Tmin=(298,'K'), Tmax=(3000,'K'), E0=(-119.854,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(249.434,'J/(mol*K)'),
+                label="""C3H8""",
+                comment="""Thermo library: DFT_QCI_thermo"""
             ),
-            molecule=[Molecule(smiles="CC(C)C(=O)C(C)C")],
+            molecule=[Molecule(smiles="CCC")],
         )
 
-        source = self.database.extract_source_from_comments(dipk)
-        assert "Library" in source
+        CCC_source = self.database.extract_source_from_comments(propane)
+        assert "Library" in CCC_source
+        assert CCC_source["Library"][0] == "DFT_QCI_thermo"
 
         # Mixed library and HBI thermo
-        dipk_rad = Species(
+        propane_rad = Species(
             index=4,
-            label="R_tert",
+            label="propane_rad",
             thermo=NASA(
                 polynomials=[
-                    NASAPolynomial(
-                        coeffs=[
-                            2.90061,
-                            0.0298018,
-                            -7.06268e-05,
-                            6.9636e-08,
-                            -2.42414e-11,
-                            54431,
-                            5.44492,
-                        ],
-                        Tmin=(100, "K"),
-                        Tmax=(882.19, "K"),
-                    ),
-                    NASAPolynomial(
-                        coeffs=[
-                            6.70999,
-                            0.000201027,
-                            6.65617e-07,
-                            -7.99543e-11,
-                            4.08721e-15,
-                            54238.6,
-                            -9.73662,
-                        ],
-                        Tmin=(882.19, "K"),
-                        Tmax=(5000, "K"),
-                    ),
+                    NASAPolynomial(coeffs=[0.599885,0.0320439,-2.63211e-05,1.15072e-08,-2.01662e-12,66381.4,20.2736], Tmin=(298,'K'), Tmax=(1331.58,'K')),
+                    NASAPolynomial(coeffs=[6.43539,0.0145141,-6.57382e-06,1.62046e-09,-1.60381e-13,64827.3,-9.55036], Tmin=(1331.58,'K'), Tmax=(3000,'K'))
                 ],
-                Tmin=(100, "K"),
-                Tmax=(5000, "K"),
-                comment="""Thermo library: DIPK + radical(C2CJCHO)""",
+                Tmin=(298,'K'), Tmax=(3000,'K'), E0=(549.676,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(249.434,'J/(mol*K)'),
+                comment="""Thermo library: DFT_QCI_thermo + radical(CJ3)"""
             ),
             molecule=[
-                Molecule(smiles="C[C](C)C(=O)C(C)C"),
-                Molecule(smiles="CC(C)=C([O])C(C)C"),
+                Molecule(smiles="CC[C]")
             ],
         )
 
-        source = self.database.extract_source_from_comments(dipk_rad)
-        assert "Library" in source
-        assert "GAV" in source
-        assert len(source["GAV"]["radical"]) == 1
+        CCC_rad_source = self.database.extract_source_from_comments(propane_rad)
+        assert "Library" in CCC_rad_source
+        assert "GAV" in CCC_rad_source
+        assert len(CCC_rad_source["GAV"]["radical"]) == 1
+
+        assert CCC_source["Library"][0] == CCC_rad_source["Library"][0], "The library source should be the same for the radical and non-radical species since they come from the same library entry."
+        assert CCC_source["Library"][1].item.is_isomorphic(CCC_rad_source["Library"][1].item), "The library source should be the same molecule for the radical and non-radical species since they come from the same library entry."
+
 
         # Pure QM thermo
         cineole = Species(
@@ -422,6 +376,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
 
         source = self.database.extract_source_from_comments(cineole)
         assert "QM" in source
+        assert source["QM"][0] == "MopacMolPM3"
 
         # Mixed QM and HBI thermo
         cineole_rad = Species(
@@ -465,6 +420,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
 
         source = self.database.extract_source_from_comments(cineole_rad)
         assert "QM" in source
+        assert source["QM"][0] == "MopacMolPM3"
         assert "GAV" in source
         assert len(source["GAV"]["radical"]) == 1
 
@@ -604,9 +560,12 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         OX = rmgpy.species.Species(smiles="O=*")
         OX.thermo = rmgpy.thermo.NASA()
         OX.thermo.comment = 'Thermo library: surfaceThermoPt111'
-        source = self.database.extract_source_from_comments(OX)
+        # load the surfaceThermoPt111 library into databaseWithNoLibraries for this one example since it's not worth the ~7s it takes to make a separate test database
+        self.databaseWithoutLibraries.load_libraries(path=os.path.join(settings["database.directory"], "thermo", "libraries"), libraries=["surfaceThermoPt111"])
+        source = self.databaseWithoutLibraries.extract_source_from_comments(OX)
+        self.databaseWithoutLibraries.unload_libraries('surfaceThermoPt111')  # unload the library again so it doesn't interfere with other tests
         assert "Library" in source
-        assert source["Library"] == "surfaceThermoPt111"
+        assert source["Library"][0] == "surfaceThermoPt111"
 
         # Gas library + adsorption correction
         CH2X = rmgpy.species.Species(smiles="[CH2]=*")
@@ -614,7 +573,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         CH2X.thermo.comment = 'Gas phase thermo for CH2(T) from Thermo library: primaryThermoLibrary. Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111(C=XR2)'
         source = self.database.extract_source_from_comments(CH2X)
         assert "Library" in source
-        assert source["Library"] == "primaryThermoLibrary"
+        assert source["Library"][0] == "primaryThermoLibrary"
         assert "ADS" in source
         assert source['ADS']['adsorptionPt111'][0][0].label == 'C=XR2'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
@@ -637,10 +596,10 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         # Gas library + radical for HBI + adsorption correction
         CHOX = rmgpy.species.Species(smiles="O=[CH]*")
         CHOX.thermo = rmgpy.thermo.NASA()
-        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-XR3)'
+        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: DFT_QCI_thermo + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-XR3)'
         source = self.database.extract_source_from_comments(CHOX)
         assert "Library" in source
-        assert source["Library"] == "primaryThermoLibrary"
+        assert source["Library"][0] == "DFT_QCI_thermo"
         assert "GAV" in source
         assert source["GAV"]["radical"][0][0].label == "HCdsJO"
         assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
@@ -656,7 +615,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         OX.thermo.comment = OX_comment  # set the comment to be the generated comment
         source = self.database.extract_source_from_comments(OX)
         assert "Library" in source
-        assert source["Library"] == "primaryThermoLibrary"
+        assert source["Library"][0] == "primaryThermoLibrary"
         assert 'ADS' in source
         assert source['ADS']['adsorptionPt111'][0][0].label == 'OX'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
@@ -667,7 +626,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         CH2CHCH_ads.thermo = self.database.get_thermo_data(CH2CHCH_ads)
         source = self.database.extract_source_from_comments(CH2CHCH_ads)
         assert "Library" in source
-        assert source["Library"] == "DFT_QCI_thermo"
+        assert source["Library"][0] == "DFT_QCI_thermo"
         assert "GAV" in source
         assert source["GAV"]["radical"][0][0].label == "AllylJ2_triplet"
         assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
