@@ -219,18 +219,21 @@ class Atom(Vertex):
         """Returns a sorting key for comparing Atom objects. Read-only"""
         return self.element.number, -get_vertex_connectivity_value(self), self.radical_electrons, self.lone_pairs, self.charge
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
         attributes except `label` and 'ID' must match exactly. If `other` is an
         :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern. If ``strict`` is ``False``, then only
-        the element is compared and electrons are ignored.
+        the element is compared and electrons are ignored. If ``check_labels``
+        is ``True``, the atoms must also have matching `label` attributes.
         """
         cython.declare(atom=Atom, ap=gr.GroupAtom)
         if isinstance(other, Atom):
             atom = other
+            if check_labels and self.label != atom.label:
+                return False
             if strict:
                 return (self.element is atom.element
                         and self.radical_electrons == atom.radical_electrons
@@ -248,6 +251,8 @@ class Atom(Vertex):
                 raise NotImplementedError('There is currently no implementation of '
                                           'the strict argument for Group objects.')
             ap = other
+            if check_labels and self.label != ap.label:
+                return False
             for a in ap.atomtype:
                 if self.atomtype.equivalent(a): break
             else:
@@ -282,19 +287,23 @@ class Atom(Vertex):
                     return False
             return True
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. If `other` is an :class:`Atom` object, then this is the same
         as the :meth:`equivalent()` method. If `other` is an
         :class:`GroupAtom` object, then the atom must match or be more
-        specific than any of the combinations in the atom pattern.
+        specific than any of the combinations in the atom pattern. If
+        ``check_labels`` is ``True``, the atoms must also have matching
+        `label` attributes.
         """
         if isinstance(other, Atom):
-            return self.equivalent(other)
+            return self.equivalent(other, strict=True, check_labels=check_labels)
         elif isinstance(other, gr.GroupAtom):
             cython.declare(atom=gr.GroupAtom, a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             atom = other
+            if check_labels and self.label != atom.label:
+                return False
             if self.atomtype is None:
                 return False
             for a in atom.atomtype:
@@ -1665,7 +1674,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
+    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True, check_labels=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1679,6 +1688,7 @@ class Molecule(Graph):
             generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
             save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):               if ``False``, perform isomorphism ignoring electrons
+            check_labels (bool, optional):         if ``True``, atoms only match if their `label` attributes match
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -1701,14 +1711,14 @@ class Molecule(Graph):
             return False
         # if given an initial map, ensure that it's valid.
         if initial_map:
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
+            if not self.is_mapping_valid(other, initial_map, equivalent=True, strict=True, check_labels=check_labels):
                 return False
 
         # Do the full isomorphism comparison
-        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict)
+        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
         return result
 
-    def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True):
+    def find_isomorphism(self, other, initial_map=None, save_order=False, strict=True, check_labels=False):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1722,6 +1732,7 @@ class Molecule(Graph):
             initial_map (dict, optional): initial atom mapping to use
             save_order (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):      if ``False``, perform isomorphism ignoring electrons
+            check_labels (bool, optional): if ``True``, atoms only match if their `label` attributes match
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -1743,10 +1754,10 @@ class Molecule(Graph):
         if self.facet != other.facet:
             return []
         # Do the isomorphism comparison
-        result = Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict)
+        result = Graph.find_isomorphism(self, other, initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
         return result
 
-    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
+    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, check_labels=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. The `initial_map` attribute can be used to specify a required
@@ -1805,20 +1816,20 @@ class Molecule(Graph):
                         continue
                     for i, key in enumerate(keys):
                         initial_map[key] = atmlist[i]
-                    if (self.is_mapping_valid(other, initial_map, equivalent=False) and
-                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)):
+                    if (self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels) and
+                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)):
                         return True
                 else:
                     return False
             else:
-                if not self.is_mapping_valid(other, initial_map, equivalent=False):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
                     return False
 
         # Do the isomorphism comparison
-        result = Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order)
+        result = Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels)
         return result
 
-    def find_subgraph_isomorphisms(self, other, initial_map=None, save_order=False):
+    def find_subgraph_isomorphisms(self, other, initial_map=None, save_order=False, check_labels=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings. The
@@ -1860,7 +1871,7 @@ class Molecule(Graph):
                 return []
 
         # Do the isomorphism comparison
-        result = Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
+        result = Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order, check_labels=check_labels)
         return result
 
     def is_atom_in_cycle(self, atom):
@@ -2993,7 +3004,7 @@ class Molecule(Graph):
             return True
         return False
 
-    def is_identical(self, other, strict=True):
+    def is_identical(self, other, strict=True, check_labels=False):
         """
         Performs isomorphism checking, with the added constraint that atom IDs must match.
 
@@ -3002,6 +3013,7 @@ class Molecule(Graph):
         Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
+        If ``check_labels`` is ``True``, atoms only match if their `label` attributes also match.
         """
         cython.declare(atom_ids=set, other_ids=set, atom_list=list, other_list=list, mapping=dict)
         from rmgpy.molecule.fragment import Fragment
@@ -3025,7 +3037,7 @@ class Molecule(Graph):
             for atom1, atom2 in zip(atom_list, other_list):
                 mapping[atom1] = atom2
 
-            return self.is_mapping_valid(other, mapping, equivalent=True, strict=strict)
+            return self.is_mapping_valid(other, mapping, equivalent=True, strict=strict, check_labels=check_labels)
         else:
             # The molecules don't have the same set of indices, so they are not identical
             return False

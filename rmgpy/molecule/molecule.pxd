@@ -52,9 +52,9 @@ cdef class Atom(Vertex):
     cdef public int id
     cdef public dict props
     
-    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?, bint check_labels=?) except -2
 
-    cpdef bint is_specific_case_of(self, Vertex other) except -2
+    cpdef bint is_specific_case_of(self, Vertex other, bint check_labels=?) except -2
 
     cpdef Vertex copy(self)
 
@@ -253,13 +253,13 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?) except -2
 
-    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?)
 
-    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint check_labels=?) except -2
 
-    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
 
     cpdef bint is_atom_in_cycle(self, Atom atom) except -2
 
@@ -362,7 +362,7 @@ cdef class Molecule(Graph):
 
     cpdef bint atom_ids_valid(self)
 
-    cpdef bint is_identical(self, Graph other, bint strict=?) except -2
+    cpdef bint is_identical(self, Graph other, bint strict=?, bint check_labels=?) except -2
 
     cpdef dict enumerate_bonds(self)
 
