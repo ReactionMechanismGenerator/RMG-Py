@@ -2838,8 +2838,8 @@ class Molecule(Graph):
                     if vertex in cycle:
                         polycyclic_cycle.update(cycle)
 
-            # convert each set to a list
-            continuous_cycles = [list(cycle) for cycle in continuous_cycles]
+            # convert each set to a list (sorted for deterministic atom ordering)
+            continuous_cycles = [sorted(cycle) for cycle in continuous_cycles]
             return continuous_cycles
 
     def get_monocycles(self):
@@ -2888,9 +2888,9 @@ class Molecule(Graph):
         # Merge connected cycles
         monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
 
-        # Convert cycles back to lists
-        monocyclic_cycles = [list(cycle_set) for cycle_set in monocyclic_cycles]
-        polycyclic_cycles = [list(cycle_set) for cycle_set in polycyclic_cycles]
+        # Convert cycles back to lists (sorted for deterministic atom ordering)
+        monocyclic_cycles = [sorted(cycle_set) for cycle_set in monocyclic_cycles]
+        polycyclic_cycles = [sorted(cycle_set) for cycle_set in polycyclic_cycles]
 
         return monocyclic_cycles, polycyclic_cycles
 
