@@ -1323,7 +1323,7 @@ cdef class ReactionSystem(DASx):
         k_j is the rate parameter for the jth core reaction.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
-        cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C, deriv
+        cdef np.ndarray[np.float64_t, ndim=1] kf, Keq, C, deriv
         cdef np.ndarray[np.float64_t, ndim=2] rate_deriv
         cdef double fderiv, rderiv, flux, V
         cdef int j, num_core_reactions, num_core_species
@@ -1334,7 +1334,7 @@ cdef class ReactionSystem(DASx):
         ip = self.product_indices
 
         kf = self.kf
-        kr = self.kb
+        Keq = self.Keq
 
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
@@ -1355,12 +1355,20 @@ cdef class ReactionSystem(DASx):
             else:  # three reactants
                 fderiv = C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
 
-            if ip[j, 1] == -1:  # only one reactant
-                rderiv = kr[j] / kf[j] * C[ip[j, 0]]
-            elif ip[j, 2] == -1:  # only two reactants
-                rderiv = kr[j] / kf[j] * C[ip[j, 0]] * C[ip[j, 1]]
-            else:  # three reactants
-                rderiv = kr[j] / kf[j] * C[ip[j, 0]] * C[ip[j, 1]] * C[ip[j, 2]]
+            # kb is always built as kf/Keq, so kb/kf is identically 1/Keq. Dividing by Keq avoids
+            # the 0.0/0.0 that kb/kf becomes when kf underflows, which is NaN in C and silently
+            # poisons the sensitivity matrix. Every reactor marks an irreversible reaction with
+            # Keq = inf, which passes this test and correctly gives C/inf = 0. A reversible
+            # reaction cannot have Keq == 0 (get_equilibrium_constant raises), so the only thing
+            # that trips this branch is NaN thermochemistry, where zero is the safe answer.
+            if not (Keq[j] > 0.0):
+                rderiv = 0.0
+            elif ip[j, 1] == -1:  # only one product
+                rderiv = C[ip[j, 0]] / Keq[j]
+            elif ip[j, 2] == -1:  # only two products
+                rderiv = C[ip[j, 0]] * C[ip[j, 1]] / Keq[j]
+            else:  # three products
+                rderiv = C[ip[j, 0]] * C[ip[j, 1]] * C[ip[j, 2]] / Keq[j]
 
             flux = fderiv - rderiv
             gderiv = rderiv * kf[j] * RT_inverse

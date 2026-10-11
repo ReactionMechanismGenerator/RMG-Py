@@ -147,7 +147,7 @@ cdef class Reaction:
 
     cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?, bint save_order=?)
 
-    cpdef list check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
+    cpdef tuple check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
 
     cpdef calculate_coll_limit(self, float temp, bint reverse=?)
 

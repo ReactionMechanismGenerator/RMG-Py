@@ -313,6 +313,9 @@ cdef class SurfaceReactor(ReactionSystem):
                 # which applies the coverage-dependent correction to Keq at runtime.
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                self.kb[j] = 0.0
+                self.Keq[j] = np.inf
 
     def log_initial_conditions(self, number=None):
         """
