@@ -93,6 +93,9 @@ class CuttingLabel(Atom):
         ``False`` otherwise. If `other` is an :class:`CuttingLabel` object, then all
         attributes must match exactly.
         """
+        if self.label != other.label:
+            return False
+        
         if isinstance(other, CuttingLabel):
             return self.name == other.name
         else:
