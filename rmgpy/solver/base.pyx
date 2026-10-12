@@ -472,7 +472,7 @@ cdef class ReactionSystem(DASx):
         Sets the derivative of the species moles with respect to the independent variable (time)
         equal to the residual.
         """
-        self.dydt0 = - self.residual(self.t0, self.y0, np.zeros(self.neq, float), self.senpar)[0]
+        self.dydt0 = self.residual(self.t0, self.y0, np.zeros(self.neq, float), self.senpar)[0]
 
     def compute_network_variables(self, pdep_networks=None):
         """

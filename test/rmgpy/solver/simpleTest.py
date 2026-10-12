@@ -470,6 +470,49 @@ class SimpleReactorTest:
         # fig.subplots_adjust(left=0.12, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
         # pylab.show()
 
+    def test_initial_derivative_sign(self):
+        """
+        The initial derivative handed to the DAE solver must be y'(t0) = f(t0, y0).
+        The residual is G = f(t, y) - y', so with y' = 0 it returns f, and dydt0 must equal it
+        (not its negative).
+        """
+        ch4 = Species(molecule=[Molecule().from_smiles("C")], thermo=ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([8.615, 9.687, 10.963, 12.301, 14.841, 16.976, 20.528], "cal/(mol*K)"),
+            H298=(-17.714, "kcal/mol"), S298=(44.472, "cal/(mol*K)")))
+        ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")], thermo=ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195], "cal/(mol*K)"),
+            H298=(9.357, "kcal/mol"), S298=(45.174, "cal/(mol*K)")))
+        c2h6 = Species(molecule=[Molecule().from_smiles("CC")], thermo=ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595], "cal/(mol*K)"),
+            H298=(-19.521, "kcal/mol"), S298=(54.799, "cal/(mol*K)")))
+        c2h5 = Species(molecule=[Molecule().from_smiles("C[CH2]")], thermo=ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+            Cpdata=([11.635, 13.744, 16.085, 18.246, 21.885, 24.676, 29.107], "cal/(mol*K)"),
+            H298=(29.496, "kcal/mol"), S298=(56.687, "cal/(mol*K)")))
+        rxn1 = Reaction(
+            reactants=[c2h6, ch3],
+            products=[c2h5, ch4],
+            kinetics=Arrhenius(A=(686.375 * 6, "m^3/(mol*s)"), n=4.40721, Ea=(7.82799, "kcal/mol"), T0=(298.15, "K")),
+        )
+        core_species = [ch4, ch3, c2h6, c2h5]
+        # Start far from equilibrium (no CH4 or C2H5) so the net reaction rate is non-zero
+        rxn_system = SimpleReactor(
+            1000, 1.0e5,
+            initial_mole_fractions={ch3: 0.5, c2h6: 0.5, ch4: 0.0, c2h5: 0.0},
+            n_sims=1, termination=[],
+        )
+        rxn_system.initialize_model(core_species, [rxn1], [], [])
+
+        f = rxn_system.residual(rxn_system.t0, rxn_system.y0, np.zeros(rxn_system.neq, float), rxn_system.senpar)[0]
+        dydt0 = np.array(rxn_system.dydt0)
+        assert np.any(dydt0 != 0)
+        np.testing.assert_allclose(dydt0, f, rtol=1e-8)
+        # Independent sign check: CH4 is a product of the net-forward reaction, so it is produced
+        assert np.sign(dydt0[0]) == np.sign(rxn_system.core_reaction_rates[0]) != 0
+
     def test_collider_model(self):
         """
         Test the solver's ability to simulate a model with collision efficiencies.
