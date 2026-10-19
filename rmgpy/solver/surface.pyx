@@ -769,6 +769,28 @@ cdef class SurfaceReactor(ReactionSystem):
             kf = kf * coverage_corrections  # corrected copy; leaves self.kf unchanged
             kr = kr * coverage_corrections
 
+        # Jacobian requires an additional term from the coverage-dependent thermo to converge
+        if self.thermo_coverage_dependence:
+            T = self.T.value_si
+            M = self.thermo_coeff_matrix[:num_core_species, :num_core_species, :]
+            G = M[:, :, 0:3] - T * M[:, :, 3:6]  # H_k - T*S_k
+            dpow = np.vstack((np.ones(num_core_species), 2.0 * coverages, 3.0 * coverages ** 2))
+            dg_dtheta = np.einsum('isk,ks->is', G, dpow)  # d g_i / d theta_s
+            S = self.stoi_matrix[:num_core_reactions, :num_core_species]
+            dDG_dtheta = S @ dg_dtheta  # d DeltaG_j / d theta_s
+
+            # Adding additional term to the Jacobian matrix
+            rr = kr[:num_core_reactions].copy()
+            for j in range(num_core_reactions):
+                for m in range(3):
+                    if ip[j, m] != -1:
+                        rr[j] *= C[ip[j, m]]
+            term = -(V / (constants.R * T * total_sites)) * (S.T @ (rr[:, None] * dDG_dtheta))
+
+            # Exclude all reactions that do not involve surface species
+            term[:, self.species_on_surface[:num_core_species] == 0] = 0.0
+            pd += term
+
         for j in range(num_core_reactions):
 
             # ------------------------------------------------------------------
