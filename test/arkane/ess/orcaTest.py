@@ -33,10 +33,11 @@ This module contains unit tests of the :mod:`arkane.ess.orca` module.
 
 import os
 
+import numpy as np
 
 from arkane.ess.orca import OrcaLog
 from arkane.exceptions import LogError
-from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator
 import pytest
 
 
@@ -167,3 +168,37 @@ class OrcaTest:
         log = OrcaLog(os.path.join(self.data_path, "Orca_TS_test.log"))
         conformer, unscaled_frequencies = log.load_conformer()
         assert conformer.spin_multiplicity == 1
+
+    def test_linear_rotor_from_oblique_diatomic(self, tmp_path):
+        """
+        A diatomic should get a LinearRotor regardless of its orientation,
+        even when the smallest principal moment is a floating-point residual.
+        """
+        oblique = np.array([[0.803286, 1.531929, -1.098384], [0.663152, 2.004019, -0.249782]])
+        bond = float(np.linalg.norm(oblique[1] - oblique[0]))
+        aligned = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, bond]])
+        q_rot = []
+        for name, coords in (("oblique", oblique), ("aligned", aligned)):
+            atoms = "\n".join(
+                f"  {symbol}  " + "  ".join(f"{x:.17g}" for x in position)
+                for symbol, position in zip(("O", "H"), coords)
+            )
+            path = tmp_path / f"oh_{name}.log"
+            path.write_text(
+                "CARTESIAN COORDINATES (ANGSTROEM)\n"
+                "---------------------------------\n"
+                f"{atoms}\n\n"
+                " Multiplicity           Mult            ....    2\n"
+                " Mode    freq (cm**-1)   T**2         TX         TY         TZ\n"
+                "---------------------------------------------------------\n"
+                "   5:      3669.30   10.000000  (  0.000000   0.000000   1.000000)\n\n"
+                "                             ****ORCA TERMINATED NORMALLY****\n"
+            )
+            log = OrcaLog(str(path))
+            conformer, _ = log.load_conformer(symmetry=1, optical_isomers=1)
+            rotors = [mode for mode in conformer.modes if isinstance(mode, (LinearRotor, NonlinearRotor))]
+            assert len(rotors) == 1
+            assert isinstance(rotors[0], LinearRotor), name
+            q_rot.append(rotors[0].get_partition_function(340.3))
+        assert q_rot[0] == pytest.approx(q_rot[1])
+        assert q_rot[0] == pytest.approx(12.805036, rel=1e-5)
