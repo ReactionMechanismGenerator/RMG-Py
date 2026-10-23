@@ -791,6 +791,33 @@ cdef class SurfaceReactor(ReactionSystem):
             term[:, self.species_on_surface[:num_core_species] == 0] = 0.0
             pd += term
 
+        #Jacobian requires an additional term for the coverage-dependent kinetics to converge
+        if self.coverage_dependence:
+            rf = kf[:num_core_reactions].copy()
+            rr = kr[:num_core_reactions].copy()
+            for j in range(num_core_reactions):
+                for z in range(3):
+                    if ir[j, z] != -1:
+                        rf[j] *= C[ir[j, z]]
+                    if ip[j, z] != -1:
+                        rr[j] *= C[ip[j, z]]
+            for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                if i >= num_core_species:
+                    continue
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
+                    continue
+                for j, a, m, E in list_of_coverage_deps:
+                    if j >= num_core_reactions:
+                        continue
+                    deriv = V * (rf[j] - rr[j]) / total_sites *\
+                            (a * log(10.) + m / surface_site_fraction - E / (constants.R * self.T.value_si))
+                    for z in range(3):
+                        if ir[j, z] != -1:
+                            pd[ir[j, z], i] -= deriv
+                        if ip[j, z] != -1:
+                            pd[ip[j, z], i] += deriv
+
         for j in range(num_core_reactions):
 
             # ------------------------------------------------------------------
