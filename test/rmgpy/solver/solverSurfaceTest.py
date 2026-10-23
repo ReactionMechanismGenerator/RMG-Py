@@ -1580,18 +1580,18 @@ class SurfaceReactorTest:
 
     def test_jacobian_with_kinetic_coverage_dependence(self):
         """
-        Verify the analytical Jacobian applies the kinetic ``coverage_dependence``
-        correction to kf and kr, consistently with the residual.
+        Verify the analytical Jacobian is the exact derivative of the residual
+        when the kinetic ``coverage_dependence`` is active, including the
+        d(correction)/d(theta) term.
 
-        Previously the Jacobian used the uncorrected self.kf / self.kb while the
-        residual scaled both by the coverage-dependent factor, leaving the
-        Jacobian inconsistent with the rate expression it differentiates.
+        The residual scales kf and kr by the same factor
+        c_j(theta) = prod_s 10**(a*theta_s) * theta_s**m * exp(-E*theta_s/RT),
+        so the net rate picks up r_j * d ln(c_j)/d theta_s, with
+        d ln(c_j)/d theta_s = a*ln(10) + m/theta_s - E/RT.
 
-        As in :meth:`test_jacobian_with_thermo_coverage_dependence`, we freeze the
-        rate constants at their coverage-corrected values and finite-difference the
-        residual, because the analytical Jacobian deliberately neglects the
-        d(correction)/d(coverage) term. The correction must differ from unity,
-        otherwise the test would pass even with the old (uncorrected) code.
+        The test finite-differences the full residual (coverage dependence on),
+        with nonzero a, m and E on two adsorbates, and compares the Jacobian
+        entry by entry.
         """
         h2 = Species(
             molecule=[Molecule().from_smiles("[H][H]")],
@@ -1630,7 +1630,10 @@ class SurfaceReactorTest:
                 n=0.5,
                 Ea=(5.0, "kJ/mol"),
                 T0=(1.0, "K"),
-                coverage_dependence={x: {"a": 1.0, "m": 0.0, "E": (0.0, "J/mol")}},
+                coverage_dependence={
+                    x: {"a": 4.0, "m": -0.5, "E": (0.0, "J/mol")},
+                    hx: {"a": 0.0, "m": 0.0, "E": (-20.0, "kJ/mol")},
+                },
             ),
         )
         core_species = [h2, x, hx]
@@ -1650,6 +1653,8 @@ class SurfaceReactorTest:
             termination=[],
         )
         rxn_system.initialize_model(core_species, core_reactions, [], [])
+        rxn_system.sensitivity = False
+        idx = rxn_system.species_index
 
         n = rxn_system.num_core_species
         total_sites = (rxn_system.surface_site_density.value_si
@@ -1657,16 +1662,18 @@ class SurfaceReactorTest:
 
         # Build a state with non-trivial X coverage so the correction is active.
         y = np.zeros(n)
-        y[0] = 1.0  # moles of gas-phase H2 (one mole total of gas at start)
-        y[1] = 0.4 * total_sites  # X
-        y[2] = 0.6 * total_sites  # HX
+        y[idx[h2]] = 1.0  # moles of gas-phase H2 (one mole total of gas at start)
+        y[idx[x]] = 0.4 * total_sites  # X
+        y[idx[hx]] = 0.6 * total_sites  # HX
         dydt = np.zeros(n)
 
         coverages = np.where(rxn_system.species_on_surface[:n],
                              np.maximum(y / total_sites, 0.0), 0.0)
 
-        # Replicate the residual's coverage-correction factor using the parameters the
-        # solver actually stored (avoids any unit ambiguity in the input).
+        # Make sure d(correction)/d(theta) is a large part of the surface columns; otherwise
+        # this test could pass with a Jacobian that omits it. Freezing kf and kr at their
+        # corrected values removes exactly that contribution from the finite-difference Jacobian.
+        coverages = np.where(rxn_system.species_on_surface[:n], y / total_sites, 0.0)
         coverage_corrections = np.ones_like(rxn_system.kf)
         for i, deps in rxn_system.coverage_dependencies.items():
             theta = coverages[i]
@@ -1685,24 +1692,33 @@ class SurfaceReactorTest:
 
         J_analytical = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
 
+        def fd_jacobian():
+            # Central differences of the residual, one column at a time
+            J = np.zeros((n, n))
+            for s in range(n):
+                delta = 1e-6 * abs(y[s])
+                y_plus, y_minus = y.copy(), y.copy()
+                y_plus[s] += delta
+                y_minus[s] -= delta
+                f_plus, _ = rxn_system.residual(0.0, y_plus, dydt)
+                f_minus, _ = rxn_system.residual(0.0, y_minus, dydt)
+                J[:, s] = (f_plus - f_minus) / (2 * delta)
+            return J
+
+        J_fd = fd_jacobian()
+
         # Freeze the rate constants at their coverage-corrected values and turn off
         # coverage_dependence so the residual uses the same constant kf/kr as the
         # analytical Jacobian (which omits d(correction)/d(coverage)).
         rxn_system.coverage_dependence = False
         rxn_system.kf = kf_corrected.copy()
         rxn_system.kb = kr_corrected.copy()
-        rxn_system.sensitivity = False
 
-        f0, _ = rxn_system.residual(0.0, y, dydt)
+        J_fd_frozen = fd_jacobian()
+        for i in [idx[h2], idx[x], idx[hx]]:
+            for s in [idx[x], idx[hx]]:
+                assert abs(J_fd[i, s] - J_fd_frozen[i, s]) > 0.5 * abs(J_fd[i, s])
 
-        eps_machine = np.sqrt(np.finfo(float).eps)
-        n_scale = 1e-10
-        J_fd = np.zeros((n, n))
-        for s in range(n):
-            y_perturbed = y.copy()
-            delta_n_s = eps_machine * max(abs(y[s]), n_scale)
-            y_perturbed[s] += delta_n_s
-            f_perturbed, _ = rxn_system.residual(0.0, y_perturbed, dydt)
-            J_fd[:, s] = (f_perturbed - f0) / delta_n_s
-
-        assert np.allclose(J_analytical, J_fd, rtol=1e-2, atol=1e-6)
+        # Compare every entry relative to its own magnitude. The absolute tolerance only
+        # absorbs finite-difference noise in entries that are zero.
+        assert np.allclose(J_analytical, J_fd, rtol=1e-4, atol=1e-10 * np.abs(J_fd).max())
