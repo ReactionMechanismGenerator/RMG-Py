@@ -36,7 +36,7 @@ import logging
 cimport cython
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp, pow
+from libc.math cimport exp, pow, log
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
@@ -768,6 +768,55 @@ cdef class SurfaceReactor(ReactionSystem):
                                                 exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
             kf = kf * coverage_corrections  # corrected copy; leaves self.kf unchanged
             kr = kr * coverage_corrections
+
+        # Jacobian requires an additional term from the coverage-dependent thermo to converge
+        if self.thermo_coverage_dependence:
+            T = self.T.value_si
+            M = self.thermo_coeff_matrix[:num_core_species, :num_core_species, :]
+            G = M[:, :, 0:3] - T * M[:, :, 3:6]  # H_k - T*S_k
+            dpow = np.vstack((np.ones(num_core_species), 2.0 * coverages, 3.0 * coverages ** 2))
+            dg_dtheta = np.einsum('isk,ks->is', G, dpow)  # d g_i / d theta_s
+            S = self.stoi_matrix[:num_core_reactions, :num_core_species]
+            dDG_dtheta = S @ dg_dtheta  # d DeltaG_j / d theta_s
+
+            # Adding additional term to the Jacobian matrix
+            rr = kr[:num_core_reactions].copy()
+            for j in range(num_core_reactions):
+                for m in range(3):
+                    if ip[j, m] != -1:
+                        rr[j] *= C[ip[j, m]]
+            term = -(V / (constants.R * T * total_sites)) * (S.T @ (rr[:, None] * dDG_dtheta))
+
+            # Exclude all reactions that do not involve surface species
+            term[:, self.species_on_surface[:num_core_species] == 0] = 0.0
+            pd += term
+
+        #Jacobian requires an additional term for the coverage-dependent kinetics to converge
+        if self.coverage_dependence:
+            rf = kf[:num_core_reactions].copy()
+            rr = kr[:num_core_reactions].copy()
+            for j in range(num_core_reactions):
+                for z in range(3):
+                    if ir[j, z] != -1:
+                        rf[j] *= C[ir[j, z]]
+                    if ip[j, z] != -1:
+                        rr[j] *= C[ip[j, z]]
+            for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                if i >= num_core_species:
+                    continue
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
+                    continue
+                for j, a, m, E in list_of_coverage_deps:
+                    if j >= num_core_reactions:
+                        continue
+                    deriv = V * (rf[j] - rr[j]) / total_sites *\
+                            (a * log(10.) + m / surface_site_fraction - E / (constants.R * self.T.value_si))
+                    for z in range(3):
+                        if ir[j, z] != -1:
+                            pd[ir[j, z], i] -= deriv
+                        if ip[j, z] != -1:
+                            pd[ip[j, z], i] += deriv
 
         for j in range(num_core_reactions):
 
