@@ -36,7 +36,7 @@ import logging
 cimport cython
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp, pow
+from libc.math cimport exp, pow, log
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
