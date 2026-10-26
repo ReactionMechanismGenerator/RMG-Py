@@ -2885,7 +2885,9 @@ class ThermoDatabase(object):
         The Dictionary_of_Groups_Used looks like 
         {'groupType':[List of tuples containing (Entry, Weight)]
         """
-        comment = species.thermo.comment
+        # write_thermo_entry wraps long comment lines with textwrap, which also breaks lines after the hyphens
+        # in group names, e.g. adsorptionPt111(C-XRC-\nXR); rejoin those so the newline doesn't become a space.
+        comment = re.sub(r'-(\n|\\n)', '-', species.thermo.comment)
         tokens = comment.split()
 
         source = {}
