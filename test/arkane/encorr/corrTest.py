@@ -34,6 +34,8 @@ This script contains unit tests for the :mod:`arkane.encorr.corr` module.
 
 import numpy as np
 
+from rmgpy import constants
+
 from arkane.encorr.corr import (
     assign_frequency_scale_factor,
     get_atom_correction,
@@ -70,6 +72,45 @@ class TestCorr:
 
         with pytest.raises(AtomEnergyCorrectionError):
             aec = get_atom_correction(level_of_theory=self.freq_lot, atoms={"X": 1})
+
+    @pytest.mark.parametrize(
+        "symbol, hf298, h298_h0",
+        [
+            ("He", 0.0, 6.197), ("Ne", 0.0, 6.197), ("K", 89.0, 6.197), ("Ca", 177.8, 6.197),
+            ("Ti", 473.0, 7.539), ("Cu", 337.4, 6.197), ("Zn", 130.40, 6.197), ("Ge", 372.0, 7.398),
+            ("Br", 111.87, 6.197), ("Kr", 0.0, 6.197), ("Rb", 80.9, 6.197), ("Ag", 284.9, 6.197),
+            ("Cd", 111.80, 6.197), ("Sn", 301.2, 6.215), ("I", 106.76, 6.197), ("Xe", 0.0, 6.197),
+            ("Cs", 76.5, 6.197), ("Hg", 61.38, 6.197), ("Pb", 195.2, 6.197),
+        ],
+    )
+    def test_get_atom_correction_reproduces_codata_atom_hf(self, symbol, hf298, h298_h0):
+        """
+        Test that the AEC of a free gas-phase atom reproduces its CODATA enthalpy of formation at 298 K.
+        CODATA values (kJ/mol) are ΔfH°(298 K) and H(298 K) - H(0) of the gas-phase atom, from
+        Cox, Wagman, and Medvedev, CODATA Key Values for Thermodynamics (1989).
+        """
+        atom_energy = -1.0  # Hartree, arbitrary: it cancels against the AEC reference term
+        aec = get_atom_correction(level_of_theory=self.freq_lot, atoms={symbol: 1}, atom_energies={symbol: atom_energy})
+        hf298_calc = (atom_energy * 4.35974394e-18 * constants.Na + aec) / 1000 + h298_h0  # kJ/mol
+        assert abs(hf298_calc - hf298) < 0.3
+
+    def test_br_bac_compensates_aec(self):
+        """
+        Test that the total AEC + BAC for Br species at a fitted level of theory is unchanged by the
+        correction of the Br atom_hf double subtraction, since the Br BACs were fitted against the old AEC.
+        """
+        lot = LevelOfTheory(method="b3lyp2023", basis="def2tzvp", software="gaussian")
+        cases = [
+            ({"H": 1, "Br": 1}, {"Br-H": 1}, np.array([[0, 0, 0], [0, 0, 1.4144]]), (35, 1),
+             {"p": 6760049904.469657, "m": 6760046922.099125}),
+            ({"Br": 2}, {"Br-Br": 1}, np.array([[0, 0, 0], [0, 0, 2.281]]), (35, 35),
+             {"p": 13517043472.255623, "m": 13517038056.646053}),
+        ]
+        for atoms, bonds, coords, nums, expected in cases:
+            aec = get_atom_correction(level_of_theory=lot, atoms=atoms)
+            for bac_type, value in expected.items():
+                bac = get_bac(level_of_theory=lot, bonds=bonds, coords=coords, nums=nums, bac_type=bac_type)
+                assert abs(aec + bac - value) < 1
 
     def test_get_bac(self):
         """
