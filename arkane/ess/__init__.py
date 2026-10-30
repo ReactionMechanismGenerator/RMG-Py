@@ -40,3 +40,4 @@ from arkane.ess.psi4_parser import Psi4Log
 from arkane.ess.qchem import QChemLog
 from arkane.ess.terachem import TeraChemLog
 from arkane.ess.xtb import XTBLog
+from arkane.ess.arc_yaml import ARCYAMLLog

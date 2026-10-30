@@ -80,7 +80,9 @@ def ess_factory(fullpath: str,
     ess_name = None
     if os.path.splitext(fullpath)[-1] in ['.xyz', '.dat', '.geometry']:
         ess_name = 'TeraChemLog'
-    else:
+    elif os.path.splitext(fullpath)[-1] in ['.yml', '.yaml']:
+        ess_name = 'ARCYAMLLog'
+    if ess_name is None:
         with open(fullpath, 'r') as f:
             line = f.readline().lower()
             while ess_name is None and line != '':
@@ -107,7 +109,12 @@ def ess_factory(fullpath: str,
                     break
                 line = f.readline().lower()
     if ess_name is None:
+        # ARC copies the YAML output of e.g. its ASE adapter to names such as freq.out, so recognize it by content.
+        from arkane.ess.arc_yaml import is_arc_yaml
+        if is_arc_yaml(fullpath):
+            ess_name = 'ARCYAMLLog'
+    if ess_name is None:
         raise InputError(f'The file at {fullpath} could not be identified as a '
-                         f'Gaussian, Molpro, Orca, Psi4, QChem, TeraChem, or xTB log file.')
+                         f'Gaussian, Molpro, Orca, Psi4, QChem, TeraChem, or xTB log file, or an ARC YAML output.')
 
     return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors, scratch_directory=scratch_directory)
