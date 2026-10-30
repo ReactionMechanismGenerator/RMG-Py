@@ -1476,7 +1476,12 @@ class ThermoDatabase(object):
                 # first and perform an HBI correction on them
                 thermo = []
                 for molecule in species.molecule:
-                    if molecule.reactive:
+                    # A species can be an overall radical (original_molecule.get_radical_count() > 0,
+                    # checked above) while still having one of its OTHER resonance structures be a
+                    # non-radical valence tautomer (e.g. a singlet carbene form) -- estimate_radical_thermo_via_hbi
+                    # requires molecule.is_radical() and raises ValueError otherwise, so skip those here
+                    # the same way non-`reactive` structures are already skipped.
+                    if molecule.reactive and molecule.get_radical_count() > 0:
                         molecule.clear_labeled_atoms()
                         # First see if the saturated molecule is in the libaries
                         tdata = self.estimate_radical_thermo_via_hbi(molecule, self.get_thermo_data_from_libraries)
@@ -2880,7 +2885,9 @@ class ThermoDatabase(object):
         The Dictionary_of_Groups_Used looks like 
         {'groupType':[List of tuples containing (Entry, Weight)]
         """
-        comment = species.thermo.comment
+        # write_thermo_entry wraps long comment lines with textwrap, which also breaks lines after the hyphens
+        # in group names, e.g. adsorptionPt111(C-XRC-\nXR); rejoin those so the newline doesn't become a space.
+        comment = re.sub(r'-(\n|\\n)', '-', species.thermo.comment)
         tokens = comment.split()
 
         source = {}
@@ -2955,6 +2962,30 @@ class ThermoDatabase(object):
             elif token.startswith('-'):
                 weight = -1
                 token = token[1:]
+            if token.startswith('missing(') and token.endswith(')'):
+                # RMG's own placeholder for "no matching group node found" during
+                # group-additivity estimation (e.g. exotic valences like N5dc).
+                # There's no real Entry to look up in self.groups for a fake
+                # groupType named "missing", so stand in with a bare-label Entry.
+                # Safe for uncertainty analysis: the uncorrelated
+                # ThermoParameterUncertainty.get_uncertainty_value() path (the
+                # only one this project's run_uncertainty_job.py exercises)
+                # only reads each group tuple's weight, never the entry itself.
+                # Without this, species whose GAV estimate is entirely
+                # "missing(...)" groups have zero recognized source and
+                # extract_source_from_comments raises "thermo appears to not be
+                # estimated using any methods" -- confirmed against this
+                # project's round 1 edge species H2N2(81) / [N-]=[NH2+](81).
+                group_label = token[len('missing('):-1]
+                group_entry = Entry(label=group_label)
+                if 'missing' not in groups:
+                    groups['missing'] = {group_entry: weight}
+                else:
+                    if group_entry in groups['missing']:
+                        groups['missing'][group_entry] += weight
+                    else:
+                        groups['missing'][group_entry] = weight
+                continue
             for groupType in group_types:
                 if token.startswith(groupType + '(') and token.endswith(')'):
                     split_tokens = re.split(regex, token)
