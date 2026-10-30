@@ -125,6 +125,30 @@ class TestARCYAMLLog:
         assert np.all(np.diff(angle) > 0)
         assert 5e3 < max(vlist) < 2e4  # a methyl rotor barrier, J/mol
 
+    def test_a_yaml_scan_is_a_hindered_rotor_scan_log(self):
+        """StatMechJob fits a hindered rotor to an ARC YAML scan, as it does to a Gaussian one"""
+        from rmgpy.species import Species
+        from rmgpy.statmech import HinderedRotor
+        from arkane.statmech import StatMechJob
+        freq, scan = os.path.join(DATA, 'C3H8_freq_uma.yml'), os.path.join(DATA, 'C3H8_scan_uma.yml')
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, 'C3H8.py')
+            with open(path, 'w') as f:
+                f.write(f"spin_multiplicity = 1\noptical_isomers = 1\nexternal_symmetry = 2\nenergy = -119.0\n"
+                        f"geometry = Log('{freq}')\nfrequencies = Log('{freq}')\n"
+                        f"rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 4, 5, 6], "
+                        f"symmetry=3, fit='fourier')]\n")
+            species = Species(label='C3H8', smiles='CCC')
+            job = StatMechJob(species=species, path=path)
+            job.applyAtomEnergyCorrections = job.applyBondEnergyCorrections = False
+            job.load(pdep=False, plot=False)
+        rotors = [mode for mode in species.conformer.modes if isinstance(mode, HinderedRotor)]
+        assert len(rotors) == 1
+        assert rotors[0].symmetry == 3
+        # The methyl torsion leaves the harmonic modes, which keep 3N - 6 - 1 = 26 of propane's 27 frequencies.
+        oscillator = [mode for mode in species.conformer.modes if isinstance(mode, HarmonicOscillator)][0]
+        assert len(oscillator.frequencies.value_si) == 26
+
     def test_a_failed_job_raises(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, 'output.yml')
