@@ -47,7 +47,7 @@ from arkane.exceptions import LogError
 from arkane.ess.arc_yaml import ARCYAMLLog
 from arkane.ess.factory import ess_factory
 
-DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'arc_yaml')
+DATA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', '..', 'arkane', 'data', 'arc_yaml')
 
 
 def wavenumbers(force_si, mass_amu):
