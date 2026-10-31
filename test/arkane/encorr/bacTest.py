@@ -243,6 +243,25 @@ class TestBAC:
         assert isinstance(dataset, BACDataset)
         assert dataset.bac_data is not None
 
+    def test_test_br_species(self):
+        """
+        Test that BAC-corrected enthalpies of Br reference species are consistent between the stored
+        calculated H298 values and the Br BACs, both of which were shifted when the Br atom_hf was corrected.
+        """
+        lot = LevelOfTheory(method="b3lyp2023", basis="def2tzvp", software="gaussian")
+        expected = {
+            "p": {"Hydrogen bromide": -8.501434034416826, "Dibromine": 7.382887189292543},
+            "m": {"Hydrogen bromide": -9.177007636827724, "Dibromine": 6.443095750926018},
+        }
+        for bac_type, values in expected.items():
+            bac = BAC(lot, bac_type=bac_type)
+            key = bac.load_database(names="main")
+            species = [spc for spc in bac.ref_databases[key].reference_sets["main"] if spc.label in values]
+            dataset = bac.test(species=species)
+            assert len(dataset) == 2
+            for datapoint, h298 in zip(dataset, dataset.bac_data):
+                assert abs(h298 - values[datapoint.spc.label]) < 1e-6
+
     def test_write_to_database(self):
         """
         Test that BAC parameters can be written to a file.
