@@ -1317,10 +1317,19 @@ cdef class ReactionSystem(DASx):
                 logging.info('    {0} conversion: {1:<10.4g}'.format(term.species, X))
 
     @cython.boundscheck(False)
-    def compute_rate_derivative(self):
+    def compute_rate_derivative(self, kf_eff=None, kr_eff=None):
         """
         Returns derivative vector df/dk_j where dy/dt = f(y, t, k) and
         k_j is the rate parameter for the jth core reaction.
+
+        The parameters are the stored rate coefficients ``self.kf`` (with
+        ``Keq`` held fixed) and the species free energies. If the rate
+        coefficients used in the residual differ from the stored ones, as they
+        do for coverage-dependent surface reactions, pass the ones actually used
+        as ``kf_eff`` and ``kr_eff``. A reaction's rate is then
+        ``kf_eff * prod(C_reactants) - kr_eff * prod(C_products)``, and its
+        derivative with respect to ``self.kf[j]`` is that rate divided by
+        ``self.kf[j]``, since both effective coefficients are proportional to it.
         """
         cdef np.ndarray[np.int_t, ndim=2] ir, ip
         cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C, deriv
@@ -1334,7 +1343,7 @@ cdef class ReactionSystem(DASx):
         ip = self.product_indices
 
         kf = self.kf
-        kr = self.kb
+        kr = self.kb if kr_eff is None else kr_eff
 
         num_core_reactions = len(self.core_reaction_rates)
         num_core_species = len(self.core_species_concentrations)
@@ -1354,6 +1363,8 @@ cdef class ReactionSystem(DASx):
                 fderiv = C[ir[j, 0]] * C[ir[j, 1]]
             else:  # three reactants
                 fderiv = C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
+            if kf_eff is not None:
+                fderiv *= kf_eff[j] / kf[j]
 
             if ip[j, 1] == -1:  # only one reactant
                 rderiv = kr[j] / kf[j] * C[ip[j, 0]]

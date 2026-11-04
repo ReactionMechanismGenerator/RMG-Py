@@ -527,7 +527,9 @@ cdef class SurfaceReactor(ReactionSystem):
             core_species_concentrations[j] = C[j]
         
         if self.thermo_coverage_dependence or self.coverage_dependence:
-            coverages = np.where(species_on_surface, np.maximum(N / total_sites, 0.0), 0.0)
+            # With sensitivity on, N also holds the sensitivity coefficients after the
+            # first num_core_species entries
+            coverages = np.where(species_on_surface, np.maximum(N[:num_core_species] / total_sites, 0.0), 0.0)
 
         # Thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
@@ -656,7 +658,8 @@ cdef class SurfaceReactor(ReactionSystem):
                 jacobian = self.jacobian(t, N, dNdt, 0, senpar)
             else:
                 jacobian = self.jacobian_matrix
-            dgdk = ReactionSystem.compute_rate_derivative(self)
+            # Pass the coverage-corrected rate coefficients that this residual used
+            dgdk = ReactionSystem.compute_rate_derivative(self, kf, kr)
             for j in range(num_core_reactions + num_core_species):
                 for i in range(num_core_species):
                     for z in range(num_core_species):

@@ -1799,3 +1799,133 @@ class SurfaceReactorTest:
 
         assert np.allclose(residual_with_edge_dependence, residual_without, rtol=1e-12)
         assert np.allclose(J_with_edge_dependence, J_without, rtol=1e-12)
+
+    def test_sensitivity_rate_derivative_with_coverage_dependence(self):
+        """
+        With coverage dependence on, the sensitivity equations need df/dk_j and
+        df/dG_i computed from the coverage-corrected rate coefficients that the
+        residual uses, not the stored self.kf and self.kb.
+
+        Check compute_rate_derivative, called the way the residual calls it,
+        against finite differences of the residual: scaling the stored kf_j (and
+        kb_j, so Keq is fixed), and shifting G_i (which scales Keq_j by
+        exp(-nu_ij dG / RT)). Also check that the residual can be evaluated with
+        sensitivity on, i.e. when N holds the sensitivity coefficients too.
+        """
+        Tdata = ([300, 400, 500, 600, 800, 1000, 1500], "K")
+        hx_adj = "1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}"
+        cox_adj = "1 O u0 p2 c0 {2,D} \n 2 C u0 p0 c0 {1,D} {3,D} \n 3 X u0 p0 c0 {2,D}"
+        zero_entropy = [(0, "J/(mol*K)"), (0, "J/(mol*K)"), (0, "J/(mol*K)")]
+
+        def polynomial(h1, s1=0):
+            return {"model": "polynomial",
+                    "enthalpy-coefficients": [(h1, "J/mol"), (0, "J/mol"), (0, "J/mol")],
+                    "entropy-coefficients": [(s1, "J/(mol*K)"), (0, "J/(mol*K)"), (0, "J/(mol*K)")]}
+
+        h2 = Species(molecule=[Molecule().from_smiles("[H][H]")],
+                     thermo=ThermoData(Tdata=Tdata, Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003, 7.103, 7.502], "cal/(mol*K)"),
+                                       H298=(0, "kcal/mol"), S298=(31.129, "cal/(mol*K)")))
+        co = Species(molecule=[Molecule().from_smiles("[C-]#[O+]")],
+                     thermo=ThermoData(Tdata=Tdata, Cpdata=([6.95, 7.02, 7.12, 7.27, 7.61, 7.94, 8.41], "cal/(mol*K)"),
+                                       H298=(-26.42, "kcal/mol"), S298=(47.21, "cal/(mol*K)")))
+        x = Species(molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
+                    thermo=ThermoData(Tdata=Tdata, Cpdata=([0.0] * 7, "cal/(mol*K)"),
+                                      H298=(0.0, "kcal/mol"), S298=(0.0, "cal/(mol*K)")))
+        hx = Species(molecule=[Molecule().from_adjacency_list(hx_adj)],
+                     thermo=ThermoData(Tdata=Tdata, Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                                       H298=(-11.26, "kcal/mol"), S298=(0.44, "cal/(mol*K)"),
+                                       thermo_coverage_dependence={hx_adj: polynomial(40000), cox_adj: polynomial(10000)}))
+        cox = Species(molecule=[Molecule().from_adjacency_list(cox_adj)],
+                      thermo=ThermoData(Tdata=Tdata, Cpdata=([9.0, 10.0, 10.8, 11.4, 12.2, 12.7, 13.3], "cal/(mol*K)"),
+                                        H298=(-60.0, "kcal/mol"), S298=(10.0, "cal/(mol*K)"),
+                                        thermo_coverage_dependence={cox_adj: polynomial(30000, 10), hx_adj: polynomial(10000)}))
+        rxn1 = Reaction(
+            reactants=[h2, x, x],
+            products=[hx, hx],
+            kinetics=SurfaceArrhenius(
+                A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K"),
+                coverage_dependence={x: {"a": 4.0, "m": -0.5, "E": (0.0, "J/mol")},
+                                     cox: {"a": 1.0, "m": 0.0, "E": (15.0, "kJ/mol")}},
+            ),
+        )
+        rxn2 = Reaction(
+            reactants=[co, x],
+            products=[cox],
+            kinetics=SurfaceArrhenius(
+                A=(1.0e8, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kJ/mol"), T0=(1.0, "K"),
+                coverage_dependence={hx: {"a": -2.0, "m": 0.0, "E": (8.0, "kJ/mol")}},
+            ),
+        )
+        rxn_system = SurfaceReactor(
+            600,
+            1.0e5,
+            n_sims=1,
+            initial_gas_mole_fractions={h2: 0.5, co: 0.5},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            coverage_dependence=True,
+            thermo_coverage_dependence=True,
+            termination=[],
+        )
+        rxn_system.initialize_model([h2, co, x, hx, cox], [rxn1, rxn2], [], [])
+        rxn_system.sensitivity = False
+
+        n = rxn_system.num_core_species
+        n_rxn = rxn_system.num_core_reactions
+        idx = rxn_system.species_index
+        total_sites = (rxn_system.surface_site_density.value_si
+                       * rxn_system.V * rxn_system.surface_volume_ratio.value_si)
+        y = np.zeros(n)
+        y[idx[h2]] = 0.5
+        y[idx[co]] = 0.5
+        y[idx[x]] = 0.1 * total_sites
+        y[idx[hx]] = 0.5 * total_sites
+        y[idx[cox]] = 0.4 * total_sites
+        dydt = np.zeros(n)
+
+        # The residual with sensitivity on gets N = [y, dy/dk_1, ..., dy/dG_n]. With all the
+        # sensitivity coefficients zero, its first n entries are the plain residual and the
+        # next ones are df/dk_j and df/dG_i.
+        rxn_system.sensitivity = True
+        neq = n * (n_rxn + n + 1)
+        N = np.zeros(neq)
+        N[:n] = y
+        delta, _ = rxn_system.residual(0.0, N, np.zeros(neq))
+        rxn_system.sensitivity = False
+        f0, _ = rxn_system.residual(0.0, y, dydt)
+        assert np.allclose(delta[:n], f0, rtol=1e-12)
+        dgdk = delta[n:].reshape(n_rxn + n, n).T  # columns: df/dk_j, then df/dG_i
+
+        kf0, kb0, keq0 = rxn_system.kf.copy(), rxn_system.kb.copy(), rxn_system.Keq.copy()
+        rel = 1e-6
+        for j in range(n_rxn):
+            f = []
+            for sign in (1, -1):
+                rxn_system.kf = kf0.copy()
+                rxn_system.kb = kb0.copy()
+                rxn_system.kf[j] *= 1 + sign * rel
+                rxn_system.kb[j] *= 1 + sign * rel
+                f.append(rxn_system.residual(0.0, y, dydt)[0])
+            column_fd = (f[0] - f[1]) / (2 * rel * kf0[j])
+            assert np.allclose(dgdk[:, j], column_fd, rtol=1e-5, atol=1e-8 * np.abs(column_fd).max())
+        rxn_system.kf, rxn_system.kb = kf0.copy(), kb0.copy()
+
+        nu = np.zeros((n_rxn, n))
+        for j in range(n_rxn):
+            for z in range(3):
+                if rxn_system.reactant_indices[j, z] != -1:
+                    nu[j, rxn_system.reactant_indices[j, z]] -= 1
+                if rxn_system.product_indices[j, z] != -1:
+                    nu[j, rxn_system.product_indices[j, z]] += 1
+        RT = constants.R * 600
+        dG = 1.0  # J/mol
+        for i in range(n):
+            f = []
+            for sign in (1, -1):
+                rxn_system.Keq = keq0 * np.exp(-nu[:, i] * sign * dG / RT)
+                rxn_system.kb = kf0 / rxn_system.Keq
+                f.append(rxn_system.residual(0.0, y, dydt)[0])
+            column_fd = (f[0] - f[1]) / (2 * dG)
+            assert np.allclose(dgdk[:, n_rxn + i], column_fd, rtol=1e-5, atol=1e-8 * np.abs(column_fd).max())
+        rxn_system.Keq, rxn_system.kb = keq0, kb0
