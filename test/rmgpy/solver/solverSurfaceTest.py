@@ -28,6 +28,7 @@
 ###############################################################################
 
 
+import csv
 import time
 
 import numpy as np
@@ -38,6 +39,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.species import Species
+from rmgpy.chemkin import get_species_identifier
 from rmgpy.thermo import ThermoData, NASA, NASAPolynomial
 from rmgpy.solver.termination import TerminationTime
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
@@ -1659,3 +1661,140 @@ class SurfaceReactorTest:
             J_fd[:, s] = (f_perturbed - f0) / delta_n_s
 
         assert np.allclose(J_analytical, J_fd, rtol=1e-2, atol=1e-6)
+
+    def _h2_h2o_sensitivity_case(self):
+        """
+        Return the core species, core reactions and sensitive species of a small mechanism
+        in which H2 and H2O compete for surface sites, and a function that makes a
+        SurfaceReactor (or a subclass) for it at 600 K with a surface-to-volume ratio of 10 m^-1.
+        """
+        X = self.species_list[get_i_thing(Species(smiles='*'), self.species_list)]
+        H2 = self.species_list[get_i_thing(Species(smiles='[H][H]'), self.species_list)]
+        HX = self.species_list[get_i_thing(Species(smiles='[H]*'), self.species_list)]
+        H2O = self.species_list[get_i_thing(Species(smiles='O'), self.species_list)]
+        H2OX = self.species_list[get_i_thing(Species(smiles='O.*'), self.species_list)]
+        core_species = [X, H2, HX, H2O, H2OX]
+        core_reactions = [self.reaction_list[1],  # H2 + 2X <=> 2HX
+                          self.reaction_list[4]]  # H2O + X <=> H2OX
+        sensitive_species = [HX, H2OX, H2]
+
+        def make_reactor(reactor_class=SurfaceReactor, termination=None):
+            return reactor_class(
+                600.0,
+                1.0e5,
+                n_sims=1,
+                initial_gas_mole_fractions={H2: 0.5, H2O: 0.5},
+                initial_surface_coverages={X: 1.0},
+                surface_volume_ratio=(1e1, "m^-1"),
+                surface_site_density=(2.72e-9, "mol/cm^2"),
+                termination=termination or [],
+                sensitive_species=sensitive_species,
+            )
+
+        return core_species, core_reactions, sensitive_species, make_reactor
+
+    def test_normalized_sensitivities_match_brute_force(self):
+        """
+        Compare the normalized sensitivities d ln(c_i)/d ln(k_j) and d ln(c_i)/dG_j
+        of gas-phase and surface species with central differences of re-run simulations.
+
+        For a surface species c_i is in mol/m^2 and the surface area is constant, so the
+        expected value is d ln(n_i). This used to come out too large by the
+        surface-to-volume ratio, because the moles were divided by the gas volume.
+        """
+        core_species, core_reactions, sensitive_species, make_reactor = self._h2_h2o_sensitivity_case()
+        t_check = 1e-9  # s, while H2 is still adsorbing and H2O + X <=> H2OX is equilibrated
+
+        class PerturbedSurfaceReactor(SurfaceReactor):
+            """A SurfaceReactor with one rate coefficient scaled, or one species' Gibbs energy shifted."""
+            k_scale = None  # (reaction index, factor), scales kf and kb so Keq is unchanged
+            dG = None  # (species, shift in J/mol), changes Keq and kb with kf unchanged
+
+            def generate_rate_coefficients(self, core_reactions, edge_reactions):
+                SurfaceReactor.generate_rate_coefficients(self, core_reactions, edge_reactions)
+                if self.k_scale is not None:
+                    j, factor = self.k_scale
+                    self.kf[j] *= factor
+                    self.kb[j] *= factor
+                if self.dG is not None:
+                    spc, dG = self.dG
+                    for rxn in core_reactions:
+                        j = self.reaction_index[rxn]
+                        nu = rxn.products.count(spc) - rxn.reactants.count(spc)
+                        if nu != 0 and rxn.reversible:
+                            self.Keq[j] *= np.exp(-nu * dG / (constants.R * self.T.value_si))
+                            self.kb[j] = self.kf[j] / self.Keq[j]
+
+        rxn_system = make_reactor()
+        rxn_system.initialize_model(core_species, core_reactions, [], [], sensitivity=True)
+        rxn_system.advance(t_check)
+        sens_indices = np.array([rxn_system.species_index[spc] for spc in sensitive_species])
+        norm_sens = rxn_system.compute_normalized_sensitivities(sens_indices)
+
+        def final_moles(**perturbation):
+            perturbed = make_reactor(PerturbedSurfaceReactor)
+            for attribute, value in perturbation.items():
+                setattr(perturbed, attribute, value)
+            perturbed.initialize_model(core_species, core_reactions, [], [])
+            perturbed.advance(rxn_system.t)
+            return perturbed.y[sens_indices].copy()
+
+        num_reactions = len(core_reactions)
+        brute_force = np.zeros_like(norm_sens)
+        delta = 1e-3
+        for j in range(num_reactions):
+            ln_n_up = np.log(final_moles(k_scale=(j, 1 + delta)))
+            ln_n_down = np.log(final_moles(k_scale=(j, 1 - delta)))
+            brute_force[:, j] = (ln_n_up - ln_n_down) / (np.log(1 + delta) - np.log(1 - delta))
+        dG = 0.01  # kcal/mol
+        for k, spc in enumerate(core_species):
+            ln_n_up = np.log(final_moles(dG=(spc, dG * 4184)))
+            ln_n_down = np.log(final_moles(dG=(spc, -dG * 4184)))
+            brute_force[:, num_reactions + k] = (ln_n_up - ln_n_down) / (2 * dG)
+
+        # Make sure the comparison is not trivial: HX is sensitive to the H2 adsorption rate
+        # coefficient, and H2OX to the Gibbs energies of H2O and H2OX.
+        assert brute_force[0, 0] > 0.5
+        assert np.abs(brute_force[1, num_reactions:]).max() > 0.5
+        assert np.allclose(norm_sens, brute_force, rtol=1e-2, atol=1e-4)
+
+    def test_simulate_writes_normalized_sensitivities(self, tmp_path):
+        """
+        Check that simulate() writes the values of compute_normalized_sensitivities()
+        to the sensitivity csv files, for gas-phase and surface species.
+        """
+        core_species, core_reactions, sensitive_species, make_reactor = self._h2_h2o_sensitivity_case()
+        rxn_system = make_reactor(termination=[TerminationTime((1e-9, 's'))])
+        sens_worksheet = [str(tmp_path / 'sensitivity_1_SPC_{0}.csv'.format(i)) for i in range(len(sensitive_species))]
+        rxn_system.simulate(
+            core_species=core_species,
+            core_reactions=core_reactions,
+            edge_species=[],
+            edge_reactions=[],
+            surface_species=[],
+            surface_reactions=[],
+            model_settings=ModelSettings(tol_move_to_core=1e5),
+            simulator_settings=SimulatorSettings(),
+            sensitivity=True,
+            sens_worksheet=sens_worksheet,
+        )
+        sens_indices = np.array([rxn_system.species_index[spc] for spc in sensitive_species])
+        norm_sens = rxn_system.compute_normalized_sensitivities(sens_indices)
+        reaction_labels = [rxn.to_chemkin(kinetics=False) for rxn in core_reactions]
+        species_labels = [get_species_identifier(spc) for spc in core_species]
+
+        for i, path in enumerate(sens_worksheet):
+            with open(path) as f:
+                rows = list(csv.reader(f))
+            header, last_row = rows[0], [float(value) for value in rows[-1]]
+            assert last_row[0] == rxn_system.t
+            for label, value in zip(header[1:], last_row[1:]):
+                # Columns are 'dln[spc]/dln[k<j>]: <reaction>' or 'dln[spc]/dG[<species>]'
+                if '/dln[k' in label:
+                    j = reaction_labels.index(label.split(': ', 1)[1])
+                else:
+                    j = len(core_reactions) + species_labels.index(label.split('/dG[', 1)[1][:-1])
+                assert np.isclose(value, norm_sens[i, j], rtol=1e-6, atol=0)
+        # The H2 adsorption rate coefficient is among the columns written for HX
+        with open(sens_worksheet[0]) as f:
+            assert any('/dln[k1]' in label for label in next(csv.reader(f)))

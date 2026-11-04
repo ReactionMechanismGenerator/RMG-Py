@@ -568,6 +568,64 @@ cdef class ReactionSystem(DASx):
 
         return surface_species, surface_reactions
 
+    def compute_normalized_sensitivities(self, sens_species_indices):
+        """
+        Return the normalized sensitivity coefficients of the species whose
+        core species indices are given in `sens_species_indices`, at the
+        current time ``self.t``, as an array of shape
+        ``(len(sens_species_indices), num_core_reactions + num_core_species)``.
+
+        Column ``j < num_core_reactions`` holds ``d ln(c_i) / d ln(k_j)``, where
+        ``k_j`` is the forward rate coefficient of core reaction ``j``. Column
+        ``num_core_reactions + j`` holds ``d ln(c_i) / d G_j``, in (kcal/mol)^-1,
+        where ``G_j`` is the Gibbs free energy of core species ``j``.
+
+        Here ``c_i`` is the concentration of sensitive species ``i`` in its own
+        phase: mol/m^3 for a gas-phase species and mol/m^2 for a surface species.
+        The coefficients are computed from the moles ``n_i`` and their
+        sensitivities ``dn_i/dp`` stored in ``self.y``, so they describe the
+        state at ``self.t``. (``self.core_species_concentrations`` is not used:
+        it is only updated by the residual function, so after a solver step it
+        holds the state of the last residual evaluation, not ``self.y``.)
+
+        With ``c_i = n_i / V``, ``d ln(c_i) = d ln(n_i) - d ln(V)``. Reactors
+        with surface species have constant volume and constant surface area,
+        so there ``d ln(c_i) = d ln(n_i)`` for every species, which for a surface
+        species is also the derivative of the log of its coverage.
+        """
+        cdef int num_core_species = self.num_core_species
+        cdef int num_core_reactions = self.num_core_reactions
+        cdef int num_params = num_core_reactions + num_core_species
+        cdef int i, j, index
+        cdef double moles, volume, RTP
+        cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdp, kf
+        cdef np.ndarray[np.float64_t, ndim=2] norm_sens
+
+        mole_sens = self.y[num_core_species:]  # dn_i/dp_j is stored at [j * num_core_species + i]
+        kf = self.kf
+        volume = self.V
+
+        # dV/dp_j, for the parameters [k_1 ... k_nrxn, G_1 ... G_nspc]
+        dVdp = np.zeros(num_params, float)
+        if not self.constant_volume:
+            RTP = constants.R * self.T.value_si / self.P.value_si
+            for j in range(num_params):
+                dVdp[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP
+
+        norm_sens = np.zeros((len(sens_species_indices), num_params), float)
+        for i in range(len(sens_species_indices)):
+            index = sens_species_indices[i]
+            moles = self.y[index]
+            if moles == 0:
+                continue
+            for j in range(num_core_reactions):
+                # d ln(c_i) / d ln(k_j) = (dn_i/dk_j - (n_i/V) dV/dk_j) * k_j / n_i
+                norm_sens[i, j] = (mole_sens[j * num_core_species + index] - moles / volume * dVdp[j]) * kf[j] / moles
+            for j in range(num_core_reactions, num_params):
+                # d ln(c_i) / d G_j, not normalized by G_j; G is in J/mol, so multiply by 4184 J/kcal
+                norm_sens[i, j] = (mole_sens[j * num_core_species + index] - moles / volume * dVdp[j]) / moles * 4184
+        return norm_sens
+
     @cython.boundscheck(False)
     cpdef simulate(self, list core_species, list core_reactions, list edge_species,
                    list edge_reactions, list surface_species, list surface_reactions,
@@ -605,8 +663,8 @@ cdef class ReactionSystem(DASx):
         cdef np.float64_t conversion
         cdef np.ndarray[np.float64_t, ndim=1] surface_species_production, surface_species_consumption, branching_nums
         cdef np.ndarray[np.float64_t, ndim=1] surface_total_div_accum_nums, surface_species_rate_ratios
-        cdef np.ndarray[np.float64_t, ndim=1] forward_rate_coefficients, core_species_concentrations
-        cdef double prev_time, total_moles, c, volume, RTP, max_char_rate, br, rr
+        cdef np.ndarray[np.float64_t, ndim=1] core_species_concentrations
+        cdef double prev_time, total_moles, max_char_rate, br, rr
         cdef double unimolecular_threshold_val, bimolecular_threshold_val, trimolecular_threshold_val
         cdef bool useDynamicsTemp, first_time, use_dynamics, terminate_at_max_objects, schanged, invalid_objects_print_boolean
         cdef np.ndarray[np.float64_t, ndim=1] edge_reaction_rates
@@ -614,7 +672,7 @@ cdef class ReactionSystem(DASx):
         cdef np.ndarray[np.int_t, ndim=1] surface_species_indices, surface_reaction_indices
         # cython declations for sensitivity analysis
         cdef np.ndarray[np.int_t, ndim=1] sens_species_indices, reactant_side, product_side
-        cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdk, norm_sens
+        cdef np.ndarray[np.float64_t, ndim=2] norm_sens
         cdef list time_array, norm_sens_array, new_surface_reactions, new_surface_reaction_inds, new_objects, new_object_inds
 
         zero_production = False
@@ -700,7 +758,6 @@ cdef class ReactionSystem(DASx):
 
         max_edge_species_rate_ratios = self.max_edge_species_rate_ratios
         max_network_leak_rate_ratios = self.max_network_leak_rate_ratios
-        forward_rate_coefficients = self.kf
         unimolecular_threshold = self.unimolecular_threshold
         bimolecular_threshold = self.bimolecular_threshold
         trimolecular_threshold = self.trimolecular_threshold
@@ -714,8 +771,6 @@ cdef class ReactionSystem(DASx):
         if sensitivity:
             time_array = []
             norm_sens_array = [[] for spec in self.sensitive_species]
-            if not self.constant_volume:
-                RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
                                                int)  # index within core_species list of the sensitive species
@@ -786,23 +841,9 @@ cdef class ReactionSystem(DASx):
             total_moles = np.sum(y_core_species)
             if sensitivity:
                 time_array.append(self.t)
-                mole_sens = self.y[num_core_species:]
-                volume = self.V
-
-                dVdk = np.zeros(num_core_reactions + num_core_species, float)
-                if not self.constant_volume:
-                    for j in range(num_core_reactions + num_core_species):
-                        dVdk[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP  # Contains [ dV_dk and dV_dG ]
+                norm_sens = self.compute_normalized_sensitivities(sens_species_indices)
                 for i in range(len(self.sensitive_species)):
-                    norm_sens = np.zeros(num_core_reactions + num_core_species, float)
-                    c = self.core_species_concentrations[sens_species_indices[i]]
-                    if c != 0:
-                        for j in range(num_core_reactions):
-                            norm_sens[j] = 1/volume * (mole_sens[j*num_core_species+sens_species_indices[i]]-c*dVdk[j]) * forward_rate_coefficients[j]/c
-                        for j in range(num_core_reactions,num_core_reactions+num_core_species):
-                            # no normalization against dG, conversion to kcal/mol units
-                            norm_sens[j] = 1/volume * (mole_sens[j*num_core_species+sens_species_indices[i]]-c*dVdk[j]) / c * 4184
-                    norm_sens_array[i].append(norm_sens)
+                    norm_sens_array[i].append(norm_sens[i])
 
             snapshot = [self.t, self.V]
             snapshot.extend(y_core_species)
