@@ -543,6 +543,8 @@ cdef class SurfaceReactor(ReactionSystem):
             """
             for i, list_of_coverage_deps in self.coverage_dependencies.items():
                 # Species i, Reaction j
+                if i >= num_core_species:
+                    continue  # edge species are not in the reactor, so have zero coverage
                 surface_site_fraction = coverages[i]
                 if surface_site_fraction <= 1e-6:
                     continue
@@ -759,6 +761,8 @@ cdef class SurfaceReactor(ReactionSystem):
         if self.coverage_dependence:
             coverage_corrections = np.ones_like(kf, float)
             for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                if i >= num_core_species:
+                    continue  # edge species are not in the reactor, so have zero coverage
                 surface_site_fraction = coverages[i]
                 if surface_site_fraction <= 1e-6:
                     continue
@@ -787,8 +791,9 @@ cdef class SurfaceReactor(ReactionSystem):
                         rr[j] *= C[ip[j, m]]
             term = -(V / (constants.R * T * total_sites)) * (S.T @ (rr[:, None] * dDG_dtheta))
 
-            # Exclude all reactions that do not involve surface species
-            term[:, self.species_on_surface[:num_core_species] == 0] = 0.0
+            # Gas-phase columns have no coverage. Negative amounts of surface species are
+            # clipped to zero coverage in the residual, so its correction is flat there too.
+            term[:, (self.species_on_surface[:num_core_species] == 0) | (y[:num_core_species] < 0)] = 0.0
             pd += term
 
         #Jacobian requires an additional term for the coverage-dependent kinetics to converge

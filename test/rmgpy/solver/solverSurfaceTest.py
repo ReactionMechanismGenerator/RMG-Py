@@ -1578,6 +1578,19 @@ class SurfaceReactorTest:
         # absorbs finite-difference noise in entries that are zero.
         assert np.allclose(J_analytical, J_fd, rtol=1e-4, atol=1e-10 * np.abs(J_fd).max())
 
+        # The solver may try a small negative amount of an adsorbate. The residual clips that
+        # to zero coverage, so the thermo coverage correction is flat in that column, and the
+        # cross-interaction with HX must not add a term there.
+        s = idx[cox]
+        y[s] = -1e-3 * total_sites
+        J_analytical = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
+        delta = 1e-6 * total_sites  # keeps y[s] negative
+        y_plus, y_minus = y.copy(), y.copy()
+        y_plus[s] += delta
+        y_minus[s] -= delta
+        column_fd = (rxn_system.residual(0.0, y_plus, dydt)[0] - rxn_system.residual(0.0, y_minus, dydt)[0]) / (2 * delta)
+        assert np.allclose(J_analytical[:, s], column_fd, rtol=1e-4, atol=1e-10 * np.abs(J_fd).max())
+
     def test_jacobian_with_kinetic_coverage_dependence(self):
         """
         Verify the analytical Jacobian is the exact derivative of the residual
@@ -1620,8 +1633,8 @@ class SurfaceReactorTest:
                 S298=(0.44, "cal/(mol*K)"),
             ),
         )
-        # a=1, m=0 gives a coverage correction of 10**(theta_x) which is clearly != 1
-        # at the chosen coverage and avoids the theta**m singularity at m<0.
+        # Nonzero a and m on X and nonzero E on HX, so every part of d ln(c_j)/d theta_s
+        # is exercised in both surface columns.
         rxn1 = Reaction(
             reactants=[h2, x, x],
             products=[hx, hx],
@@ -1722,3 +1735,67 @@ class SurfaceReactorTest:
         # Compare every entry relative to its own magnitude. The absolute tolerance only
         # absorbs finite-difference noise in entries that are zero.
         assert np.allclose(J_analytical, J_fd, rtol=1e-4, atol=1e-10 * np.abs(J_fd).max())
+
+    def test_kinetic_coverage_dependence_on_edge_species(self):
+        """
+        A core reaction may have coverage-dependent kinetics that refer to a species
+        that is still in the edge. Edge species are not in the reactor, so their
+        coverage is zero and the residual and Jacobian should both skip them,
+        rather than index past the end of the core coverage array.
+        """
+        Tdata = ([300, 400, 500, 600, 800, 1000, 1500], "K")
+
+        def thermo(H298, S298):
+            return ThermoData(Tdata=Tdata, Cpdata=([5.0] * 7, "cal/(mol*K)"),
+                              H298=(H298, "kcal/mol"), S298=(S298, "cal/(mol*K)"))
+
+        h2 = Species(molecule=[Molecule().from_smiles("[H][H]")], thermo=thermo(0.0, 31.1))
+        x = Species(molecule=[Molecule().from_adjacency_list("1 X u0 p0")], thermo=thermo(0.0, 0.0))
+        hx = Species(molecule=[Molecule().from_adjacency_list("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")],
+                     thermo=thermo(-11.26, 0.44))
+        ox = Species(molecule=[Molecule().from_adjacency_list("1 O u0 p2 {2,D} \n 2 X u0 p0 {1,D}")],
+                     thermo=thermo(-40.0, 1.0))
+        rxn1 = Reaction(
+            reactants=[h2, x, x],
+            products=[hx, hx],
+            kinetics=SurfaceArrhenius(
+                A=(9.05e18, "cm^5/(mol^2*s)"),
+                n=0.5,
+                Ea=(5.0, "kJ/mol"),
+                T0=(1.0, "K"),
+                coverage_dependence={ox: {"a": 1.0, "m": 0.0, "E": (10.0, "kJ/mol")}},
+            ),
+        )
+        rxn_system = SurfaceReactor(
+            600,
+            1.0e5,
+            n_sims=1,
+            initial_gas_mole_fractions={h2: 1.0},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            coverage_dependence=True,
+            termination=[],
+        )
+        rxn_system.initialize_model([h2, x, hx], [rxn1], [ox], [])
+        assert max(rxn_system.coverage_dependencies) >= rxn_system.num_core_species
+
+        n = rxn_system.num_core_species
+        idx = rxn_system.species_index
+        total_sites = (rxn_system.surface_site_density.value_si
+                       * rxn_system.V * rxn_system.surface_volume_ratio.value_si)
+        y = np.zeros(n)
+        y[idx[h2]] = 1.0
+        y[idx[x]] = 0.4 * total_sites
+        y[idx[hx]] = 0.6 * total_sites
+        dydt = np.zeros(n)
+
+        residual_with_edge_dependence, _ = rxn_system.residual(0.0, y, dydt)
+        J_with_edge_dependence = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
+
+        rxn_system.coverage_dependence = False
+        residual_without, _ = rxn_system.residual(0.0, y, dydt)
+        J_without = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
+
+        assert np.allclose(residual_with_edge_dependence, residual_without, rtol=1e-12)
+        assert np.allclose(J_with_edge_dependence, J_without, rtol=1e-12)
