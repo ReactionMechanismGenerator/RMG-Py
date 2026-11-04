@@ -1005,10 +1005,15 @@ class SurfaceReactorTest:
             assert parameters["model"] is not None
             assert parameters["enthalpy-coefficients"] is not None
             assert parameters["entropy-coefficients"] is not None
-        assert np.array_equal(rxn_system.stoi_matrix, np.array([[-1., -2.,  2.]]))
-        thermo_coeffs = np.array([np.zeros((3,6))]*3)
-        thermo_coeffs[-1][-1] = [1., 2., 3., 1., 5., 3.]
-        assert np.array_equal(rxn_system.thermo_coeff_matrix, thermo_coeffs)
+        # HX (index 2) interacts only with itself, so there is one pair, (2, 2)
+        assert np.array_equal(rxn_system.thermo_coverage_pairs, [[2, 2]])
+        assert np.array_equal(rxn_system.thermo_coverage_coefficients, [[1., 2., 3., 1., 5., 3.]])
+        assert np.array_equal(rxn_system.thermo_coverage_pair_start, [0, 0, 0, 1])
+        # H2 + 2 X <=> 2 HX, so DeltaG_cov = 2 g_HX, with g_HX = sum_k (h_k - T s_k) theta_HX^k
+        theta = 0.3
+        g_hx = sum((h - T * s) * theta ** k for k, h, s in zip((1, 2, 3), (1., 2., 3.), (1., 5., 3.)))
+        assert np.allclose(rxn_system.compute_thermo_coverage_free_energy_changes(np.array([0., 1 - theta, theta])),
+                           [2 * g_hx], rtol=1e-14)
         # Integrate to get the solution at each time point
         t = []
         y = []
@@ -1212,12 +1217,17 @@ class SurfaceReactorTest:
             assert parameters["entropy-coefficients"] is not None
         
         # check thermo_coverage_dependence is on
-        # and thermo_coeff_matrix and stoi_matrix are correctly created
+        # and the interacting pairs are correctly created
         assert rxn_system.thermo_coverage_dependence is True
-        assert np.array_equal(rxn_system.stoi_matrix, np.array([[-1, -1, 1]], dtype=float))
-        thermo_coeff_matrix = np.array([np.zeros((3,6))]*3)
-        thermo_coeff_matrix[-1][-1] = [1e5, 2, 3, 1, 5, 3]
-        assert np.array_equal(rxn_system.thermo_coeff_matrix, thermo_coeff_matrix)
+        # CH3X (index 2) interacts only with itself, so there is one pair, (2, 2)
+        assert np.array_equal(rxn_system.thermo_coverage_pairs, [[2, 2]])
+        assert np.array_equal(rxn_system.thermo_coverage_coefficients, [[1e5, 2, 3, 1, 5, 3]])
+        assert np.array_equal(rxn_system.thermo_coverage_pair_start, [0, 0, 0, 1])
+        # CH3 + X <=> CH3X, so DeltaG_cov = g_CH3X, with g_CH3X = sum_k (h_k - T s_k) theta_CH3X^k
+        theta = 0.3
+        g_ch3x = sum((h - T * s) * theta ** k for k, h, s in zip((1, 2, 3), (1e5, 2, 3), (1, 5, 3)))
+        assert np.allclose(rxn_system.compute_thermo_coverage_free_energy_changes(np.array([0., 1 - theta, theta])),
+                           [g_ch3x], rtol=1e-14)
 
         # Integrate to get the solution at each time point
         t = []
@@ -1283,10 +1293,11 @@ class SurfaceReactorTest:
         rxn_system.initialize_model(core_species, core_reactions, edge_species, edge_reactions)
         
         # check thermo_coverage_dependence is off
-        # and thermo_coeff_matrix and stoi_matrix are not created
+        # and the interacting pairs are not created
         assert rxn_system.thermo_coverage_dependence is False
-        assert rxn_system.thermo_coeff_matrix is None
-        assert rxn_system.stoi_matrix is None
+        assert rxn_system.thermo_coverage_pairs is None
+        assert rxn_system.thermo_coverage_coefficients is None
+        assert rxn_system.thermo_coverage_pair_start is None
 
         tlist = np.logspace(-13, -5, 81, dtype=float)
 
