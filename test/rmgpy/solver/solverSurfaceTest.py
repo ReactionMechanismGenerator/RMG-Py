@@ -1567,10 +1567,12 @@ class SurfaceReactorTest:
         # value removes exactly that contribution from the finite-difference Jacobian.
         coverages = np.where(rxn_system.species_on_surface[:n], y / total_sites, 0.0)
         kr_corrected = rxn_system.kf / rxn_system.compute_thermo_coverage_corrections(coverages)
+        kb_uncorrected = rxn_system.kb.copy()
         rxn_system.thermo_coverage_dependence = False
         rxn_system.kb = kr_corrected.copy()
         J_fd_frozen_kr = fd_jacobian()
         rxn_system.thermo_coverage_dependence = True
+        rxn_system.kb = kb_uncorrected  # the corrected kr is computed from the uncorrected kb
         for i, s in [(idx[hx], idx[hx]), (idx[cox], idx[cox]), (idx[hx], idx[cox]), (idx[cox], idx[hx])]:
             assert abs(J_fd[i, s] - J_fd_frozen_kr[i, s]) > 0.5 * abs(J_fd[i, s])
 
@@ -1929,3 +1931,80 @@ class SurfaceReactorTest:
             column_fd = (f[0] - f[1]) / (2 * dG)
             assert np.allclose(dgdk[:, n_rxn + i], column_fd, rtol=1e-5, atol=1e-8 * np.abs(column_fd).max())
         rxn_system.Keq, rxn_system.kb = keq0, kb0
+
+    def test_irreversible_reaction_with_thermo_coverage_dependence(self):
+        """
+        An irreversible reaction has Keq = 0 and kb = 0. With thermo coverage
+        dependence the reverse rate constant must stay zero, rather than being
+        computed as kf / (Keq * correction) = inf, which made the residual and
+        Jacobian non-finite.
+        """
+        Tdata = ([300, 400, 500, 600, 800, 1000, 1500], "K")
+        cox_adj = "1 O u0 p2 c0 {2,D} \n 2 C u0 p0 c0 {1,D} {3,D} \n 3 X u0 p0 c0 {2,D}"
+        co = Species(
+            molecule=[Molecule().from_smiles("[C-]#[O+]")],
+            thermo=ThermoData(Tdata=Tdata, Cpdata=([6.95, 7.02, 7.12, 7.27, 7.61, 7.94, 8.41], "cal/(mol*K)"),
+                              H298=(-26.42, "kcal/mol"), S298=(47.21, "cal/(mol*K)")),
+        )
+        x = Species(
+            molecule=[Molecule().from_adjacency_list("1 X u0 p0")],
+            thermo=ThermoData(Tdata=Tdata, Cpdata=([0.0] * 7, "cal/(mol*K)"),
+                              H298=(0.0, "kcal/mol"), S298=(0.0, "cal/(mol*K)")),
+        )
+        cox = Species(
+            molecule=[Molecule().from_adjacency_list(cox_adj)],
+            thermo=ThermoData(
+                Tdata=Tdata,
+                Cpdata=([9.0, 10.0, 10.8, 11.4, 12.2, 12.7, 13.3], "cal/(mol*K)"),
+                H298=(-60.0, "kcal/mol"),
+                S298=(10.0, "cal/(mol*K)"),
+                thermo_coverage_dependence={
+                    cox_adj: {
+                        "model": "polynomial",
+                        "enthalpy-coefficients": [(30000, "J/mol"), (20000, "J/mol"), (20000, "J/mol")],
+                        "entropy-coefficients": [(0, "J/(mol*K)"), (0, "J/(mol*K)"), (0, "J/(mol*K)")],
+                    },
+                },
+            ),
+        )
+        rxn = Reaction(
+            reactants=[co, x],
+            products=[cox],
+            kinetics=SurfaceArrhenius(A=(1.0e8, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kJ/mol"), T0=(1.0, "K")),
+            reversible=False,
+        )
+        rxn_system = SurfaceReactor(
+            600,
+            1.0e5,
+            n_sims=1,
+            initial_gas_mole_fractions={co: 1.0},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            thermo_coverage_dependence=True,
+            termination=[],
+        )
+        rxn_system.initialize_model([co, x, cox], [rxn], [], [])
+        assert rxn_system.Keq[0] == 0 and rxn_system.kb[0] == 0
+
+        n = rxn_system.num_core_species
+        idx = rxn_system.species_index
+        total_sites = (rxn_system.surface_site_density.value_si
+                       * rxn_system.V * rxn_system.surface_volume_ratio.value_si)
+        y = np.zeros(n)
+        y[idx[co]] = 1.0
+        y[idx[x]] = 0.4 * total_sites
+        y[idx[cox]] = 0.6 * total_sites
+        dydt = np.zeros(n)
+
+        residual, _ = rxn_system.residual(0.0, y, dydt)
+        J = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
+        assert np.all(np.isfinite(residual)) and np.all(np.isfinite(J))
+
+        # Only the forward reaction runs: d n_CO / dt = -kf * C_CO * C_X * V
+        V = rxn_system.V
+        C_co = y[idx[co]] / V
+        C_x = y[idx[x]] / (V * rxn_system.surface_volume_ratio.value_si)
+        assert np.isclose(residual[idx[co]], -rxn_system.kf[0] * C_co * C_x * V, rtol=1e-12)
+        # ... so nothing depends on the amount of OCX
+        assert np.all(J[:, idx[cox]] == 0)

@@ -307,10 +307,10 @@ cdef class SurfaceReactor(ReactionSystem):
                     warned = True
                 self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, P)
             if rxn.reversible:
-                # kb is set here from the uncorrected Keq. For reactions with
-                # thermo_coverage_dependence, kb is not used directly — residual
-                # and jacobian both compute kr = kf / compute_thermo_coverage_corrections()
-                # which applies the coverage-dependent correction to Keq at runtime.
+                # kb is set here from the uncorrected Keq. With thermo_coverage_dependence,
+                # the residual and jacobian scale it at runtime by exp(DeltaG_cov / RT)
+                # (see compute_thermo_coverage_free_energy_changes). Irreversible reactions
+                # keep kb = 0 and Keq = 0, so they stay irreversible.
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
@@ -424,18 +424,31 @@ cdef class SurfaceReactor(ReactionSystem):
     cpdef np.ndarray compute_thermo_coverage_corrections(self, np.ndarray[np.float64_t, ndim=1] coverages):
         """
         Return the equilibrium constants ``Keq`` corrected for thermodynamic
-        coverage dependence at the given surface ``coverages``.
+        coverage dependence at the given surface ``coverages``:
+        ``Keq_corrected = Keq * exp(-DeltaG_cov / RT)``, with ``DeltaG_cov`` from
+        :meth:`compute_thermo_coverage_free_energy_changes`.
+
+        The residual and Jacobian do not divide ``kf`` by this, because ``Keq``
+        is zero for irreversible reactions. They use the equivalent
+        ``kr = kb * exp(DeltaG_cov / RT)``, which is zero for those reactions.
+        """
+        return self.Keq * np.exp(-1 * self.compute_thermo_coverage_free_energy_changes(coverages)
+                                 / (constants.R * self.T.value_si))
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cpdef np.ndarray compute_thermo_coverage_free_energy_changes(self, np.ndarray[np.float64_t, ndim=1] coverages):
+        """
+        Return the coverage-dependent part of the Gibbs free energy change,
+        ``DeltaG_cov``, of every reaction at the given surface ``coverages``.
 
         For each species the free-energy correction is the sum over the (up to)
         six polynomial terms ``coverage**k`` and ``-T*coverage**k`` weighted by the
         per-species coefficients stored in ``thermo_coeff_matrix``. These are
-        mapped to per-reaction free-energy changes via ``stoi_matrix`` and applied
-        to ``Keq``. The corrected ``Keq`` is used to obtain a coverage-dependent
-        reverse rate constant ``kr = kf / Keq_corrected`` in both the residual and
-        the Jacobian.
+        mapped to per-reaction free-energy changes via ``stoi_matrix``.
         """
         cdef np.ndarray[np.float64_t, ndim=1] coverages_squared, temperature_scaled_coverages
-        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change, corrected_K_eq
+        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change
         cdef np.ndarray[np.float64_t, ndim=2] thermo_dep_coverage, matrix
         cdef int i, n
 
@@ -454,8 +467,7 @@ cdef class SurfaceReactor(ReactionSystem):
             matrix = self.thermo_coeff_matrix[i]
             free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage)
         rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
-        corrected_K_eq = self.Keq * np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
-        return corrected_K_eq
+        return rxns_free_energy_change
 
     @cython.boundscheck(False)
     def residual(self,
@@ -531,9 +543,11 @@ cdef class SurfaceReactor(ReactionSystem):
             # first num_core_species entries
             coverages = np.where(species_on_surface, np.maximum(N[:num_core_species] / total_sites, 0.0), 0.0)
 
-        # Thermodynamic coverage dependence
+        # Thermodynamic coverage dependence: kr = kf / (Keq * exp(-DeltaG_cov / RT)), written
+        # in terms of kb so that it stays zero for irreversible reactions (where Keq = 0)
         if self.thermo_coverage_dependence:
-            kr = kf / self.compute_thermo_coverage_corrections(coverages)
+            kr = self.kb * np.exp(self.compute_thermo_coverage_free_energy_changes(coverages)
+                                  / (constants.R * self.T.value_si))
 
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
@@ -753,9 +767,10 @@ cdef class SurfaceReactor(ReactionSystem):
                                  0.0)
 
         # Thermodynamic coverage dependence: the reverse rate constant is derived
-        # from the coverage-corrected equilibrium constant.
+        # from the coverage-corrected equilibrium constant, as in the residual.
         if self.thermo_coverage_dependence:
-            kr = kf / self.compute_thermo_coverage_corrections(coverages)
+            kr = self.kb * np.exp(self.compute_thermo_coverage_free_energy_changes(coverages)
+                                  / (constants.R * self.T.value_si))
         else:
             kr = self.kb
 
