@@ -1270,13 +1270,20 @@ class Uncertainty(object):
 
     def sensitivity_analysis(self, initial_mole_fractions, sensitive_species, T, P, termination_time,
                              sensitivity_threshold=1e-3, number=10, fileformat='.png', initial_surface_coverages=None,
-                             surface_volume_ratio=None, surface_site_density=2.72e-5):
+                             surface_volume_ratio=None, surface_site_density=2.72e-5,
+                             coverage_dependence=False, thermo_coverage_dependence=False):
         """
         Run sensitivity analysis using the RMG solver in a single ReactionSystem object
 
         initial_mole_fractions is a dictionary with Species objects as keys and mole fraction initial conditions
         sensitive_species is a list of sensitive Species objects
         number is the number of top species thermo or reaction kinetics desired to be plotted
+
+        For surface mechanisms, initial_surface_coverages, surface_volume_ratio and surface_site_density
+        set up the SurfaceReactor. coverage_dependence and thermo_coverage_dependence (both False by default)
+        turn on the coverage-dependent kinetics and coverage-dependent thermochemistry stored on the reactions
+        and species, as the coverageDependence and thermoCoverageDependence options do in an RMG input file.
+        They are ignored for gas-phase mechanisms.
         """
 
         from rmgpy.solver import SimpleReactor, SurfaceReactor, TerminationTime
@@ -1309,7 +1316,9 @@ class Uncertainty(object):
                                              n_sims=1,
                                              termination=termination,
                                              sensitive_species=sensitive_species,
-                                             sensitivity_threshold=sensitivity_threshold)
+                                             sensitivity_threshold=sensitivity_threshold,
+                                             coverage_dependence=coverage_dependence,
+                                             thermo_coverage_dependence=thermo_coverage_dependence)
 
         # Create the csv worksheets for logging sensitivity
         util.make_output_subdirectory(self.output_directory, 'solver')
