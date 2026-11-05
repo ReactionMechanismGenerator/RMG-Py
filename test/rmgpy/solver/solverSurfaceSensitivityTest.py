@@ -127,29 +127,36 @@ def _simulate(thermo_coverage, kinetic_coverage, sensitivity=False, k_scale=(1.0
                          [(False, False), (True, False), (False, True), (True, True)])
 def test_sensitivities_match_brute_force(thermo_coverage, kinetic_coverage):
     """
-    d ln(n_i) / d ln(k_j) and d n_i / d G_s from the sensitivity equations must
+    d n_i / d ln(k_j) and d n_i / d G_s from the sensitivity equations must
     match central differences of re-simulations, for every species i (gas and
     surface), both reactions j and the free energies of the two adsorbates s.
+
+    Both are compared in moles, not as logarithmic sensitivities. There is far
+    more gas (0.5 mol of each) than surface sites (about 1e-5 mol), so
+    d ln n / d ln k of a gas species is about 1e-5 times that of an adsorbate,
+    and a tolerance relative to the largest entry would not test it at all.
+    In moles, the gas and surface entries of a column are comparable.
     """
     logging.disable(logging.WARNING)  # DASPK step-count notices
     try:
         reactor = _simulate(thermo_coverage, kinetic_coverage, sensitivity=True)
         n = reactor.num_core_species
         n_rxn = reactor.num_core_reactions
-        moles = reactor.y[:n].copy()
         # Sensitivity block p holds d n / d p_p, for p = kf of each reaction, then G of each species
         dn_dp = reactor.y[n:].reshape(n_rxn + n, n)
 
-        rel = 1e-4
+        # A gas amount changes only by about 1e-9 mol per 1e-3 change in ln k, so a smaller
+        # step lets the solver's error in the 0.5 mol of gas dominate the difference.
+        rel = 1e-2
         for j in range(n_rxn):
             up, down = [1.0, 1.0], [1.0, 1.0]
             up[j], down[j] = 1 + rel, 1 - rel
-            ln_plus = np.log(_simulate(thermo_coverage, kinetic_coverage, k_scale=tuple(up)).y[:n])
-            ln_minus = np.log(_simulate(thermo_coverage, kinetic_coverage, k_scale=tuple(down)).y[:n])
-            brute_force = (ln_plus - ln_minus) / (np.log(1 + rel) - np.log(1 - rel))
-            from_sensitivity = dn_dp[j] * reactor.kf[j] / moles
+            n_plus = _simulate(thermo_coverage, kinetic_coverage, k_scale=tuple(up)).y[:n]
+            n_minus = _simulate(thermo_coverage, kinetic_coverage, k_scale=tuple(down)).y[:n]
+            brute_force = (n_plus - n_minus) / (np.log(1 + rel) - np.log(1 - rel))
+            from_sensitivity = dn_dp[j] * reactor.kf[j]
             assert np.allclose(from_sensitivity, brute_force, rtol=0, atol=2e-3 * np.abs(brute_force).max()), \
-                f"d ln n / d ln k for reaction {j}"
+                f"d n / d ln k for reaction {j}"
 
         dG = 10.0  # J/mol
         for k, species_index in enumerate((3, 4)):  # HX, OCX
