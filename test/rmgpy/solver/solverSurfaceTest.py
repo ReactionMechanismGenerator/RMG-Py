@@ -2019,3 +2019,109 @@ class SurfaceReactorTest:
         assert np.isclose(residual[idx[co]], -rxn_system.kf[0] * C_co * C_x * V, rtol=1e-12)
         # ... so nothing depends on the amount of OCX
         assert np.all(J[:, idx[cox]] == 0)
+
+    def test_thermo_coverage_dependence_with_edge_species(self):
+        """
+        Thermo coverage dependence is stored as interacting pairs of core species
+        only. Edge species are not in the reactor, so an interaction with an edge
+        species is left out, and a reaction with an edge-species reactant or
+        product gets no correction. When the partner is moved into the core and
+        the model is initialized again, the interaction must become active, and
+        the Jacobian must still match finite differences of the residual.
+        """
+        Tdata = ([300, 400, 500, 600, 800, 1000, 1500], "K")
+        hx_adj = "1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}"
+        ocx_adj = "1 O u0 p2 c0 {2,D} \n 2 C u0 p0 c0 {1,D} {3,D} \n 3 X u0 p0 c0 {2,D}"
+
+        def thermo(H298, S298, coverage_dependence=None):
+            return ThermoData(Tdata=Tdata, Cpdata=([5.0] * 7, "cal/(mol*K)"),
+                              H298=(H298, "kcal/mol"), S298=(S298, "cal/(mol*K)"),
+                              thermo_coverage_dependence=coverage_dependence)
+
+        def polynomial(h, s):
+            return {"model": "polynomial",
+                    "enthalpy-coefficients": [(h[0], "J/mol"), (h[1], "J/mol"), (h[2], "J/mol")],
+                    "entropy-coefficients": [(s[0], "J/(mol*K)"), (s[1], "J/(mol*K)"), (s[2], "J/(mol*K)")]}
+
+        hx_self, hx_ocx = ([30000, 10000, 5000], [5, 0, 0]), ([12000, 0, 0], [0, 0, 0])
+        ocx_self, ocx_hx = ([25000, 0, 8000], [0, 2, 0]), ([9000, 3000, 0], [0, 0, 0])
+        h2 = Species(molecule=[Molecule().from_smiles("[H][H]")], thermo=thermo(0.0, 31.1))
+        co = Species(molecule=[Molecule().from_smiles("[C-]#[O+]")], thermo=thermo(-26.4, 47.2))
+        x = Species(molecule=[Molecule().from_adjacency_list("1 X u0 p0")], thermo=thermo(0.0, 0.0))
+        hx = Species(molecule=[Molecule().from_adjacency_list(hx_adj)],
+                     thermo=thermo(-11.3, 0.4, {hx_adj: polynomial(*hx_self), ocx_adj: polynomial(*hx_ocx)}))
+        ocx = Species(molecule=[Molecule().from_adjacency_list(ocx_adj)],
+                      thermo=thermo(-45.0, 10.0, {ocx_adj: polynomial(*ocx_self), hx_adj: polynomial(*ocx_hx)}))
+        rxn1 = Reaction(reactants=[h2, x, x], products=[hx, hx],
+                        kinetics=SurfaceArrhenius(A=(9.05e18, "cm^5/(mol^2*s)"), n=0.5, Ea=(5.0, "kJ/mol"), T0=(1.0, "K")))
+        rxn2 = Reaction(reactants=[co, x], products=[ocx],
+                        kinetics=SurfaceArrhenius(A=(1.0e8, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kJ/mol"), T0=(1.0, "K")))
+        rxn_system = SurfaceReactor(
+            600,
+            1.0e5,
+            n_sims=1,
+            initial_gas_mole_fractions={h2: 0.5, co: 0.5},
+            initial_surface_coverages={x: 1.0},
+            surface_volume_ratio=(1e1, "m^-1"),
+            surface_site_density=(2.72e-9, "mol/cm^2"),
+            thermo_coverage_dependence=True,
+            termination=[],
+        )
+        T = 600.0
+
+        def g(theta, h, s):
+            return sum((h[k] - T * s[k]) * theta ** (k + 1) for k in range(3))
+
+        def check_jacobian(core_species, theta):
+            n = rxn_system.num_core_species
+            idx = rxn_system.species_index
+            total_sites = (rxn_system.surface_site_density.value_si
+                           * rxn_system.V * rxn_system.surface_volume_ratio.value_si)
+            y = np.zeros(n)
+            for spec in core_species:
+                y[idx[spec]] = theta[spec] * total_sites if spec in theta else 0.5
+            dydt = np.zeros(n)
+            J = rxn_system.jacobian(0.0, y, dydt, cj=0.0)
+            J_fd = np.zeros((n, n))
+            for s in range(n):
+                delta = 1e-6 * abs(y[s])
+                y_plus, y_minus = y.copy(), y.copy()
+                y_plus[s] += delta
+                y_minus[s] -= delta
+                J_fd[:, s] = (rxn_system.residual(0.0, y_plus, dydt)[0]
+                              - rxn_system.residual(0.0, y_minus, dydt)[0]) / (2 * delta)
+            assert np.allclose(J, J_fd, rtol=1e-4, atol=1e-10 * np.abs(J_fd).max())
+
+        # OCX in the edge: the HX-OCX interaction is left out, and rxn2 (which has OCX
+        # as a product) is an edge reaction with no correction
+        rxn_system.initialize_model([h2, co, x, hx], [rxn1], [ocx], [rxn2])
+        idx = rxn_system.species_index
+        assert rxn_system.num_core_species == 4
+        assert np.array_equal(rxn_system.thermo_coverage_pairs, [[idx[hx], idx[hx]]])
+        assert np.array_equal(rxn_system.thermo_coverage_coefficients, [hx_self[0] + hx_self[1]])
+        theta_hx = 0.4
+        coverages = np.array([0.0, 0.0, 1 - theta_hx, theta_hx])
+        dG = rxn_system.compute_thermo_coverage_free_energy_changes(coverages)
+        assert dG.shape == (2,)  # one core and one edge reaction
+        assert np.isclose(dG[rxn_system.reaction_index[rxn1]], 2 * g(theta_hx, *hx_self), rtol=1e-14)
+        assert dG[rxn_system.reaction_index[rxn2]] == 0.0
+        check_jacobian([h2, co, x, hx], {x: 1 - theta_hx, hx: theta_hx})
+
+        # Promote OCX (and rxn2) to the core and initialize again: all four pairs are now
+        # active, and HX's correction includes its interaction with OCX
+        rxn_system.initialize_model([h2, co, x, hx, ocx], [rxn1, rxn2], [], [])
+        idx = rxn_system.species_index
+        assert rxn_system.num_core_species == 5
+        expected = sorted([(idx[hx], idx[hx], hx_self), (idx[hx], idx[ocx], hx_ocx),
+                           (idx[ocx], idx[ocx], ocx_self), (idx[ocx], idx[hx], ocx_hx)])
+        assert np.array_equal(rxn_system.thermo_coverage_pairs, [[i, s] for i, s, _ in expected])
+        assert np.array_equal(rxn_system.thermo_coverage_coefficients, [h + s for _, _, (h, s) in expected])
+        theta_hx, theta_ocx = 0.4, 0.3
+        coverages = np.zeros(5)
+        coverages[idx[x]], coverages[idx[hx]], coverages[idx[ocx]] = 1 - theta_hx - theta_ocx, theta_hx, theta_ocx
+        dG = rxn_system.compute_thermo_coverage_free_energy_changes(coverages)
+        g_hx = g(theta_hx, *hx_self) + g(theta_ocx, *hx_ocx)
+        g_ocx = g(theta_ocx, *ocx_self) + g(theta_hx, *ocx_hx)
+        assert np.isclose(dG[rxn_system.reaction_index[rxn1]], 2 * g_hx, rtol=1e-14)
+        assert np.isclose(dG[rxn_system.reaction_index[rxn2]], g_ocx, rtol=1e-14)
+        check_jacobian([h2, co, x, hx, ocx], {x: 1 - theta_hx - theta_ocx, hx: theta_hx, ocx: theta_ocx})
