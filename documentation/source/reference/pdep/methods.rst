@@ -75,11 +75,17 @@ The chemically-significant eigenvalues method
     networks of only modest size. The chemically-significant eigenvalues method
     is also substantially more expensive to apply than the other methods.
 
-    In double precision the eigensolver only resolves eigenvalues larger than
-    about :math:`10^{-16}` times the fastest rate in the master equation matrix.
-    At low temperatures and pressures the chemically-significant eigenvalues can
-    be smaller than this, and the :math:`k(T,P)` values derived from them would
-    then be set by round-off error. In that case the result is rejected with an
-    error message, and the :math:`k(T,P)` values at those conditions are zero.
+    In double precision the eigensolver only resolves eigenvalues to an absolute
+    accuracy of about machine epsilon (:math:`2.2 \times 10^{-16}`) times the
+    largest eigenvalue magnitude, which is set by the fastest rate in the master
+    equation matrix. At low temperatures and pressures the chemically-significant
+    eigenvalues can be close to or below this, and the :math:`k(T,P)` values
+    derived from them are then set by round-off error. To leave a margin, the
+    result is rejected if the smallest chemically-significant eigenvalue (other
+    than the zero eigenvalue of a network with no product channels) is smaller
+    than ``rmgpy.pdep.cse.CSE_EIGENVALUE_RTOL`` (1000 times machine epsilon,
+    about :math:`2 \times 10^{-13}`) times the largest eigenvalue magnitude.
+    The rejection is logged as an error, and the :math:`k(T,P)` values at those
+    conditions are zero.
 
 

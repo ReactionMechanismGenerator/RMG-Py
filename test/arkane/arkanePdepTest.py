@@ -47,6 +47,7 @@ from rmgpy.species import Species
 
 from arkane.input import load_input_file
 from arkane.main import Arkane
+from arkane.pdep import PressureDependenceJob
 
 
 @pytest.mark.functional
@@ -154,7 +155,9 @@ class TestChemicallySignificantEigenvaluesRoundOff:
         input_file = os.path.join(os.path.dirname(__file__), "..", "..", "examples", "arkane", "networks",
                                   "acetyl+O2_cse", "input.py")
         job_list = load_input_file(input_file)[0]
-        cls.job = [job for job in job_list if job.__class__.__name__ == "PressureDependenceJob"][0]
+        pdep_jobs = [job for job in job_list if isinstance(job, PressureDependenceJob)]
+        assert len(pdep_jobs) == 1, "Expected one pressure dependence job in {0}".format(input_file)
+        cls.job = pdep_jobs[0]
         cls.job.initialize()
         cls.network = cls.job.network
         cls.n_chem = cls.network.n_isom + cls.network.n_reac
