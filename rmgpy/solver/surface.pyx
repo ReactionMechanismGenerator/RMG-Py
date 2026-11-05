@@ -67,8 +67,10 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public ScalarQuantity surface_site_density
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
-    cdef public np.ndarray thermo_coeff_matrix
-    cdef public np.ndarray stoi_matrix
+    # Thermodynamic coverage dependence, as a sparse list of interacting pairs of core species
+    cdef public np.ndarray thermo_coverage_pairs  # (n_pairs, 2): [i, s], sorted by i
+    cdef public np.ndarray thermo_coverage_coefficients  # (n_pairs, 6): h_1..h_3, s_1..s_3 of each pair
+    cdef public np.ndarray thermo_coverage_pair_start  # (num_core_species + 1): pairs of species i are pair_start[i]:pair_start[i + 1]
     cdef public np.ndarray _jacobian_inv_omega
     cdef public Py_ssize_t _jacobian_inv_omega_num_core_species
 
@@ -177,10 +179,6 @@ cdef class SurfaceReactor(ReactionSystem):
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
-        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
-        cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
-        if self.thermo_coverage_dependence:
-            self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -210,49 +208,41 @@ cdef class SurfaceReactor(ReactionSystem):
                 means that Species with index 2 in the current simulation is used in
                 Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
                 """
-        for sp, sp_index in self.species_index.items():
-            if sp.contains_surface_site():
-                if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
-                    for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
-                        molecule = Molecule().from_adjacency_list(spec)
-                        for species in self.species_index.keys():
-                            if species.is_isomorphic(molecule, strict=False):
-                                species_index = self.species_index[species]
-                                enthalpy_coeff = np.array([p.value_si for p in parameters['enthalpy-coefficients']])
-                                entropy_coeff = np.array([p.value_si for p in parameters['entropy-coefficients']])
-                                thermo_polynomials = np.concatenate((enthalpy_coeff, entropy_coeff), axis=0)
-                                self.thermo_coeff_matrix[sp_index, species_index] = [x for x in thermo_polynomials]
-        # create a stoichiometry matrix for reaction enthalpy and entropy correction 
-        # due to thermodynamic coverage dependence
+        # Thermodynamic coverage dependence. The coverage correction to the free energy of
+        # core adsorbate i is g_i = sum_s sum_k (h_isk - T s_isk) theta_s^k, summed over the
+        # core species s it interacts with. Most pairs (i, s) have no coefficients, so store
+        # only those that do, sorted by i. Edge species are not in the reactor, so their
+        # coverage is zero, and reactions that involve them get no correction (see
+        # compute_thermo_coverage_free_energy_changes), so only core-core pairs are needed.
+        self.thermo_coverage_pairs = None
+        self.thermo_coverage_coefficients = None
+        self.thermo_coverage_pair_start = None
         if self.thermo_coverage_dependence:
-            ir = self.reactant_indices
-            ip = self.product_indices
-            for rxn_id, rxn_stoi_num in enumerate(stoi_matrix):
-                if ir[rxn_id, 0] >= self.num_core_species or ir[rxn_id, 1] >= self.num_core_species or ir[rxn_id, 2] >= self.num_core_species:
+            core_species_by_index = {index: spec for spec, index in self.species_index.items()
+                            if index < self.num_core_species}
+            matching_core_species = {}  # adjacency list -> indices of the core species isomorphic to it
+            pair_coefficients = {}  # (i, s) -> [h_1, h_2, h_3, s_1, s_2, s_3]
+            for i in range(self.num_core_species):
+                sp = core_species_by_index[i]
+                if not (sp.contains_surface_site() and sp.thermo.thermo_coverage_dependence):
                     continue
-                elif ip[rxn_id, 0] >= self.num_core_species or ip[rxn_id, 1] >= self.num_core_species or ip[rxn_id, 2] >= self.num_core_species:
-                    continue
-                else:
-                    if ir[rxn_id, 1] == -1:  # only one reactant
-                        rxn_stoi_num[ir[rxn_id, 0]] += -1
-                    elif ir[rxn_id, 2] == -1:  # only two reactants
-                        rxn_stoi_num[ir[rxn_id, 0]] += -1
-                        rxn_stoi_num[ir[rxn_id, 1]] += -1
-                    else:  # three reactants
-                        rxn_stoi_num[ir[rxn_id, 0]] += -1
-                        rxn_stoi_num[ir[rxn_id, 1]] += -1
-                        rxn_stoi_num[ir[rxn_id, 2]] += -1
-                    if ip[rxn_id, 1] == -1:  # only one product
-                        rxn_stoi_num[ip[rxn_id, 0]] += 1
-                    elif ip[rxn_id, 2] == -1:  # only two products
-                        rxn_stoi_num[ip[rxn_id, 0]] += 1
-                        rxn_stoi_num[ip[rxn_id, 1]] += 1
-                    else:  # three products
-                        rxn_stoi_num[ip[rxn_id, 0]] += 1
-                        rxn_stoi_num[ip[rxn_id, 1]] += 1
-                        rxn_stoi_num[ip[rxn_id, 2]] += 1
-            self.stoi_matrix = stoi_matrix
-        
+                for adjacency_list, parameters in sp.thermo.thermo_coverage_dependence.items():
+                    if adjacency_list not in matching_core_species:
+                        molecule = Molecule().from_adjacency_list(adjacency_list)
+                        matching_core_species[adjacency_list] = [
+                            s for s in range(self.num_core_species)
+                            if core_species_by_index[s].is_isomorphic(molecule, strict=False)]
+                    coefficients = ([p.value_si for p in parameters['enthalpy-coefficients']]
+                                    + [p.value_si for p in parameters['entropy-coefficients']])
+                    for s in matching_core_species[adjacency_list]:
+                        pair_coefficients[(i, s)] = coefficients
+            pairs = sorted(pair_coefficients)
+            self.thermo_coverage_pairs = np.array(pairs, dtype=int).reshape(-1, 2)
+            self.thermo_coverage_coefficients = np.array([pair_coefficients[pair] for pair in pairs],
+                                                         dtype=np.float64).reshape(-1, 6)
+            self.thermo_coverage_pair_start = np.searchsorted(self.thermo_coverage_pairs[:, 0],
+                                                              np.arange(self.num_core_species + 1)).astype(int)
+
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -440,33 +430,53 @@ cdef class SurfaceReactor(ReactionSystem):
     cpdef np.ndarray compute_thermo_coverage_free_energy_changes(self, np.ndarray[np.float64_t, ndim=1] coverages):
         """
         Return the coverage-dependent part of the Gibbs free energy change,
-        ``DeltaG_cov``, of every reaction at the given surface ``coverages``.
+        ``DeltaG_cov``, of every reaction at the given surface ``coverages``
+        (one entry per core species).
 
-        For each species the free-energy correction is the sum over the (up to)
-        six polynomial terms ``coverage**k`` and ``-T*coverage**k`` weighted by the
-        per-species coefficients stored in ``thermo_coeff_matrix``. These are
-        mapped to per-reaction free-energy changes via ``stoi_matrix``.
+        The correction to the free energy of core adsorbate i is
+        ``g_i = sum_s sum_k (h_isk - T * s_isk) * coverages[s]**k`` (k = 1, 2, 3),
+        summed over the interacting pairs (i, s) in ``thermo_coverage_pairs``.
+        ``DeltaG_cov`` of a reaction is the sum of ``g`` over its products minus
+        that over its reactants. A reaction with any edge-species reactant or
+        product gets zero.
         """
-        cdef np.ndarray[np.float64_t, ndim=1] coverages_squared, temperature_scaled_coverages
-        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change
-        cdef np.ndarray[np.float64_t, ndim=2] thermo_dep_coverage, matrix
-        cdef int i, n
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip, pairs
+        cdef np.ndarray[np.float64_t, ndim=2] coefficients
+        cdef np.ndarray[np.float64_t, ndim=1] g, rxns_free_energy_change
+        cdef Py_ssize_t p, j, z, num_core_species
+        cdef double T, theta, delta
+        cdef bint involves_edge_species
 
-        n = coverages.shape[0]
-        coverages_squared = coverages * coverages
-        temperature_scaled_coverages = -self.T.value_si * coverages
-        thermo_dep_coverage = np.empty((6, n), dtype=np.float64)
-        thermo_dep_coverage[0, :] = coverages
-        thermo_dep_coverage[1, :] = coverages_squared
-        thermo_dep_coverage[2, :] = coverages_squared * coverages
-        thermo_dep_coverage[3, :] = temperature_scaled_coverages
-        thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
-        thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
-        free_energy_coverage_corrections = np.empty(self.thermo_coeff_matrix.shape[0], dtype=np.float64)
-        for i in range(self.thermo_coeff_matrix.shape[0]):
-            matrix = self.thermo_coeff_matrix[i]
-            free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage)
-        rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
+        T = self.T.value_si
+        num_core_species = self.num_core_species
+        pairs = self.thermo_coverage_pairs
+        coefficients = self.thermo_coverage_coefficients
+        g = np.zeros(num_core_species, dtype=np.float64)
+        for p in range(pairs.shape[0]):
+            theta = coverages[pairs[p, 1]]
+            if theta == 0.0:
+                continue
+            g[pairs[p, 0]] += theta * ((coefficients[p, 0] - T * coefficients[p, 3])
+                                       + theta * ((coefficients[p, 1] - T * coefficients[p, 4])
+                                                  + theta * (coefficients[p, 2] - T * coefficients[p, 5])))
+
+        ir = self.reactant_indices
+        ip = self.product_indices
+        rxns_free_energy_change = np.zeros(ir.shape[0], dtype=np.float64)
+        for j in range(ir.shape[0]):
+            involves_edge_species = False
+            for z in range(3):
+                if ir[j, z] >= num_core_species or ip[j, z] >= num_core_species:
+                    involves_edge_species = True
+            if involves_edge_species:
+                continue
+            delta = 0.0
+            for z in range(3):
+                if ir[j, z] != -1:
+                    delta -= g[ir[j, z]]
+                if ip[j, z] != -1:
+                    delta += g[ip[j, z]]
+            rxns_free_energy_change[j] = delta
         return rxns_free_energy_change
 
     @cython.boundscheck(False)
@@ -726,9 +736,13 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=2] pd
         cdef np.ndarray[np.float64_t, ndim=1] inv_omega   # per-species normalization
         cdef np.ndarray[np.float64_t, ndim=1] coverages, coverage_corrections, rf, rr
+        cdef np.ndarray[np.int_t, ndim=2] pairs
+        cdef np.ndarray[np.float64_t, ndim=2] coefficients
+        cdef np.ndarray[np.int_t, ndim=1] pair_start, last_reaction, touched, species_on_surface
+        cdef np.ndarray[np.float64_t, ndim=1] dg_pair, dDG_dtheta
         cdef int num_core_reactions, num_core_species, i, j
-        cdef Py_ssize_t z
-        cdef double k, V, A, deriv, T, RT, total_sites, surface_site_fraction, a, m, E
+        cdef Py_ssize_t z, p, s, q, n_touched, side
+        cdef double k, V, A, deriv, T, RT, total_sites, surface_site_fraction, a, m, E, theta, factor, value, nu
         cdef list list_of_coverage_deps
 
         ir = self.reactant_indices
@@ -808,21 +822,60 @@ cdef class SurfaceReactor(ReactionSystem):
                         rr[j] *= C[ip[j, z]]
 
         # Jacobian requires an additional term from the coverage-dependent thermo to converge
+        # The reverse rate r_j^- depends on theta_s through kr_j = kb_j exp(DeltaG_j / RT), so
+        #     d res_a / d n_s += -(V / (RT N_sites)) sum_j nu_aj r_j^- d DeltaG_j / d theta_s,
+        # with d DeltaG_j / d theta_s = sum_i nu_ij d g_i / d theta_s. Only the interacting
+        # pairs (i, s) contribute to d g_i / d theta_s, so for each reaction collect the few
+        # columns s that its species interact with, instead of forming dense matrices.
         if self.thermo_coverage_dependence:
-            M = self.thermo_coeff_matrix[:num_core_species, :num_core_species, :]
-            G = M[:, :, 0:3] - T * M[:, :, 3:6]  # H_k - T*S_k
-            dpow = np.vstack((np.ones(num_core_species), 2.0 * coverages, 3.0 * coverages ** 2))
-            dg_dtheta = np.einsum('isk,ks->is', G, dpow)  # d g_i / d theta_s
-            S = self.stoi_matrix[:num_core_reactions, :num_core_species]
-            dDG_dtheta = S @ dg_dtheta  # d DeltaG_j / d theta_s
-
-            # Adding additional term to the Jacobian matrix
-            term = -(V / (RT * total_sites)) * (S.T @ (rr[:, None] * dDG_dtheta))
-
-            # Gas-phase columns have no coverage. Negative amounts of surface species are
-            # clipped to zero coverage in the residual, so its correction is flat there too.
-            term[:, (self.species_on_surface[:num_core_species] == 0) | (y[:num_core_species] < 0)] = 0.0
-            pd += term
+            pairs = self.thermo_coverage_pairs
+            coefficients = self.thermo_coverage_coefficients
+            pair_start = self.thermo_coverage_pair_start
+            species_on_surface = self.species_on_surface
+            dg_pair = np.empty(pairs.shape[0], dtype=np.float64)  # d g_i / d theta_s of each pair
+            for p in range(pairs.shape[0]):
+                theta = coverages[pairs[p, 1]]
+                dg_pair[p] = ((coefficients[p, 0] - T * coefficients[p, 3])
+                              + theta * (2.0 * (coefficients[p, 1] - T * coefficients[p, 4])
+                                         + 3.0 * theta * (coefficients[p, 2] - T * coefficients[p, 5])))
+            factor = V / (RT * total_sites)
+            dDG_dtheta = np.zeros(num_core_species, dtype=np.float64)  # d DeltaG_j / d theta_s for this j
+            last_reaction = np.full(num_core_species, -1, dtype=int)  # last j that set dDG_dtheta[s]
+            touched = np.empty(num_core_species, dtype=int)  # the columns s this j has set
+            for j in range(num_core_reactions):
+                if rr[j] == 0.0:
+                    continue
+                n_touched = 0
+                for z in range(3):
+                    for side in range(2):  # reactants (nu = -1), then products (nu = +1)
+                        if side == 0:
+                            i = ir[j, z]
+                            nu = -1.0
+                        else:
+                            i = ip[j, z]
+                            nu = 1.0
+                        if i == -1:
+                            continue
+                        for p in range(pair_start[i], pair_start[i + 1]):
+                            s = pairs[p, 1]
+                            if last_reaction[s] != j:
+                                last_reaction[s] = j
+                                dDG_dtheta[s] = 0.0
+                                touched[n_touched] = s
+                                n_touched += 1
+                            dDG_dtheta[s] += nu * dg_pair[p]
+                for q in range(n_touched):
+                    s = touched[q]
+                    # Gas-phase columns have no coverage. Negative amounts of surface species
+                    # are clipped to zero coverage in the residual, so it is flat there too.
+                    if species_on_surface[s] == 0 or y[s] < 0:
+                        continue
+                    value = factor * rr[j] * dDG_dtheta[s]
+                    for z in range(3):
+                        if ir[j, z] != -1:
+                            pd[ir[j, z], s] += value
+                        if ip[j, z] != -1:
+                            pd[ip[j, z], s] -= value
 
         #Jacobian requires an additional term for the coverage-dependent kinetics to converge
         if self.coverage_dependence:
