@@ -45,6 +45,12 @@ from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 
 ################################################################################
 
+# Chemically-significant eigenvalues smaller in magnitude than this multiple of the
+# largest eigenvalue magnitude are treated as unresolved by the eigensolver. Tests on
+# the acetyl+O2 example network showed k(T,P) values that agree between LAPACK drivers
+# and BLAS kernels above about 1000 * eps, and that are round-off below about 10 * eps.
+CSE_EIGENVALUE_RTOL = 1000.0 * np.finfo(float).eps
+
 
 def apply_chemically_significant_eigenvalues_method(network, list lumping_order=None, bint neglect_high_energy_collisions=False, double high_energy_rate_tol=0.01):
     """A method for applying the Chemically Significant Eigenvalues approach for solving the master equation."""
@@ -163,6 +169,27 @@ def apply_chemically_significant_eigenvalues_method(network, list lumping_order=
     # Extract the chemically-significant eigenvalues and eigenvectors
     omega = omega0.take(ind[-n_cse:])
     eigen_vectors = eigen_vectors0.take(ind[-n_cse:], axis=1)
+
+    # A dense symmetric eigensolver determines each eigenvalue only to an absolute
+    # accuracy of roughly machine epsilon times the largest eigenvalue magnitude
+    # (the fastest internal-energy relaxation or reaction rate). At low temperatures
+    # and pressures the chemically-significant eigenvalues can be at or below that
+    # level, and then the k(T,P) values extracted from them are set by round-off.
+    # Such values differ between BLAS/LAPACK builds and CPUs, and are often negative
+    # or violate detailed balance, so reject the result.
+    # With no product channels one chemically-significant eigenvalue is truly zero
+    # (conservation of mass) and is expected to be at round-off level; skip it.
+    abs_omega = np.sort(np.abs(omega))
+    if n_prod == 0:
+        abs_omega = abs_omega[1:]
+    noise_floor = CSE_EIGENVALUE_RTOL * np.max(np.abs(omega0))
+    if abs_omega.shape[0] > 0 and abs_omega[0] < noise_floor:
+        logging.error('Smallest chemically-significant eigenvalue ({0:.3g} s^-1) is not resolved above the round-off '
+                      'level of the eigenvalue calculation ({1:.3g} s^-1) at {2:g} K and {3:g} bar, so the '
+                      'chemically-significant eigenvalues method cannot compute k(T,P) here; rejecting result. '
+                      'Consider the reservoir state or modified strong collision method for these '
+                      'conditions.'.format(abs_omega[0], noise_floor, temperature, pressure * 1e-5))
+        return k, pa
 
     # Unsymmetrize the eigenvectors
     for j in range(n_cse):

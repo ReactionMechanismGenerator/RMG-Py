@@ -75,4 +75,11 @@ The chemically-significant eigenvalues method
     networks of only modest size. The chemically-significant eigenvalues method
     is also substantially more expensive to apply than the other methods.
 
+    In double precision the eigensolver only resolves eigenvalues larger than
+    about :math:`10^{-16}` times the fastest rate in the master equation matrix.
+    At low temperatures and pressures the chemically-significant eigenvalues can
+    be smaller than this, and the :math:`k(T,P)` values derived from them would
+    then be set by round-off error. In that case the result is rejected with an
+    error message, and the :math:`k(T,P)` values at those conditions are zero.
+
 

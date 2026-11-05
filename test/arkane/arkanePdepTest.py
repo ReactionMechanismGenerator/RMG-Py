@@ -36,13 +36,16 @@ import os
 import shutil
 
 
+import numpy as np
 import pytest
 
 from rmgpy import settings
 from rmgpy.chemkin import read_reactions_block
 from rmgpy.kinetics.chebyshev import Chebyshev
+import rmgpy.pdep.cse as cse
 from rmgpy.species import Species
 
+from arkane.input import load_input_file
 from arkane.main import Arkane
 
 
@@ -134,3 +137,44 @@ class ArkaneTest:
         for f in files:
             if "pdep_sa" not in f:
                 os.remove(os.path.join(settings["test_data.directory"], "arkane", "tst1", f))
+
+
+@pytest.mark.functional
+class TestChemicallySignificantEigenvaluesRoundOff:
+    """
+    At low temperature and pressure some chemically-significant eigenvalues of the
+    acetyl + O2 network are smaller than the round-off level of the eigensolver.
+    The k(T,P) values extracted from them are then set by round-off: they differ
+    between CPUs and BLAS builds, and on some CI runners they failed the
+    macroscopic equilibrium check, crashing the acetyl+O2_cse example.
+    """
+
+    @classmethod
+    def setup_class(cls):
+        input_file = os.path.join(os.path.dirname(__file__), "..", "..", "examples", "arkane", "networks",
+                                  "acetyl+O2_cse", "input.py")
+        job_list = load_input_file(input_file)[0]
+        cls.job = [job for job in job_list if job.__class__.__name__ == "PressureDependenceJob"][0]
+        cls.job.initialize()
+        cls.network = cls.job.network
+        cls.n_chem = cls.network.n_isom + cls.network.n_reac
+
+    def test_unresolved_eigenvalues_are_rejected(self):
+        """At 302 K and 0.0125 bar the CSE method rejects the result (all zero) instead of returning round-off"""
+        T, P = self.job.Tlist.value_si[0], self.job.Plist.value_si[0]
+        self.network.set_conditions(T, P)
+        K, pa = cse.apply_chemically_significant_eigenvalues_method(self.network)
+        assert np.all(K == 0)
+        # and the network-level calculation does not raise a macroscopic-equilibrium NetworkError
+        K = self.network.calculate_rate_coefficients([T], [P], "chemically-significant eigenvalues")
+        assert np.all(K == 0)
+
+    def test_resolved_eigenvalues_satisfy_detailed_balance(self):
+        """At 885 K and 80 bar the k(T,P) values are computed and satisfy detailed balance"""
+        T, P = self.job.Tlist.value_si[5], self.job.Plist.value_si[4]
+        K = self.network.calculate_rate_coefficients([T], [P], "chemically-significant eigenvalues")[0, 0]
+        eq_ratios = self.network.eq_ratios
+        for i in range(self.n_chem):
+            for j in range(i):
+                assert K[i, j] > 0 and K[j, i] > 0
+                assert abs(K[j, i] / K[i, j] / (eq_ratios[j] / eq_ratios[i]) - 1) < 0.01
