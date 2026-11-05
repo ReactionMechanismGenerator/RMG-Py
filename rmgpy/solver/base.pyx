@@ -589,28 +589,31 @@ cdef class ReactionSystem(DASx):
         holds the state of the last residual evaluation, not ``self.y``.)
 
         With ``c_i = n_i / V``, ``d ln(c_i) = d ln(n_i) - d ln(V)``. Reactors
-        with surface species have constant volume and constant surface area,
-        so there ``d ln(c_i) = d ln(n_i)`` for every species, which for a surface
-        species is also the derivative of the log of its coverage.
+        that are not constant-volume are ideal-gas reactors at constant T and P,
+        where ``V = R T sum_k(n_k) / P``, so ``d ln(V) = sum_k(dn_k) / sum_k(n_k)``.
+        This is computed from ``self.y`` too, rather than from ``self.V``, which
+        is also cached by the residual function. Reactors with surface species
+        have constant volume and constant surface area, so there
+        ``d ln(c_i) = d ln(n_i)`` for every species, which for a surface species
+        is also the derivative of the log of its coverage.
         """
         cdef int num_core_species = self.num_core_species
         cdef int num_core_reactions = self.num_core_reactions
         cdef int num_params = num_core_reactions + num_core_species
         cdef int i, j, index
-        cdef double moles, volume, RTP
-        cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dVdp, kf
+        cdef double moles, total_moles
+        cdef np.ndarray[np.float64_t, ndim=1] mole_sens, dlnVdp, kf
         cdef np.ndarray[np.float64_t, ndim=2] norm_sens
 
         mole_sens = self.y[num_core_species:]  # dn_i/dp_j is stored at [j * num_core_species + i]
         kf = self.kf
-        volume = self.V
 
-        # dV/dp_j, for the parameters [k_1 ... k_nrxn, G_1 ... G_nspc]
-        dVdp = np.zeros(num_params, float)
+        # d ln(V)/dp_j, for the parameters [k_1 ... k_nrxn, G_1 ... G_nspc]
+        dlnVdp = np.zeros(num_params, float)
         if not self.constant_volume:
-            RTP = constants.R * self.T.value_si / self.P.value_si
+            total_moles = np.sum(self.y[:num_core_species])
             for j in range(num_params):
-                dVdp[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) * RTP
+                dlnVdp[j] = np.sum(mole_sens[j * num_core_species:(j + 1) * num_core_species]) / total_moles
 
         norm_sens = np.zeros((len(sens_species_indices), num_params), float)
         for i in range(len(sens_species_indices)):
@@ -619,11 +622,11 @@ cdef class ReactionSystem(DASx):
             if moles == 0:
                 continue
             for j in range(num_core_reactions):
-                # d ln(c_i) / d ln(k_j) = (dn_i/dk_j - (n_i/V) dV/dk_j) * k_j / n_i
-                norm_sens[i, j] = (mole_sens[j * num_core_species + index] - moles / volume * dVdp[j]) * kf[j] / moles
+                # d ln(c_i) / d ln(k_j) = (dn_i/dk_j / n_i - d ln(V)/dk_j) * k_j
+                norm_sens[i, j] = (mole_sens[j * num_core_species + index] / moles - dlnVdp[j]) * kf[j]
             for j in range(num_core_reactions, num_params):
                 # d ln(c_i) / d G_j, not normalized by G_j; G is in J/mol, so multiply by 4184 J/kcal
-                norm_sens[i, j] = (mole_sens[j * num_core_species + index] - moles / volume * dVdp[j]) / moles * 4184
+                norm_sens[i, j] = (mole_sens[j * num_core_species + index] / moles - dlnVdp[j]) * 4184
         return norm_sens
 
     @cython.boundscheck(False)

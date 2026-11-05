@@ -785,3 +785,114 @@ class SimpleReactorTest:
 
         # Only "CH4" should be marked constant
         assert rxn_system.const_spc_indices == [core_species.index(a)]
+
+    def test_normalized_sensitivities_at_constant_pressure(self):
+        """
+        Compare the normalized sensitivities d ln(c_i)/d ln(k_j) and d ln(c_i)/dG_j in a
+        constant-pressure reactor whose total moles change (CH3 + CH3 <=> C2H6) with
+        central differences of re-run simulations, and check that they are computed
+        from the state in y alone, not from the volume and concentrations that the
+        residual function caches.
+        """
+        def thermo(Cp, H298, S298):
+            return ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=(Cp, "cal/(mol*K)"),
+                H298=(H298, "kcal/mol"),
+                S298=(S298, "cal/(mol*K)"),
+            )
+
+        ch4 = Species(molecule=[Molecule().from_smiles("C")],
+                      thermo=thermo([8.615, 9.687, 10.963, 12.301, 14.841, 16.976, 20.528], -17.714, 44.472))
+        ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")],
+                      thermo=thermo([9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195], 9.357, 45.174))
+        c2h6 = Species(molecule=[Molecule().from_smiles("CC")],
+                       thermo=thermo([12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595], -19.521, 54.799))
+        c2h5 = Species(molecule=[Molecule().from_smiles("C[CH2]")],
+                       thermo=thermo([11.635, 13.744, 16.085, 18.246, 21.885, 24.676, 29.107], 29.496, 56.687))
+        core_species = [ch4, ch3, c2h6, c2h5]
+        core_reactions = [
+            Reaction(reactants=[c2h6, ch3], products=[c2h5, ch4],
+                     kinetics=Arrhenius(A=(686.375 * 6, "m^3/(mol*s)"), n=4.40721, Ea=(7.82799, "kcal/mol"),
+                                        T0=(298.15, "K"))),
+            Reaction(reactants=[ch3, ch3], products=[c2h6],
+                     kinetics=Arrhenius(A=(1e4, "m^3/(mol*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K"))),
+        ]
+        sensitive_species = [ch3, c2h6, ch4]
+        T = 1000.0
+        P = 1.0e5
+        t_check = 1e-6  # s
+
+        class PerturbedSimpleReactor(SimpleReactor):
+            """A SimpleReactor with one rate coefficient scaled, or one species' Gibbs energy shifted."""
+            k_scale = None  # (reaction index, factor), scales kf and kb so Keq is unchanged
+            dG = None  # (species, shift in J/mol), changes Keq and kb with kf unchanged
+
+            def generate_rate_coefficients(self, core_reactions, edge_reactions):
+                SimpleReactor.generate_rate_coefficients(self, core_reactions, edge_reactions)
+                if self.k_scale is not None:
+                    j, factor = self.k_scale
+                    self.kf[j] *= factor
+                    self.kb[j] *= factor
+                if self.dG is not None:
+                    spc, dG = self.dG
+                    for rxn in core_reactions:
+                        j = self.reaction_index[rxn]
+                        nu = rxn.products.count(spc) - rxn.reactants.count(spc)
+                        if nu != 0 and rxn.reversible:
+                            self.Keq[j] *= np.exp(-nu * dG / (constants.R * T))
+                            self.kb[j] = self.kf[j] / self.Keq[j]
+
+        def make_reactor(reactor_class=SimpleReactor):
+            return reactor_class(
+                T,
+                P,
+                initial_mole_fractions={ch3: 0.5, c2h6: 0.3, ch4: 0.2},
+                n_sims=1,
+                termination=[],
+                sensitive_species=sensitive_species,
+            )
+
+        def advance(reactor):
+            # Approach t_check in steps, as a simulation would
+            for t in np.logspace(-10, np.log10(t_check), 15):
+                reactor.advance(t)
+
+        rxn_system = make_reactor()
+        rxn_system.initialize_model(core_species, core_reactions, [], [], sensitivity=True)
+        advance(rxn_system)
+        sens_indices = np.array([rxn_system.species_index[spc] for spc in sensitive_species])
+        norm_sens = rxn_system.compute_normalized_sensitivities(sens_indices)
+
+        # The result must not depend on the volume or concentrations cached by the last residual call
+        rxn_system.V *= 1.1
+        rxn_system.core_species_concentrations *= 1.1
+        assert np.array_equal(rxn_system.compute_normalized_sensitivities(sens_indices), norm_sens)
+
+        def final_ln_concentrations(**perturbation):
+            perturbed = make_reactor(PerturbedSimpleReactor)
+            for attribute, value in perturbation.items():
+                setattr(perturbed, attribute, value)
+            perturbed.initialize_model(core_species, core_reactions, [], [])
+            advance(perturbed)
+            moles = perturbed.y[:len(core_species)]
+            volume = constants.R * T * np.sum(moles) / P
+            return np.log(moles[sens_indices] / volume)
+
+        num_reactions = len(core_reactions)
+        brute_force = np.zeros_like(norm_sens)
+        delta = 1e-3
+        for j in range(num_reactions):
+            ln_c_up = final_ln_concentrations(k_scale=(j, 1 + delta))
+            ln_c_down = final_ln_concentrations(k_scale=(j, 1 - delta))
+            brute_force[:, j] = (ln_c_up - ln_c_down) / (np.log(1 + delta) - np.log(1 - delta))
+        dG = 0.01  # kcal/mol
+        for k, spc in enumerate(core_species):
+            ln_c_up = final_ln_concentrations(dG=(spc, dG * 4184))
+            ln_c_down = final_ln_concentrations(dG=(spc, -dG * 4184))
+            brute_force[:, num_reactions + k] = (ln_c_up - ln_c_down) / (2 * dG)
+
+        # Make sure the comparison is not trivial: the recombination changes the total moles,
+        # so the d ln(V) term matters, and the sensitivities are well above the tolerance.
+        assert np.abs(brute_force[:, :num_reactions]).max() > 1e-2
+        assert np.allclose(norm_sens, brute_force, rtol=1e-2, atol=1e-6)
