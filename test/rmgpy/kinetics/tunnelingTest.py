@@ -134,7 +134,15 @@ class TestEckart:
         Test the Eckart.calculate_tunneling_factor() method.
         """
         Tlist = np.array([300, 500, 1000, 1500, 2000])
-        kexplist = np.array([1623051.0, 7.69349, 1.46551, 1.18111, 1.09858])
+        # Reference values for this barrier (dV1 = 251.0053 kJ/mol, dV2 = 282.8219 kJ/mol,
+        # nu = 2017.96 cm^-1), computed with 50-digit quadrature of the Eckart transmission
+        # probability and independently with ball arithmetic, in reduced units so that the
+        # values do not depend on the constants used here:
+        #   300 K  1.1580301092e7    500 K  7.694602770    1000 K  1.465514627
+        #   1500 K 1.181106276      2000 K  1.098578484
+        # The 300 K value was 1623051.0 before the cancellation in the transmission
+        # probability was removed; it was too small by a factor of about 7.1.
+        kexplist = np.array([11580301.0, 7.69460, 1.46551, 1.18111, 1.09858])
         for T, kexp in zip(Tlist, kexplist):
             kact = self.tunneling.calculate_tunneling_factor(T)
             assert abs(kexp - kact) < 1e-3 * kexp
