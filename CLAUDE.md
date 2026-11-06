@@ -14,7 +14,7 @@ Entry points:
 
 ## Setup
 
-The conda env is the only supported install path. Python is pinned `>=3.9,<3.12`.
+The conda env is the only supported install path. Python is pinned `>=3.10,<3.12`.
 
 ```bash
 conda env create --file environment.yml   # creates env named `rmg_env`
