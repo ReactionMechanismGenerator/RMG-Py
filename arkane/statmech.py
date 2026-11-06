@@ -57,7 +57,7 @@ from rmgpy.quantity import Quantity
 
 from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments_of_inertia
 from arkane.encorr.corr import get_atom_correction, get_bac
-from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog, XTBLog
+from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, ARCYAMLLog, GaussianLog, QChemLog, XTBLog
 from arkane.encorr.isodesmic import ErrorCancelingSpecies, IsodesmicRingScheme
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory, standardize_name
 from arkane.output import prettify
@@ -801,7 +801,7 @@ class StatMechJob(object):
                                              'in the specified path {1}'.format(self.species.label, scan_log.path))
                         else:
                             scan_log.path = modified_scan_path
-                if isinstance(scan_log, (GaussianLog, QChemLog)):
+                if isinstance(scan_log, (GaussianLog, QChemLog, ARCYAMLLog)):
                     v_list, angle = scan_log.load_scan_energies()
                     try:
                         pivot_atoms = scan_log.load_scan_pivot_atoms()
