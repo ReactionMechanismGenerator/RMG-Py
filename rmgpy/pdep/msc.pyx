@@ -144,7 +144,35 @@ cpdef apply_modified_strong_collision_method(network, str efficiency_model='defa
                         logging.debug(str([f_im[j, n - n_isom, r, s], dens_states[n, r, s],
                                            (2 * j_list[s] + 1), exp(-e_list[r] * beta), e_list[r], beta]))
             # Solve for steady-state population
-            x = -np.linalg.solve(a_mat, b)
+            try:
+                x = -np.linalg.solve(a_mat, b)
+            except np.linalg.LinAlgError:
+                # a_mat goes singular when the microcanonical rate coefficients in this grain
+                # overwhelm the collision frequency, so the collisional terms on the diagonal stop
+                # carrying anything the solve can use. That is almost always a sign that the input
+                # k(E) is unphysical rather than that the algorithm was unlucky -- most often
+                # because the wells and the transition states of this network are described with
+                # different degrees of freedom, so Q_TS/Q_reactant never cancels. Report where it
+                # happened and how far apart the two scales were: the bare LinAlgError carries none
+                # of this, and locating it otherwise means bisecting the grains by hand.
+                # `.max()` on an empty array raises, and a network with no reactant or product
+                # channels has a zero-sized g_nj -- so an unguarded max() here would replace the
+                # unhelpful LinAlgError with an equally unhelpful ValueError.
+                k_max = 0.0
+                if k_ij.size:
+                    k_max = max(k_max, np.abs(k_ij[:, :, r, s]).max())
+                if g_nj.size:
+                    k_max = max(k_max, np.abs(g_nj[:, :, r, s]).max())
+                freq_max = coll_freq.max() if coll_freq.size else 0.0
+                raise ModifiedStrongCollisionError(
+                    'Singular matrix encountered while solving for the steady-state population of '
+                    'network {0} at grain {1} (E = {2:g} kJ/mol), J index {3}, T = {4:g} K. The '
+                    'largest rate coefficient in this grain is {5:g} s^-1 against a collision '
+                    'frequency of {6:g} s^-1, a ratio of {7:g}. A ratio this large usually means '
+                    'k(E) is unphysical -- check that every isomer and transition state in the '
+                    'network enumerates the same translational and rotational modes.'.format(
+                        network.label, r, e_list[r] / 1000., j_list[s], temperature,
+                        k_max, freq_max, k_max / freq_max if freq_max else float('inf')))
             for n in range(n_isom + n_reac):
                 for i in range(n_isom):
                     pa[i, n, r, s] = x[i, n]
