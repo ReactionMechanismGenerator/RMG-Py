@@ -446,6 +446,9 @@ with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indica
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
 dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
 sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > sensitivityThreshold are saved to this file.
+Here C_i is the concentration of species i in its own phase: mol/m^3 for gas-phase species, and mol/m^2 for adsorbates in a
+surface reactor, where the volume and catalyst area are constant, so the sensitivity of an adsorbate is also that of its
+surface coverage.
 
 Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).

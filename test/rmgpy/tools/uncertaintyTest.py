@@ -550,3 +550,60 @@ class TestUncertainty:
             actual_group_data = sorted(actual_group_data)
             assert np.isclose(uncertainty.thermo_input_uncertainties[i], expected_result[0], rtol=1e-4)
             assert actual_group_data == expected_group_data
+
+
+class _ReactorCreated(Exception):
+    """Raised by the stand-in SurfaceReactor to stop sensitivity_analysis once the reactor is built."""
+
+
+class TestUncertaintySurfaceSensitivity:
+    """
+    Check that Uncertainty.sensitivity_analysis builds a SurfaceReactor with the requested
+    coverage-dependence options. These tests need no database.
+    """
+
+    def _get_reactor_kwargs(self, monkeypatch, tmp_path, **sensitivity_kwargs):
+        import rmgpy.solver
+
+        recorded = {}
+
+        def fake_surface_reactor(*args, **kwargs):
+            recorded.update(kwargs)
+            raise _ReactorCreated()
+
+        monkeypatch.setattr(rmgpy.solver, "SurfaceReactor", fake_surface_reactor)
+
+        h2 = rmgpy.species.Species(smiles="[H][H]")
+        x = rmgpy.species.Species(smiles="*")
+        hx = rmgpy.species.Species(smiles="[H]*")
+        uncertainty = Uncertainty(species_list=[h2, x, hx], reaction_list=[], output_directory=str(tmp_path))
+        try:
+            uncertainty.sensitivity_analysis(
+                initial_mole_fractions={h2: 1.0},
+                sensitive_species=[hx],
+                T=(600, "K"),
+                P=(1, "bar"),
+                termination_time=(1e-6, "s"),
+                initial_surface_coverages={x: 1.0},
+                surface_volume_ratio=(1e1, "m^-1"),
+                **sensitivity_kwargs,
+            )
+        except _ReactorCreated:
+            pass
+        else:
+            raise AssertionError("sensitivity_analysis did not build a SurfaceReactor for a surface mechanism")
+        return recorded
+
+    def test_coverage_dependence_off_by_default(self, monkeypatch, tmp_path):
+        kwargs = self._get_reactor_kwargs(monkeypatch, tmp_path)
+        assert kwargs["coverage_dependence"] is False
+        assert kwargs["thermo_coverage_dependence"] is False
+
+    def test_coverage_dependence_passed_to_surface_reactor(self, monkeypatch, tmp_path):
+        kwargs = self._get_reactor_kwargs(monkeypatch, tmp_path, coverage_dependence=True)
+        assert kwargs["coverage_dependence"] is True
+        assert kwargs["thermo_coverage_dependence"] is False
+
+        kwargs = self._get_reactor_kwargs(monkeypatch, tmp_path, thermo_coverage_dependence=True)
+        assert kwargs["coverage_dependence"] is False
+        assert kwargs["thermo_coverage_dependence"] is True
