@@ -492,13 +492,17 @@ class Reactor:
         )
         if resurrected:
             # RMS reports this with Julia's @error, which does not reach RMG.log, so log it here too.
-            added = ", ".join(str(getattr(obj, "name", obj)) for obj in invalid_objects) or "none"
+            added = ", ".join(str(getattr(obj, "name", obj)) for obj in invalid_objects)
+            if added:
+                action = ("adding the edge species with the largest rate ({0}) instead of species "
+                          "chosen by the flux criteria".format(added))
+            else:
+                action = "but there was no edge species to add"
             logging.warning(
-                "RMS edge simulation failed at t = {1:g} s (CVODE with the {0} linear solver). "
-                "Resurrecting the model: adding the edge species with the largest rate ({2}) "
-                "instead of species chosen by the flux criteria. If this happens often, the model is "
-                "being grown by solver failures; consider changing the simulator tolerances or "
-                "linearSolver.".format(simulator_settings.rms_linear_solver, float(t), added)
+                "RMS edge simulation failed at t = {0:g} s (CVODE with the {1} linear solver). "
+                "Resurrecting the model: {2}. If this happens often, the model is being grown by "
+                "solver failures; consider changing the simulator tolerances or linearSolver.".format(
+                    float(t), simulator_settings.rms_linear_solver, action)
             )
 
         return (

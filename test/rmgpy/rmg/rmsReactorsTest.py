@@ -106,6 +106,14 @@ class TestRMSReactorSimulate:
         assert "Resurrecting the model" in caplog.text
         assert "CO2X(12)" in caplog.text
 
+    def test_resurrection_with_empty_edge_is_logged(self, caplog):
+        """A resurrection with no edge species to add still logs a warning, without naming a species"""
+        main = _mock_main(resurrected=True, invalid_objects=[])
+        with patch.object(rms_reactors, "Main", main), caplog.at_level(logging.WARNING):
+            _make_reactor().simulate(MagicMock(), SimulatorSettings(), None)
+        assert "Resurrecting the model" in caplog.text
+        assert "no edge species to add" in caplog.text
+
     def test_no_warning_without_resurrection(self, caplog):
         """A successful simulation does not log the resurrection warning"""
         main = _mock_main(resurrected=False)
