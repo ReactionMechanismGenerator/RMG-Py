@@ -42,8 +42,9 @@ dependencies:
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
-  # 3.2.1 hangs pytest collection under Python 3.10/3.11, where test/conftest.py imports pybel
-  - conda-forge::openbabel >=3,<3.2
+  # openbabel 3.1.1 caps libxml2 <2.14 (hence icu <=75), which holds rdkit back at 2025.03.
+  # With 3.2.x, CoolProp must be imported before openbabel; see rmgpy/molecule/converter.py
+  - conda-forge::openbabel >=3.2.1
   - conda-forge::rdkit >=2024
   - rmg::pysidt-rmg >=1.2
 

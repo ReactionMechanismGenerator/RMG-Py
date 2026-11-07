@@ -39,6 +39,15 @@ import cython
 # Assume that rdkit is installed
 from rdkit import Chem
 from rdkit.Chem.rdchem import KekulizeException, AtomKekulizeException
+# CoolProp must be loaded before openbabel's format plugins. Both bundle rapidjson,
+# and the JSON plugins of openbabel >=3.2 use a newer rapidjson whose internal
+# number-formatting tables have a different size. On Linux those tables are
+# STB_GNU_UNIQUE symbols, so whichever library loads first supplies them to the
+# whole process. If openbabel's plugins load first, CoolProp's static initializer
+# reads the wrong tables and never finishes, so `import CoolProp` (done by
+# rmgpy.data.solvation) hangs at 100% CPU. Loading CoolProp first avoids this.
+# Every module that imports openbabel should do this first.
+import CoolProp  # noqa: F401
 # Test if openbabel is installed
 try:
     from openbabel import openbabel

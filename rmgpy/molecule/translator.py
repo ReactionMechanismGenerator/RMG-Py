@@ -37,6 +37,8 @@ import logging
 import cython
 # Assume that rdkit is installed
 from rdkit import Chem
+# Load CoolProp before openbabel, or importing CoolProp later can hang; see rmgpy/molecule/converter.py
+import CoolProp  # noqa: F401
 # Test if openbabel is installed
 try:
     from openbabel import openbabel
