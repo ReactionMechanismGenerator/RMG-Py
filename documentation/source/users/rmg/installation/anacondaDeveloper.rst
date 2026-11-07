@@ -160,6 +160,21 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
      RMS_INSTALLER=developer RMS_PATH=$HOME/Code/ReactionMechanismSimulator.jl source install_rms.sh
 
+    **Intel Macs: Julia killed with "Code Signature Invalid"**:
+    When conda installs a package, it rewrites paths stored inside some of its binaries.
+    For Apple Silicon (``osx-arm64``) packages it then re-signs them, but for Intel (``osx-64``) packages it doesn't,
+    so they are left with invalid code signatures.
+    Python doesn't mind, but the official Julia binaries are killed (``Killed: 9``, exit code 137, and a crash report saying
+    ``SIGKILL (Code Signature Invalid)``) as soon as they load such a file.
+    This happens, for example, when running ``using ReactionMechanismSimulator`` in ``julia``, which imports matplotlib and its ``kiwisolver`` extension.
+    Running RMG itself is not affected, because there Python loads Julia rather than the other way round.
+    ``install_rms.sh`` fixes this by re-signing the affected files, but installing or updating conda packages afterwards can break them again.
+    To fix them again, run the following from the RMG-Py directory, with your RMG conda environment activated: ::
+
+     python utilities.py fix-macos-signatures
+
+    See `issue #3037 <https://github.com/ReactionMechanismGenerator/RMG-Py/issues/3037>`_ for details.
+
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 

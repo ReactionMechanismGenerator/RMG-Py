@@ -273,6 +273,75 @@ def clean(subdirectory=''):
     print('Cleanup completed.')
 
 
+def conda_binary_patched_files(prefix):
+    """
+    Return the paths (relative to `prefix`) of all files that conda patched in
+    binary mode when installing packages into the conda environment at `prefix`.
+
+    Conda records, for each installed package, which files it rewrote to
+    replace the build-time prefix with the environment's path. Those records
+    are in ``conda-meta/*.json``, as ``paths_data`` entries with
+    ``"file_mode": "binary"``.
+    """
+    import glob
+    import json
+    paths = []
+    for meta_file in sorted(glob.glob(os.path.join(prefix, 'conda-meta', '*.json'))):
+        with open(meta_file) as f:
+            meta = json.load(f)
+        for entry in meta.get('paths_data', {}).get('paths', []):
+            if entry.get('file_mode') == 'binary':
+                paths.append(entry['_path'])
+    return paths
+
+
+def fix_macos_signatures(prefix=None):
+    """
+    Re-sign (ad hoc) binaries in a conda environment whose macOS code
+    signatures were invalidated by conda's prefix replacement.
+
+    When conda installs a package it rewrites the build-time path stored inside
+    some binaries, which changes their contents. On Apple Silicon (osx-arm64)
+    conda then re-signs them, but for Intel (osx-64) packages it does not. Recent
+    conda-forge osx-64 builds are ad hoc signed, so these files are left with a
+    signature that no longer matches. Most programs don't mind, but a process
+    with Apple's hardened runtime, such as the official Julia binaries, is killed
+    (SIGKILL, "Code Signature Invalid") as soon as it touches a modified page.
+    So, for example, running ``using ReactionMechanismSimulator`` in ``julia``
+    gets killed when PythonCall imports matplotlib, and with it kiwisolver.
+
+    Only files that conda patched and whose signature is now invalid are
+    re-signed. Unsigned files, and files with valid signatures, are left alone.
+    Re-run this after installing or updating conda packages.
+    """
+    if platform.system() != 'Darwin':
+        print('Not on macOS, so there are no code signatures to fix.')
+        return
+    if prefix is None:
+        prefix = sys.prefix
+    print('Checking code signatures of binaries that conda patched in {0}'.format(prefix))
+    fixed, failed = [], []
+    for rel_path in conda_binary_patched_files(prefix):
+        path = os.path.join(prefix, rel_path)
+        if not os.path.isfile(path) or os.path.islink(path):
+            continue
+        check = subprocess.run(['codesign', '--verify', path], capture_output=True, text=True)
+        if check.returncode == 0 or 'invalid signature' not in check.stderr:
+            continue  # valid, or not signed at all
+        sign = subprocess.run(['codesign', '--force', '--sign', '-', path], capture_output=True, text=True)
+        if sign.returncode == 0:
+            fixed.append(rel_path)
+        else:
+            failed.append(rel_path)
+            print('Could not re-sign {0}: {1}'.format(path, sign.stderr.strip()))
+    for rel_path in fixed:
+        print('Re-signed {0}'.format(rel_path))
+    print('Re-signed {0} file(s) with invalid signatures.'.format(len(fixed)))
+    if failed:
+        print('Failed to re-sign {0} file(s).'.format(len(failed)))
+        sys.exit(1)
+
+
 def update_headers():
     """
     Automatically update the headers for *.py, *.pyx, and *.pxd files
@@ -392,6 +461,7 @@ if __name__ == '__main__':
                                  'check-pydas',
                                  'clean',
                                  'clean-solver',
+                                 'fix-macos-signatures',
                                  'update-headers'],
                         help='command to execute')
 
@@ -405,5 +475,7 @@ if __name__ == '__main__':
         clean()
     elif args.command == 'clean-solver':
         clean('rmgpy/solver')
+    elif args.command == 'fix-macos-signatures':
+        fix_macos_signatures()
     elif args.command == 'update-headers':
         update_headers()

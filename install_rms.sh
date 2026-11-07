@@ -124,6 +124,18 @@ conda install -y 'conda-forge::pyjuliacall==0.9.28'
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
+# On macOS, conda can leave binaries with invalid code signatures (it rewrites paths
+# inside them, but only re-signs them for Apple Silicon packages). Julia is killed
+# ("Code Signature Invalid") if it loads one, e.g. kiwisolver via matplotlib when
+# loading RMS. This re-signs them. See fix_macos_signatures in utilities.py.
+if [ "$(uname)" = "Darwin" ]; then
+    if [ -f utilities.py ]; then
+        python utilities.py fix-macos-signatures || echo "⚠️ Could not re-sign all binaries; Julia may be killed when it loads RMS."
+    else
+        echo "⚠️ Run 'python utilities.py fix-macos-signatures' from the RMG-Py directory, or Julia may be killed when it loads RMS."
+    fi
+fi
+
 # Initialize the Julia environment from Python using juliacall
 python << EOF || return 1
 import sys
