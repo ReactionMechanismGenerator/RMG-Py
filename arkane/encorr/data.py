@@ -42,6 +42,8 @@ from dataclasses import dataclass
 from typing import Callable, Iterable, List, Sequence, Set, Union
 
 import numpy as np
+# Load CoolProp before openbabel, or importing CoolProp later can hang; see rmgpy/molecule/converter.py
+import CoolProp  # noqa: F401
 from openbabel import pybel
 
 from rmgpy import settings
