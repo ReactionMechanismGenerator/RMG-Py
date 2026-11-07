@@ -529,6 +529,30 @@ The next two lines specify the absolute and relative tolerance for the ODE solve
 The ``sens_atol`` and ``sens_rtol`` are optional arguments for the sensitivity absolute tolerance and sensitivity relative tolerances, respectively.  They
 are set to a default value of 1e-6 and 1e-4 respectively unless the user specifies otherwise.  They do not apply when sensitivity analysis is not conducted.
 
+Advanced Setting: Linear Solver (RMS Reactors Only)
+---------------------------------------------------
+For the RMS reactor types (``constantVIdealGasReactor``, ``constantTPIdealGasReactor``, ``constantTVLiquidReactor`` and ``liquidSurfaceReactor``),
+the optional ``linearSolver`` argument chooses the linear solver that the CVODE integrator uses in its Newton iterations::
+
+	simulator(
+	    atol=1e-16,
+	    rtol=1e-8,
+	    linearSolver='dense',
+	)
+
+The options are:
+
+- ``'dense'`` (default): a direct, dense LU solve of the Newton system. It is robust for stiff kinetics,
+  and its cost is small at the model sizes RMG usually builds (up to a few hundred core plus edge species).
+- ``'GMRES'``: an iterative Krylov method, used without a preconditioner. It needs less memory and can be faster for very large
+  models, but it often fails to converge on stiff systems, such as surface and electrochemical mechanisms. When the edge
+  simulation fails, RMG "resurrects" the model by adding the edge species with the largest rate to the core, rather than
+  the species chosen by the flux criteria, and logs a warning saying so.
+  It was the only choice in RMG-Py 3.3.0 and 4.0.0.
+
+The option is case-insensitive. It has no effect on RMG's native (non-RMS) reactors, such as ``simpleReactor``,
+``liquidReactor`` and ``surfaceReactor``, which use DASPK or DASSL.
+
 
 
 .. _modeltolerances:

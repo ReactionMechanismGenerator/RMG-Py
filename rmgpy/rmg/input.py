@@ -1213,8 +1213,8 @@ def mb_sampled_reactor(temperature,
     rmg.reaction_systems.append(system)
 
 
-def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
-    rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
+def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4, linearSolver='dense'):
+    rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol, linear_solver=linearSolver))
 
 
 def solvation(solvent,solventData=None):
@@ -1940,6 +1940,7 @@ def save_input_file(path, rmg):
     f.write('    rtol = {0:g},\n'.format(rmg.simulator_settings_list[0].rtol))
     f.write('    sens_atol = {0:g},\n'.format(rmg.simulator_settings_list[0].sens_atol))
     f.write('    sens_rtol = {0:g},\n'.format(rmg.simulator_settings_list[0].sens_rtol))
+    f.write("    linearSolver = '{0}',\n".format(rmg.simulator_settings_list[0].rms_linear_solver))
     f.write(')\n\n')
 
     # Model
