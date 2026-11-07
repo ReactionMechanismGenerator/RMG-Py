@@ -488,8 +488,22 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=Main.Sundials.CVODE_BDF(linear_solver=Main.Symbol("GMRES")),
+            solver=Main.Sundials.CVODE_BDF(linear_solver=Main.Symbol(simulator_settings.rms_linear_solver)),
         )
+        if resurrected:
+            # RMS reports this with Julia's @error, which does not reach RMG.log, so log it here too.
+            added = ", ".join(str(getattr(obj, "name", obj)) for obj in invalid_objects)
+            if added:
+                action = ("adding the edge species with the largest rate ({0}) instead of species "
+                          "chosen by the flux criteria".format(added))
+            else:
+                action = "but there was no edge species to add"
+            logging.warning(
+                "RMS edge simulation failed at t = {0:g} s (CVODE with the {1} linear solver). "
+                "Resurrecting the model: {2}. If this happens often, the model is being grown by "
+                "solver failures; consider changing the simulator tolerances or linearSolver.".format(
+                    float(t), simulator_settings.rms_linear_solver, action)
+            )
 
         return (
             terminated,

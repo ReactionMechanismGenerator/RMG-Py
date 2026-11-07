@@ -34,7 +34,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.rmg.input import _parse_writer_config, _writer_config_to_input
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
-from rmgpy.rmg.settings import WriterConfig
+from rmgpy.rmg.settings import SimulatorSettings, WriterConfig
 from rmgpy.ml.estimator import ADMONITION
 
 import pytest
@@ -540,6 +540,53 @@ class TestInputPressureDependence:
         
         # Check that no networks were added
         assert len(rmg.reaction_model.completed_pdep_networks) == 0
+
+
+class TestInputSimulator:
+    """
+    Contains unit tests for the simulator() input block
+    """
+
+    def setup_method(self):
+        global rmg
+        rmg.simulator_settings_list = []
+
+    def teardown_method(self):
+        global rmg
+        rmg.simulator_settings_list = []
+
+    def test_simulator_defaults(self):
+        """The RMS linear solver defaults to a dense direct solve"""
+        inp.simulator(atol=1e-16, rtol=1e-8)
+        settings = rmg.simulator_settings_list[-1]
+        assert settings.atol == 1e-16
+        assert settings.rtol == 1e-8
+        assert settings.sens_atol == 1e-6
+        assert settings.sens_rtol == 1e-4
+        assert settings.linear_solver == "dense"
+        assert settings.rms_linear_solver == "Dense"
+
+    @pytest.mark.parametrize(
+        "value,expected",
+        [("dense", "Dense"), ("Dense", "Dense"), ("GMRES", "GMRES"), ("gmres", "GMRES")],
+    )
+    def test_simulator_linear_solver(self, value, expected):
+        """linearSolver is case-insensitive and maps to the Sundials.jl name"""
+        inp.simulator(atol=1e-16, rtol=1e-8, linearSolver=value)
+        assert rmg.simulator_settings_list[-1].rms_linear_solver == expected
+
+    @pytest.mark.parametrize("value", ["KLU", "LapackDense", "", None, 1])
+    def test_simulator_invalid_linear_solver(self, value):
+        """Unsupported linear solvers are rejected when the input file is read"""
+        with pytest.raises(ValueError):
+            inp.simulator(atol=1e-16, rtol=1e-8, linearSolver=value)
+        assert rmg.simulator_settings_list == []
+
+    def test_simulator_settings_without_linear_solver_attribute(self):
+        """Settings objects made before linear_solver existed (e.g. unpickled) fall back to dense"""
+        settings = SimulatorSettings()
+        del settings.linear_solver
+        assert settings.rms_linear_solver == "Dense"
 
 
 class TestWriterConfig:

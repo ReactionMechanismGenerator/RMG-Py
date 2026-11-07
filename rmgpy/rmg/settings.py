@@ -129,16 +129,43 @@ class ModelSettings(object):
             self.max_num_objects_per_iter = max_num_objects_per_iter
 
 
+# Linear solvers that can be used by CVODE in the ReactionMechanismSimulator (RMS) reactors,
+# keyed by the lower-case name accepted in input files, with the Sundials.jl name as the value.
+# 'KLU' (sparse direct) is not offered because Sundials.jl needs a sparse Jacobian prototype for it,
+# which RMS only sets for some reactor types.
+RMS_LINEAR_SOLVERS = {
+    'dense': 'Dense',
+    'gmres': 'GMRES',
+}
+
+
 class SimulatorSettings(object):
     """
     class for holding the parameters affecting the behavior of the solver
+
+    `linear_solver` is the linear solver CVODE uses inside its Newton iterations in the RMS
+    reactors (it does not affect RMG's native DASPK/DASSL reactors). 'dense' (the default) is a
+    direct dense LU solve, which is robust for stiff kinetics. Only the core is integrated, so its
+    cost scales as N_core**3 regardless of edge size: negligible for a few hundred core species,
+    roughly 0.5 s per factorization at 1000.
+    'GMRES' is an unpreconditioned Krylov iterative method; it uses less memory for very large
+    models but often fails to converge on stiff surface or electrochemical systems.
     """
 
-    def __init__(self, atol=1e-16, rtol=1e-8, sens_atol=1e-6, sens_rtol=1e-4):
+    def __init__(self, atol=1e-16, rtol=1e-8, sens_atol=1e-6, sens_rtol=1e-4, linear_solver='dense'):
         self.atol = atol
         self.rtol = rtol
         self.sens_atol = sens_atol
         self.sens_rtol = sens_rtol
+        if not isinstance(linear_solver, str) or linear_solver.lower() not in RMS_LINEAR_SOLVERS:
+            raise ValueError("Unknown linear solver {0!r}. Valid options are: {1}.".format(
+                linear_solver, ', '.join(repr(v) for v in RMS_LINEAR_SOLVERS.values())))
+        self.linear_solver = linear_solver.lower()
+
+    @property
+    def rms_linear_solver(self):
+        """The name of the linear solver as Sundials.jl expects it (e.g. 'Dense' or 'GMRES')."""
+        return RMS_LINEAR_SOLVERS[getattr(self, 'linear_solver', 'dense')]
 
 
 class WriterConfig:
