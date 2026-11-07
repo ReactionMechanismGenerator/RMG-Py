@@ -542,8 +542,11 @@ the optional ``linearSolver`` argument chooses the linear solver that the CVODE 
 
 The options are:
 
-- ``'dense'`` (default): a direct, dense LU solve of the Newton system. It is robust for stiff kinetics,
-  and its cost is small at the model sizes RMG usually builds (up to a few hundred core plus edge species).
+- ``'dense'`` (default): a direct, dense LU solve of the Newton system. It is robust for stiff kinetics.
+  Only the core is integrated (edge fluxes are evaluated at the core state), so the matrix is N × N, where N is the
+  number of core species (plus a few state variables), however large the edge is. The cost of the LU factorization
+  grows as N³. It is negligible for a few hundred core species, but each factorization takes roughly 0.5 s at 1000 core
+  species and several seconds at 2000, so very large cores may be faster with ``'GMRES'``.
 - ``'GMRES'``: an iterative Krylov method, used without a preconditioner. It needs less memory and can be faster for very large
   models, but it often fails to converge on stiff systems, such as surface and electrochemical mechanisms. When the edge
   simulation fails, RMG "resurrects" the model by adding the edge species with the largest rate to the core, rather than

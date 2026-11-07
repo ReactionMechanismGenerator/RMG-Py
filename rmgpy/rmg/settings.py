@@ -145,7 +145,9 @@ class SimulatorSettings(object):
 
     `linear_solver` is the linear solver CVODE uses inside its Newton iterations in the RMS
     reactors (it does not affect RMG's native DASPK/DASSL reactors). 'dense' (the default) is a
-    direct dense LU solve, which is robust for stiff kinetics and cheap at typical RMG model sizes.
+    direct dense LU solve, which is robust for stiff kinetics. Only the core is integrated, so its
+    cost scales as N_core**3 regardless of edge size: negligible for a few hundred core species,
+    roughly 0.5 s per factorization at 1000.
     'GMRES' is an unpreconditioned Krylov iterative method; it uses less memory for very large
     models but often fails to converge on stiff surface or electrochemical systems.
     """
