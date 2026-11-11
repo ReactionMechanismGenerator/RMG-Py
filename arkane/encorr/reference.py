@@ -38,7 +38,7 @@ from collections import namedtuple
 
 import yaml
 
-from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, symbol_by_number
+from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT, save_yaml_file, symbol_by_number
 from arkane.encorr.isodesmic import ErrorCancelingSpecies
 from arkane.modelchem import LOT
 from rmgpy import settings
@@ -169,8 +169,7 @@ class ReferenceSpecies(ArkaneSpecies):
         valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
         filename = os.path.join(''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
-        with open(full_path, 'w') as f:
-            yaml.dump(data=self.as_dict(), stream=f)
+        save_yaml_file(full_path, self.as_dict())
         logging.debug(f'Dumping species {self.label} data as {filename}')
 
     def load_yaml(self, path, label=None, pdep=False):

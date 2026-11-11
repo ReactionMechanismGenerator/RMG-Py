@@ -131,13 +131,15 @@ def detect_chemistry(initial_species: list,
         profile.elements_present.update(element_counts.keys())
         if mol.is_surface_site() or 'X' in element_counts:
             profile.has_surface = True
+        if mol.get_net_charge() != 0:
+            profile.has_electrochem = True
 
     profile.has_nitrogen = 'N' in profile.elements_present
     profile.has_sulfur = 'S' in profile.elements_present
     profile.has_oxygen = 'O' in profile.elements_present
     profile.has_carbon = 'C' in profile.elements_present
     profile.has_halogens = bool(profile.elements_present & HALOGEN_ELEMENTS)  # bool(set intersection)
-    profile.has_electrochem = bool(profile.elements_present & ELECTROCHEM_ELEMENTS)
+    profile.has_electrochem = profile.has_electrochem or bool(profile.elements_present & ELECTROCHEM_ELEMENTS)
 
     for reactor in reaction_systems:
         if isinstance(reactor, LiquidReactor):

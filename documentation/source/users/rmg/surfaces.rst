@@ -333,22 +333,29 @@ An Arrhenius-like expression can be used to describe the effect of the coverage 
 .. math:: k_f = A T^b \exp \left( - \frac{E_a}{RT} \right)\prod_k 10^{a_k \theta_k} \theta_k^{m_k}\exp \left( \frac{- E_k \theta_k}{RT} \right)
     :label: covdepeqn
 
-where the parameters :math:`a_k`, :math:`m_k`, and :math:`E_k` are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k. 
+where the parameters :math:`a_k`, :math:`m_k`, and :math:`E_k` are the modifiers for the pre-exponential, temperature exponent, and activation energy from species k. The effect of coverage on enthalpy and entropy can also be accounted for using a polynomial correction which is up to
+cubic in order. The correction: :math:`f(\theta)` is added to to the entropy and enthalpy computed from the NASA7 polynomial, and takes the same form for both enthalpy and entropy:
+
+.. math:: f(\theta) = a_1 \theta + a_2 \theta^2 + a_3 \theta^3
+    :label: thermocovdepeqn
+
 
 input file specifications
 -------------------------
-Coverage dependent parameters are applied if the "coverage_dependence" attribute is set to "True" in the catalyst properties block::
+Coverage dependent kinetic parameters are applied if the "coverageDependence" attribute is set to "True" in the catalyst properties block, and
+coverage dependent thermodynamics are applied if the "thermoCoverageDependence" is set to "True"::
 
     catalystProperties(
         metal = "Pt111"
         coverageDependence=True,
+        thermoCoverageDependence = True,
     )
 
 By default, this field is false. 
 
 
-Coverage block in families and libraries
-----------------------------------------
+Coverage block in families and kinetics libraries
+-------------------------------------------------
 Coverage dependent parameters can be added to a family or library reaction by specifying a dictionary in the "coverage_dependence" field, with the names of the species serving as the keys. Nested within that dictionary is a dictionary of the coverage dependent parameters for each species. For example::
 
     entry(
@@ -378,6 +385,54 @@ Coverage dependent parameters can be added to a family or library reaction by sp
     )
 
 The species "N_X" and "H_X" are the coverage dependent species in this example, and they also happen to be species partaking in this reaction. However, any species that are listed in the species dictionary can also be used. 
+
+Coverage block in thermodynamics libraries
+------------------------------------------
+Coverage dependent parameters can be added to a thermodynamics library by specifying a dictionary in the "Thermo_coverage_dependence" field, with the adjacency list of the species for which the thermodynamics depends on as the keys. Nested within those dictionaries
+are a dictionary containing which model to use (only "polynomial" is supported), and the enthalpy and entropy coefficients::
+
+    entry(
+        index = 11,
+        label = "XCO",
+        molecule =
+    """
+    1 X  u0  p0 c0 {2,D}
+    2 C  u0  p0 c0 {1,D} {3,D}
+    3 O  u0  p2 c0 {2,D}
+    """,
+        thermo = NASA(
+            polynomials = [
+                NASAPolynomial(coeffs=[1.428, 0.014, -2.211e-05, 1.786e-08, -5.714e-12, -29337, -7.782], Tmin=(298.0,'K'),Tmax=(1000.0, 'K')),
+                NASAPolynomial(coeffs=[5.486, -0.001, 3.090e-06, -1.711e-09, 3.158e-13, -30250, -27.67], Tmin=(1000.0,'K'), Tmax=(2000.0, 'K')),
+            ],
+            Tmin = (298.0,'K'),
+            Tmax = (2000.0,'K'),
+            thermo_coverage_dependence = {
+                """
+                1 X  u0  p0 c0 {2,D}
+                2 C  u0  p0 c0 {1,D} {3,D}
+                3 O  u0  p2 c0 {2,D}
+                """: {
+                    'model': 'polynomial',
+                    'enthalpy-coefficients': [(-0.05, 'eV/molecule'), (0.8575, 'eV/molecule'), (0.0, 'eV/molecule')],
+                    'entropy-coefficients': [(0.0, 'eV/(molecule*K)'), (0.0, 'eV/(molecule*K)'), (0.0, 'eV/(molecule*K)')],
+                }
+            },
+        ),
+        longDesc = u"""
+        Calculated by Kirk Badger at Brown University using statistical mechanics methods implemented in
+        Franklin Goldsmith's thermo_kinetics_scripts repository in the new_workflow folder:
+
+        https://github.com/franklingoldsmith/thermo_kinetics_scripts/tree/acee9b28228abc4491bd15d264f21897d9adf0ff/new_workflow
+
+        DFT calculations were performed with Quantum Espresso using PAW pseudopotentals and the BEEF-vdW
+        functional for an optimized 3x3x4 supercell with the bottom 2 layers fixed. The following settings
+        were applied: kpoints=5x5x1, ecutwfc=50 Ry (60 Ry single point evaluation after),
+        smearing='marzari-vanderbilt', degauss=0.02, mixing_mode='local-TF', conv_thr=1e-12, fmax=1e-3.
+        """,
+        metal = "Pt",
+        facet = "111",
+    )
 
 
 Examples

@@ -193,6 +193,14 @@ class TestDetectChemistry(unittest.TestCase):
         profile = detect_chemistry([Species().from_smiles('CCl')], [_simple_reactor(500.0)], solvent=None)
         self.assertTrue(profile.has_halogens)
 
+    def test_electrochem_from_charged_species(self):
+        profile = detect_chemistry([Species().from_smiles('[H+]')], [_simple_reactor(500.0)], solvent=None)
+        self.assertTrue(profile.has_electrochem)
+
+    def test_electrochem_from_element(self):
+        profile = detect_chemistry([Species().from_smiles('[Li]')], [_simple_reactor(500.0)], solvent=None)
+        self.assertTrue(profile.has_electrochem)
+
     def test_liquid_reactor(self):
         profile = detect_chemistry([Species().from_smiles('C')], [_liquid_reactor(300.0)], solvent=None)
         self.assertTrue(profile.has_liquid)

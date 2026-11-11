@@ -131,6 +131,15 @@ If you find that the two routes disagree in a problematic way, please open an is
 `RMG-Py GitHub repository <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_
 and include the ``comparison_report.txt`` and a minimal reproducing ``input.py``.
 
+Thermochemistry Reference Pressure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The NASA polynomials in the Cantera YAML outputs presume a standard-state (reference)
+pressure of 1 atm (101325 Pa) for gas-phase species, the same as Chemkin files.
+Much of RMG's thermochemistry (Benson group additivity, Arkane, and libraries imported from
+Chemkin files) is also on a 1 atm basis. Some modern compilations use 1 bar instead; for
+gas-phase entropies the difference is :math:`R \ln(1.01325) \approx 0.026` cal/(mol·K).
+
 ------------------------------
 The RMS YAML Folder
 ------------------------------

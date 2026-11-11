@@ -7,7 +7,6 @@
 # which substantially enlarges the search space the libmamba solver has
 # to traverse.
 python:
-  - 3.9
   - 3.10
   - 3.11
 numpy:

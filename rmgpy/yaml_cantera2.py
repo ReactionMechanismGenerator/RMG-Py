@@ -133,7 +133,7 @@ def save_cantera_files(rmg, config=None):
         os.mkdir(cantera_dir)
 
     try:
-        site_density = rmg.surface_site_density.value_si
+        site_density = rmg.surface_site_density.value_si # RMG SI is mol/m2
     except (AttributeError, KeyError, TypeError):
         site_density = None
 
@@ -344,7 +344,7 @@ def generate_cantera_data(species_list,
             'species': [get_label(sp, species_list) for sp in surface_species],
             'kinetics': 'surface',
             'reactions': ['surface-reactions'],
-            'site-density': site_density or default_site_density,
+            'site-density': f"{(site_density or default_site_density) * 1e-3:e} kmol/m^2",
             'state': {'T': 300.0, 'P': '1 atm'},
         }
         if has_coverage_dependence:

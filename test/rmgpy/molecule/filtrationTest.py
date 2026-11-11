@@ -158,7 +158,7 @@ class FiltrationTest:
         ]
 
         for mol in mol_list:
-            mol.update()  # the charge_filtration uses the atom.sorting_label attribute
+            mol.update()
 
         filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
         assert len(filtered_list) == 2
@@ -247,7 +247,7 @@ class FiltrationTest:
         ]
 
         for mol in mol_list:
-            mol.update()  # the charge_filtration uses the atom.sorting_label attribute
+            mol.update()
 
         filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
         assert len(filtered_list) == 4
@@ -334,3 +334,49 @@ class FiltrationTest:
 
         filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))
         assert len(filtered_list) == 3
+
+    def test_charge_filtration_independent_of_atom_order(self):
+        """Test that the charge filtration heuristics do not depend on the atom order
+
+        The heuristics used to key on Vertex.sorting_label, which the isomorphism machinery
+        leaves either unset or holding a stale permutation, so requesting save_order
+        discarded structures -- for the aromatics below, every aromatic structure.
+        """
+        for smiles, expected, aromatic in (
+            ("[O]c1ccc([N+](=O)[O-])cc1", 11, 2),
+            ("[CH2]c1ccc([N+](=O)[O-])cc1", 11, 2),
+            ("[O]c1ccccc1[N+](=O)[O-]", 11, 2),
+            ("[O]c1cccc([N+](=O)[O-])c1", 9, 2),
+            ("[O]N=O", 4, 0),
+            ("C=N[O]", 3, 0),
+            ("NC=O", 2, 0),
+        ):
+            sorted_list = generate_resonance_structures(
+                Molecule().from_smiles(smiles), keep_isomorphic=True, save_order=False
+            )
+            saved_list = generate_resonance_structures(
+                Molecule().from_smiles(smiles), keep_isomorphic=True, save_order=True
+            )
+            assert len(sorted_list) == len(saved_list) == expected
+            for mol_list in (sorted_list, saved_list):
+                assert sum(1 for mol in mol_list if any(bond.is_benzene() for bond in mol.get_all_edges())) == aromatic
+
+    def test_charge_filtration_of_disconnected_ions(self):
+        """Test that salts, whose charges straddle disconnected fragments, survive filtration
+
+        find_shortest_path has no path between fragments, so no opposite-charge distance
+        accumulates. The proximity rule must then compare the like-charge distance against its
+        own maximum: comparing the opposite-charge distance against it pops every structure,
+        because the two are unrelated quantities, and filtration is left with nothing.
+        """
+        for smiles, expected in (
+            ("[Li+].[OH-]", 1),
+            ("[Li+].[O-]C=O", 2),
+            ("[Li+].[Li+].[O-][O-]", 1),
+            ("[Li+].[Li+].[O-]C(=O)[O-]", 3),
+        ):
+            for save_order in (False, True):
+                mol_list = generate_resonance_structures(
+                    Molecule().from_smiles(smiles), keep_isomorphic=True, save_order=save_order
+                )
+                assert len(mol_list) == expected

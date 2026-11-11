@@ -34,9 +34,11 @@ This module contains unit tests of the :mod:`arkane.common` module.
 import logging
 import os
 import shutil
+from unittest import mock
 
 
 import numpy as np
+import yaml
 
 import rmgpy
 import rmgpy.constants as constants
@@ -53,6 +55,7 @@ from arkane.common import (
     get_center_of_mass,
     get_moment_of_inertia_tensor,
     get_principal_moments_of_inertia,
+    save_yaml_file,
 )
 from arkane.input import job_list
 from arkane.modelchem import LevelOfTheory
@@ -376,6 +379,68 @@ H      -1.80315400   -1.20387400   -0.22872900"""
         arkane_current.load_yaml(path=os.path.join(self.data_path, "vinoxy_current.yml"))
         assert isinstance(arkane_current, ArkaneSpecies)  # checks make_object
         assert arkane_current.conformer.spin_multiplicity == 2
+
+    def test_save_yaml_keeps_existing_file_when_as_dict_raises(self, tmp_path):
+        """
+        Test that save_yaml leaves an existing YAML file untouched if the species cannot be converted to a dictionary
+        """
+        arkane_spc = ArkaneSpecies(species=Species(smiles="CC", label="C2H6"))
+        os.mkdir(tmp_path / "species")
+        existing_file = tmp_path / "species" / "C2H6.yml"
+        existing_content = b"label: C2H6\nsmiles: CC\n"
+        existing_file.write_bytes(existing_content)
+
+        with mock.patch.object(ArkaneSpecies, "as_dict", side_effect=AttributeError("as_dict failed")):
+            with pytest.raises(AttributeError):
+                arkane_spc.save_yaml(path=str(tmp_path))
+
+        assert existing_file.read_bytes() == existing_content
+        assert os.listdir(tmp_path / "species") == ["C2H6.yml"]
+
+
+class TestSaveYamlFile:
+    """
+    Contains unit tests for the save_yaml_file function
+    """
+
+    def test_save_yaml_file_writes_new_file(self, tmp_path):
+        """
+        Test that save_yaml_file writes a loadable YAML file and leaves no temporary file behind
+        """
+        path = tmp_path / "data.yml"
+        save_yaml_file(str(path), {"a": 1, "b": [1.5, "c"]})
+
+        assert yaml.safe_load(path.read_text()) == {"a": 1, "b": [1.5, "c"]}
+        assert os.listdir(tmp_path) == ["data.yml"]
+
+    def test_save_yaml_file_replaces_existing_file(self, tmp_path):
+        """
+        Test that save_yaml_file replaces the content of an existing file and keeps its permission bits
+        """
+        path = tmp_path / "data.yml"
+        path.write_text("old: content\n")
+        os.chmod(path, 0o640)
+        save_yaml_file(str(path), {"new": "content"})
+
+        assert yaml.safe_load(path.read_text()) == {"new": "content"}
+        assert os.stat(path).st_mode & 0o777 == 0o640
+        assert os.listdir(tmp_path) == ["data.yml"]
+
+    def test_save_yaml_file_keeps_existing_file_when_write_fails(self, tmp_path):
+        """
+        Test that save_yaml_file leaves an existing file byte-identical and removes its temporary file
+        if the new file cannot be moved into place
+        """
+        path = tmp_path / "data.yml"
+        existing_content = b"old: content\n"
+        path.write_bytes(existing_content)
+
+        with mock.patch("arkane.common.os.replace", side_effect=OSError("replace failed")):
+            with pytest.raises(OSError):
+                save_yaml_file(str(path), {"new": "content"})
+
+        assert path.read_bytes() == existing_content
+        assert os.listdir(tmp_path) == ["data.yml"]
 
 
 class TestMomentOfInertia:

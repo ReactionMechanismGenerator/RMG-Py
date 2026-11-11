@@ -25,7 +25,7 @@
 #                                                                             #
 ###############################################################################
 
-import collections
+from collections.abc import Hashable
 
 import numpy as np
 
@@ -107,7 +107,7 @@ cpdef expand_to_dict(obj):
                 new_obj[new_key] = new_value
             except TypeError:
                 # Check if the key is a hashable object and use its string representation if so
-                if isinstance(key, collections.Hashable):
+                if isinstance(key, Hashable):
                     new_obj[repr(key)] = new_value
                 else:
                     raise NotImplementedError(f'Cannot expand objects that are serving as dictionary keys ({key} is'
