@@ -785,3 +785,77 @@ class SimpleReactorTest:
 
         # Only "CH4" should be marked constant
         assert rxn_system.const_spc_indices == [core_species.index(a)]
+
+    def test_compute_rate_derivative_kf_underflow(self):
+        """
+        Test that compute_rate_derivative() stays finite when the forward rate coefficient
+        underflows to exactly zero.
+
+        The reverse rate coefficient is built as kb = kf / Keq, so the reverse contribution to
+        the rate derivative was computed as (kb / kf) * [products]. When a large activation
+        energy drives kf to exactly 0.0, that ratio is the indeterminate 0.0/0.0, which
+        evaluates to NaN in C without raising, and the NaN then spreads through the whole
+        sensitivity matrix. Dividing by Keq directly avoids the indeterminate form.
+        """
+        ch3 = Species(
+            molecule=[Molecule().from_smiles("[CH3]")],
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=(
+                    [9.397, 10.123, 10.856, 11.571, 12.899, 14.055, 16.195],
+                    "cal/(mol*K)",
+                ),
+                H298=(9.357, "kcal/mol"),
+                S298=(45.174, "cal/(mol*K)"),
+            ),
+        )
+        c2h6 = Species(
+            molecule=[Molecule().from_smiles("CC")],
+            thermo=ThermoData(
+                Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+                Cpdata=(
+                    [12.684, 15.506, 18.326, 20.971, 25.500, 29.016, 34.595],
+                    "cal/(mol*K)",
+                ),
+                H298=(-19.521, "kcal/mol"),
+                S298=(54.799, "cal/(mol*K)"),
+            ),
+        )
+
+        # An activation energy this large gives exp(-Ea/RT) ~ exp(-1600) at 300 K, which is far
+        # below the smallest representable double and therefore underflows to exactly 0.0.
+        rxn = Reaction(
+            reactants=[c2h6],
+            products=[ch3, ch3],
+            kinetics=Arrhenius(A=(686.375e6, "1/s"), n=0, Ea=(4000, "kJ/mol"), T0=(1, "K")),
+        )
+
+        T = 300
+        P = 1.0e5
+        core_species = [c2h6, ch3]
+        core_reactions = [rxn]
+
+        rxn_system = SimpleReactor(
+            T,
+            P,
+            initial_mole_fractions={c2h6: 0.5, ch3: 0.5},
+            n_sims=1,
+            termination=[],
+        )
+        rxn_system.initialize_model(core_species, core_reactions, [], [])
+
+        assert rxn_system.kf[0] == 0.0, "the test requires the forward rate to underflow to zero"
+
+        rate_deriv = rxn_system.compute_rate_derivative()
+        assert np.isfinite(rate_deriv).all(), "compute_rate_derivative() produced NaN or inf"
+
+        # The reverse contribution is [products] / Keq, not zero: check the derivative of the
+        # net rate with respect to kf against that analytic value.
+        keq = rxn.get_equilibrium_constant(T)
+        c_c2h6 = rxn_system.core_species_concentrations[core_species.index(c2h6)]
+        c_ch3 = rxn_system.core_species_concentrations[core_species.index(ch3)]
+        expected_flux = c_c2h6 - c_ch3 * c_ch3 / keq
+        assert expected_flux < 0, "the reverse contribution is expected to dominate, not vanish"
+        # compute_rate_derivative() scales its result by the reactor volume before returning.
+        expected = -rxn_system.V * expected_flux
+        assert abs(rate_deriv[core_species.index(c2h6), 0] - expected) <= abs(1e-6 * expected)

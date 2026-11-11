@@ -177,6 +177,22 @@ class TestArrhenius:
         assert round(abs(arrhenius.Ea.value_si - self.arrhenius.Ea.value_si), 2) == 0
         assert round(abs(arrhenius.T0.value_si - self.arrhenius.T0.value_si), 4) == 0
 
+    def test_fit_to_data_with_zero_rate(self):
+        """
+        Test that Arrhenius.fit_to_data() rejects a rate coefficient of exactly zero.
+
+        Zero passes the finite check and the sign check, but the fit is performed in log space,
+        so log(0) = -inf enters the least-squares problem and every fitted parameter comes back
+        NaN without an exception being raised. Evaluating that expression then fails far from
+        the cause, with a TypeError about converting a complex number.
+        """
+        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        kdata = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tdata])
+        kdata[0] = 0.0  # as if the low-temperature rate had underflowed
+
+        with pytest.raises(ValueError, match="nonzero"):
+            Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
+
     def test_fit_to_negative_data(self):
         """
         Test the Arrhenius.fit_to_data() method on negative rates
