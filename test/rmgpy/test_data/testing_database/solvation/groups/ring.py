@@ -78,9 +78,9 @@ entry(
     index=5,
     label="Cyclopropane",
     group="""
-1 * Cs u0 {2,S} {3,S}
-2   Cs u0 {1,S} {3,S}
-3   Cs u0 {1,S} {2,S}
+1 * Css u0 {2,S} {3,S}
+2   Css u0 {1,S} {3,S}
+3   Css u0 {1,S} {2,S}
 """,
     solute=SoluteData(
         S=0.08944,
@@ -105,8 +105,8 @@ entry(
     label="Ethylene_oxide",
     group="""
 1 * O2s    u0 {2,S} {3,S}
-2   [Cs,N] u0 {1,S} {3,S}
-3   [Cs,N] u0 {1,S} {2,S}
+2   [Css,N] u0 {1,S} {3,S}
+3   [Css,N] u0 {1,S} {2,S}
 """,
     solute=SoluteData(
         S=0.26498,
@@ -131,8 +131,8 @@ entry(
     label="Ethyleneimine",
     group="""
 1 * N       u0 {2,S} {3,S}
-2   [Cs,N,S]  u0 {1,S} {3,S}
-3   [Cs,N,S]  u0 {1,S} {2,S}
+2   [Css,N,S]  u0 {1,S} {3,S}
+3   [Css,N,S]  u0 {1,S} {2,S}
 """,
     solute=SoluteData(
         S=0.07140,
