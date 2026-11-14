@@ -434,7 +434,8 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     network_dict[label] = network
 
 
-def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None, three_params=True):
+def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None, three_params=True,
+             activation_block=False, standard_state=None, activation_Tlist=None):
     """Generate a kinetics job"""
     global job_list, reaction_dict
     try:
@@ -442,7 +443,9 @@ def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_cond
     except KeyError:
         raise ValueError('Unknown reaction label {0!r} for kinetics() job.'.format(label))
     job = KineticsJob(reaction=rxn, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
-                      sensitivity_conditions=sensitivity_conditions, three_params=three_params)
+                      sensitivity_conditions=sensitivity_conditions, three_params=three_params,
+                      activation_block=activation_block, standard_state=standard_state,
+                      activation_Tlist=activation_Tlist)
     job_list.append(job)
 
 

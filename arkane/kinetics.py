@@ -43,6 +43,8 @@ from rmgpy.kinetics.arrhenius import Arrhenius
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.molecule.draw import MoleculeDrawer, create_new_surface
 
+from arkane.activation import compute_activation, format_activation_block, validate_standard_state, \
+    DEFAULT_STANDARD_STATE
 from arkane.common import ArkaneSpecies
 from arkane.output import prettify
 from arkane.sensitivity import KineticsSensitivity as SensAnalysis
@@ -60,10 +62,15 @@ class KineticsJob(object):
     `three_params` - a boolean representing if the modified three-parameter Arrhenius equation is used to calculate
                      high pressure kinetic rate coefficients. If it is False, the classical two-parameter Arrhenius
                      equation is used.
+    `activation_block` - a boolean; if True, an activation and reaction thermochemistry block (dH++, dS++, dG++,
+                     dH0, dS0, dG0, Keq and k in the units of `standard_state`) is appended to ``output.py``.
+                     It changes no fitted or written kinetics data.
+    `standard_state` - the standard state of the activation block: '1 atm' (default), '1 bar' or '1 M'.
+    `activation_Tlist` - the temperatures of the activation block; default 298.15 K and the ends of the fit range (an end within 1 K of 298.15 K is dropped).
     """
 
     def __init__(self, reaction, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None,
-                 three_params=True):
+                 three_params=True, activation_block=False, standard_state=None, activation_Tlist=None):
         self.usedTST = False
         self.Tmin = Tmin if Tmin is not None else (298, 'K')
         self.Tmax = Tmax if Tmax is not None else (2500, 'K')
@@ -87,6 +94,24 @@ class KineticsJob(object):
             self.sensitivity_conditions = None
 
         self.arkane_species = ArkaneSpecies(species=self.reaction.transition_state)
+
+        if not isinstance(activation_block, bool):
+            raise InputError('activation_block must be True or False, got {0!r}.'.format(activation_block))
+        if not activation_block and (standard_state is not None or activation_Tlist is not None):
+            raise InputError('standard_state and activation_Tlist only apply to the activation block; '
+                             'set activation_block=True for reaction {0}.'.format(self.reaction.label))
+        self.activation_block = activation_block
+        self.standard_state = validate_standard_state(standard_state if standard_state is not None
+                                                      else DEFAULT_STANDARD_STATE)
+        if activation_Tlist is not None:
+            self.activation_Tlist = quantity.Temperature(activation_Tlist)
+            t_values = np.atleast_1d(self.activation_Tlist.value_si)
+            if not t_values.size or not all(np.isfinite(t) and t > 0 for t in t_values):
+                raise InputError('activation_Tlist must be a non-empty list of finite positive temperatures, '
+                                 'got {0!r}.'.format(activation_Tlist))
+        else:
+            self.activation_Tlist = None
+        self.activation_text = None
 
     @property
     def Tmin(self):
@@ -124,6 +149,9 @@ class KineticsJob(object):
         will be saved.
         """
         self.generate_kinetics()
+        if self.activation_block:
+            # Outside the try/except below: a failure here must raise, not drop the block silently
+            self.generate_activation_block()
         if output_directory is not None:
             try:
                 self.write_output(output_directory)
@@ -190,6 +218,31 @@ class KineticsJob(object):
         self.reaction.kinetics = Arrhenius().fit_to_data(self.Tlist.value_si, klist, kunits=self.k_units,
                                                          three_params=self.three_params)
         self.reaction.elementary_high_p = True
+
+    def get_activation_temperatures(self):
+        """
+        Return the temperatures (K) of the activation block: `activation_Tlist` if given,
+        else 298.15 K and the ends of the fit range, sorted and without duplicates.
+        A fit-range end within 1 K of 298.15 K is dropped (the default 298 K Tmin would
+        otherwise give a second section 0.15 K away).
+        """
+        if self.activation_Tlist is not None:
+            return [float(t) for t in np.atleast_1d(self.activation_Tlist.value_si)]
+        ends = (float(self.Tmin.value_si), float(self.Tmax.value_si))
+        return sorted({298.15} | {t for t in ends if abs(t - 298.15) >= 1.0})
+
+    def generate_activation_block(self):
+        """
+        Compute the activation block text of this job in `standard_state`, see :mod:`arkane.activation`.
+        Requires TST kinetics, i.e., run after :meth:`generate_kinetics`.
+        """
+        if not self.usedTST:
+            raise InputError('The activation block of reaction {0} needs TST kinetics (a transition state), '
+                             'but its kinetics were given in the input.'.format(self.reaction.label))
+        results = [compute_activation(self.reaction, t, self.standard_state)
+                   for t in self.get_activation_temperatures()]
+        self.activation_text = format_activation_block(results)
+        return self.activation_text
 
     def write_output(self, output_directory):
         """
@@ -284,6 +337,9 @@ class KineticsJob(object):
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(rxn_str)))
+
+        if self.activation_block and self.activation_text is not None:
+            f.write(self.activation_text)
 
         f.close()
 
