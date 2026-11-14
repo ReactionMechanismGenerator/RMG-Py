@@ -1001,6 +1001,56 @@ with the reaction label, delineates the semi-normalized sensitivity coefficients
 at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
 forward and reverse direction at all conditions.
 
+Activation block in a chosen standard state
+-------------------------------------------
+
+Optionally, Arkane can append an activation block to ``output.py`` for a reaction computed with TST.
+For each requested temperature it prints, for the forward and the reverse direction, the enthalpy,
+entropy and Gibbs energy of activation (:math:`\Delta H^\ddagger`, :math:`\Delta S^\ddagger`,
+:math:`\Delta G^\ddagger`), the molecularity :math:`m`, the rate coefficient in the units of the
+standard state and in cm\ :sup:`3`/(mol·s), and an Eyring check. It also prints the reaction
+:math:`\Delta H^\circ`, :math:`\Delta S^\circ`, :math:`\Delta G^\circ`, :math:`\Delta n` and the
+dimensionless equilibrium constant :math:`K_{eq}` in that standard state::
+
+    kinetics(
+        label = 'H + C2H4 <=> C2H5',
+        Tlist = ([400,500,700,900,1100,1200],'K'),
+        activation_block = True,
+        standard_state = '1 M',
+        activation_Tlist = ([298.15, 1000],'K'),
+    )
+
+====================== =========== ==========================================================================
+Argument               Default     Description
+====================== =========== ==========================================================================
+``activation_block``   ``False``   ``True`` appends the block to ``output.py``
+``standard_state``     ``'1 atm'`` ``'1 atm'``, ``'1 bar'`` or ``'1 M'`` (1 mol/L); any other value raises an error
+``activation_Tlist``   see text    Temperatures of the block; default 298.15 K and the ends of the fit range, dropping an end within 1 K of 298.15 K
+====================== =========== ==========================================================================
+
+``standard_state`` and ``activation_Tlist`` require ``activation_block = True``. Giving them without it raises an
+error, so that a requested block is never silently missing.
+
+Conventions:
+
+* Arkane's partition functions are on a 1 atm basis, so ``'1 atm'`` is the basis of all other Arkane output.
+* :math:`\Delta G^\ddagger` and :math:`\Delta S^\ddagger` are relative to the reactants of each direction, each at
+  the standard state. They depend on the standard state unless :math:`m = 1`. :math:`\Delta H^\ddagger` does not.
+* The tunneling factor :math:`\kappa` is printed separately and is not folded into :math:`\Delta G^\ddagger`, so
+  :math:`k = \kappa (k_B T/h) (C^\circ)^{1-m} \exp(-\Delta G^\ddagger/RT)`. The Eyring check verifies this.
+* :math:`K_{eq} = K_p/(P^\circ)^{\Delta n}` for a pressure standard state and :math:`K_c/(c^\circ)^{\Delta n}` for
+  ``'1 M'``. Rate coefficients are given in atm\ :sup:`1-m` s\ :sup:`-1`, bar\ :sup:`1-m` s\ :sup:`-1` or
+  M\ :sup:`1-m` s\ :sup:`-1`.
+* All quantities come from the same partition functions as the TST rate coefficient. The reverse rate coefficient
+  in the block is :math:`k_f/K_c` with :math:`K_c` from the partition functions. For :math:`\Delta n \neq 0`,
+  :math:`k_\mathrm{rev}(\text{block}) / k_\mathrm{rev}(\text{table}) = 1.01325^{-\Delta n}` (up to the thermo-fit
+  residual), where the table is the ``k_rev`` table above the block. That table uses
+  ``Reaction.get_equilibrium_constant``, which applies a 1 bar reference pressure to a 1 atm :math:`\Delta G^\circ`.
+  The block prints the measured :math:`K_c` ratio, the expected factor, and the remainder.
+
+The block does not change the fitted Arrhenius expression, the ``kinetics()`` and ``thermo()`` entries in
+``output.py``, ``chem.inp``, or the RMG libraries. These stay in cm\ :sup:`3`/(mol·s) on Arkane's usual basis.
+
 Pressure Dependent Network Specification
 ========================================
 
