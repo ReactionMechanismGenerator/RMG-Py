@@ -45,6 +45,7 @@ from rmgpy.kinetics.arrhenius import (
     MultiArrhenius,
     MultiPDepArrhenius,
 )
+from rmgpy.exceptions import KineticsError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -190,7 +191,7 @@ class TestArrhenius:
         kdata = np.array([self.arrhenius.get_rate_coefficient(T) for T in Tdata])
         kdata[0] = 0.0  # as if the low-temperature rate had underflowed
 
-        with pytest.raises(ValueError, match="nonzero"):
+        with pytest.raises(KineticsError, match="nonzero"):
             Arrhenius().fit_to_data(Tdata, kdata, kunits="m^3/(mol*s)")
 
     def test_fit_to_negative_data(self):
