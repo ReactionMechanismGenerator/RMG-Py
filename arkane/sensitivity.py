@@ -331,11 +331,6 @@ class PDepSensitivity(object):
             wells = []
             transition_states = []
             while c < self.max_iters:
-                # Each attempt works on a fresh deep copy of the base job, so the in-place E0/Ea
-                # shifts that perturb() applies never touch base_job. This is what makes the
-                # perturb/unperturb pair exception-safe: if self.job.execute() below raises, the
-                # corrupted copy is simply discarded on the next iteration -- the invariant does
-                # not rely on unperturb() running on every code path.
                 self.job = deepcopy(base_job)
                 wells = []
                 wells.extend(self.job.network.reactants)
@@ -422,41 +417,24 @@ class PDepSensitivity(object):
             perturbation *= -1
         if isinstance(entry, TransitionState):
             entry.conformer.E0 = quantity.Energy(entry.conformer.E0.value_si + perturbation, 'J/mol')
-            # Shift Ea by the same amount for every ILT-based path reaction owning this TS. The gate
-            # below MUST return the same verdict on a perturb call and its matching unperturb call,
-            # or Ea would be left shifted (or shifted twice) and every later iteration would run on a
-            # corrupted network. It trivially does: it depends only on the presence of statmech modes
-            # on the TS (`can_tst`) and on the type of the kinetics object, neither of which is
-            # affected by the E0/Ea shifts applied here.
+            # Shift Ea alongside E0 for each ILT-based path reaction that owns this TS.
             perturbed_kinetics = set()  # id()s of Arrhenius objects already shifted this call
             for rxn in self.job.network.path_reactions:
                 if rxn.transition_state is not None and rxn.transition_state is entry and not rxn.can_tst():
                     kinetics = rxn.kinetics if rxn.network_kinetics is None else rxn.network_kinetics
                     if isinstance(kinetics, Arrhenius):
                         if id(kinetics) in perturbed_kinetics:
-                            # Several of this TS's path reactions share one Arrhenius object: it is a
-                            # single barrier, already shifted once to match the single E0 shift above,
-                            # so do not shift it again (that would move Ea by 2x the E0 shift).
+                            # One shared Arrhenius object is one barrier: shift it once.
                             continue
                         perturbed_kinetics.add(id(kinetics))
                         kinetics.Ea = quantity.Energy(kinetics.Ea.value_si + perturbation, 'J/mol')
                     elif not unperturb:
-                        # Defensive only: a non-Arrhenius ILT path reaction cannot actually reach
-                        # sensitivity analysis, because apply_inverse_laplace_transform_method
-                        # (rmgpy/pdep/reaction.pyx) declares a Cython-typed `Arrhenius kinetics`
-                        # parameter, so the unperturbed base run in __init__ would already raise a
-                        # TypeError before we ever get here. The warning is guarded by `not unperturb`
-                        # so it is logged once per perturbation rather than twice (perturb + unperturb).
                         logging.warning(
                             "Not perturbing Ea for ILT-based path reaction '{0}' with kinetics of type "
                             "'{1}': the resulting TS sensitivity coefficient will be meaningless.".format(
                                 rxn, kinetics.__class__.__name__))
             if not unperturb:
-                # Aliased-kinetics guard: if an Arrhenius object just shifted for this TS is also the
-                # kinetics of an ILT path reaction owned by a *different* TS, that reaction's rate has
-                # been collaterally perturbed and its sensitivity row is contaminated. This is an
-                # unsupported input (distinct reactions should not share one mutable kinetics object),
-                # so surface it loudly rather than silently reporting a corrupted coefficient.
+                # Warn if a shifted Arrhenius object is also used by another TS's ILT reaction.
                 for rxn in self.job.network.path_reactions:
                     if (rxn.transition_state is not None and rxn.transition_state is not entry
                             and not rxn.can_tst()):
@@ -517,15 +495,9 @@ class PDepSensitivity(object):
         path = os.path.join(self.output_directory, filename)
         sa_data = dict()
         sa_data['structures'] = dict()
-        # Classify TS rows once (shared with plot()): which carry the combined-E0+Ea (ILT) semantics
-        # rather than a plain dln(r)/dE0(TS), and which are contaminated by an Arrhenius kinetics
-        # object shared across transition states. The '(TS) ' prefix matches the entry keys used below.
         ilt_raw_labels, contaminated_raw_labels = self._classify_ilt_transition_states()
         ilt_ts_labels = ['(TS) ' + label for label in ilt_raw_labels]
         contaminated_ts_labels = ['(TS) ' + label for label in contaminated_raw_labels]
-        # Only emit the top-level `metadata` key when it actually carries something, so an all-RRKM
-        # network's YAML keeps the pre-existing shape (`structures` + reaction strings) byte-for-byte
-        # and consumers that never dealt with ILT markers see no new key.
         metadata = {}
         if ilt_ts_labels:
             metadata['ilt_transition_states'] = ilt_ts_labels
@@ -568,10 +540,7 @@ class PDepSensitivity(object):
                         entry_label = '(TS) ' + entry.label
                     elif isinstance(entry, Configuration):
                         entry_label = ' + '.join([species.label for species in entry.species])
-                    # Flag contaminated TS rows in the table with a '(!)' suffix. The marker goes on
-                    # the display label only; the YAML data key (entry_label) stays clean so consumers
-                    # keying on '(TS) <label>' are unaffected -- the marker is carried in the YAML via
-                    # metadata.contaminated_transition_states instead.
+                    # '(!)' goes on the table label only; the YAML key stays clean.
                     display_label = entry_label
                     if isinstance(entry, TransitionState) and entry_label in contaminated_ts_labels:
                         display_label = entry_label + ' (!)'
@@ -600,10 +569,6 @@ class PDepSensitivity(object):
         for rxn in self.job.network.net_reactions:
             plt.rcdefaults()
             ax = plt.subplots(nrows=len(self.conditions), ncols=1, tight_layout=True)[1]
-            # Annotate the TS tick labels so the figure distinguishes the two derivative types it
-            # plots on one axis: a plain dln(k)/dE0 for wells and RRKM-based TSes, versus the
-            # combined-E0+Ea derivative for ILT-based TSes (see save()). Contaminated rows (shared
-            # kinetics across TSes) are flagged too, matching the '(!)' note in the text table.
             ilt_raw_labels, contaminated_raw_labels = self._classify_ilt_transition_states()
             labels = [str(entry) for entry in wells]
             for ts in transition_states:
@@ -632,10 +597,6 @@ class PDepSensitivity(object):
                 axis.set_yticks(y_pos)
                 axis.set_yticklabels(labels)
                 axis.invert_yaxis()  # labels read top-to-bottom
-                # A generic label: for wells and RRKM-based TS rows this is dln(k)/dE0, but for a
-                # TS row belonging to an ILT-based path reaction it is a derivative along the
-                # coordinate that raises E0 and Ea together, not a plain dln(k)/dE0(TS) (see save()).
-                # The coefficient has units of mol/J (the reciprocal of the perturbed energy).
                 axis.set_xlabel(r'Sensitivity coefficient ($\frac{mol}{J}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
