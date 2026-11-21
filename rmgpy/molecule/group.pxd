@@ -74,9 +74,9 @@ cdef class GroupAtom(Vertex):
 
     cpdef apply_action(self, list action)
 
-    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?, bint check_labels=?) except -2
 
-    cpdef bint is_specific_case_of(self, Vertex other) except -2
+    cpdef bint is_specific_case_of(self, Vertex other, bint check_labels=?) except -2
 
     cpdef bint is_surface_site(self) except -2
 
@@ -190,15 +190,15 @@ cdef class Group(Graph):
 
     cpdef update_charge(self)
 
-    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
+    cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?) except -2
 
-    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?)
+    cpdef list find_isomorphism(self, Graph other, dict initial_map=?, bint save_order=?, bint strict=?, bint check_labels=?)
 
-    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?) except -2
+    cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint check_labels=?) except -2
 
-    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
+    cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?, bint check_labels=?)
     
-    cpdef bint is_identical(self, Graph other, bint save_order=?)
+    cpdef bint is_identical(self, Graph other, bint save_order=?, bint check_labels=?)
 
     cpdef bint is_surface_site(self) except -2
 
