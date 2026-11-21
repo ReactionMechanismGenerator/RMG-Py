@@ -787,7 +787,7 @@ def liquid_cat_reactor(temperature,
     if distance:
         initialCondLiq["d"] = Quantity(distance).value_si
     if viscosity:
-        initialCondLiq["mu"] = Quantity(distance).value_si
+        initialCondLiq["mu"] = Quantity(viscosity).value_si
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            {"liquid":initialCondLiq,"surface":initialCondSurf},
