@@ -512,6 +512,8 @@ For gas phase reactors if normalization of the ranged mole fractions is undesira
 fractions needs to be kept constant) one can use a ``balanceSpecies``.  When a ``balanceSpecies`` is used instead of 
 normalizing the mole fractions the concentration of the defined ``balanceSpecies`` is adjusted to maintain an overall mole 
 fraction of one.  This ensures that all species except the ``balanceSpecies`` have mole fractions within the range specified.  
+A ``balanceSpecies`` applies only to the reactor it is given in, and it has to be one of the species in the
+``initialMoleFractions`` of that reactor.
 
 .. _simulatortolerances:
 

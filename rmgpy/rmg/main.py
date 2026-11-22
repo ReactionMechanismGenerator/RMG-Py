@@ -215,7 +215,6 @@ class RMG(util.Subject):
 
         self.model_settings_list = []
         self.simulator_settings_list = []
-        self.balance_species = None
 
         self.filter_reactions = False
         self.init_react_tuples = []
@@ -891,7 +890,7 @@ class RMG(util.Subject):
         # Initiate first reaction discovery step after adding all core species
         for index, reaction_system in enumerate(self.reaction_systems):
             # Initialize memory object to track conditions for ranged reactors
-            self.rmg_memories.append(RMG_Memory(reaction_system, self.balance_species))
+            self.rmg_memories.append(RMG_Memory(reaction_system, getattr(reaction_system, "balance_species", None)))
             self.rmg_memories[index].generate_cond()
             log_conditions(self.rmg_memories, index)
 

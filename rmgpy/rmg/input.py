@@ -478,8 +478,11 @@ def simple_reactor(temperature,
     rmg.reaction_systems.append(system)
 
     assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
-    rmg.balance_species = balanceSpecies
+    system.balance_species = balanceSpecies
     if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        if balanceSpecies not in initialMoleFractions:
+            raise InputError('balanceSpecies {0} must be one of the species in the initialMoleFractions of the same '
+                             'reactor'.format(balanceSpecies))
         total = 0.0
         for key, item in initialMoleFractions.items():
             if key == balanceSpecies:
@@ -579,8 +582,11 @@ def constant_V_ideal_gas_reactor(temperature,
     rmg.reaction_systems.append(system)
 
     assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
-    rmg.balance_species = balanceSpecies
+    system.balance_species = balanceSpecies
     if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        if balanceSpecies not in initialMoleFractions:
+            raise InputError('balanceSpecies {0} must be one of the species in the initialMoleFractions of the same '
+                             'reactor'.format(balanceSpecies))
         total = 0.0
         for key, item in initialMoleFractions.items():
             if key == balanceSpecies:
@@ -680,8 +686,11 @@ def constant_TP_ideal_gas_reactor(temperature,
     rmg.reaction_systems.append(system)
 
     assert balanceSpecies is None or isinstance(balanceSpecies, str), 'balanceSpecies should be the string corresponding to a single species'
-    rmg.balance_species = balanceSpecies
+    system.balance_species = balanceSpecies
     if balanceSpecies:  # check that the balanceSpecies can't be taken to zero
+        if balanceSpecies not in initialMoleFractions:
+            raise InputError('balanceSpecies {0} must be one of the species in the initialMoleFractions of the same '
+                             'reactor'.format(balanceSpecies))
         total = 0.0
         for key, item in initialMoleFractions.items():
             if key == balanceSpecies:
