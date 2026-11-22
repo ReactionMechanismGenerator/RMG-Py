@@ -358,6 +358,57 @@ class TestInputReactors:
         assert reactor.initial_mole_fractions["B"] == 3
         assert reactor.initial_mole_fractions["C"] == 2
 
+    def test_simple_reactor_balance_species(self):
+        """Test that each SimpleReactor keeps its own balanceSpecies"""
+        inp.simple_reactor(
+            temperature=(1000, "K"),
+            pressure=(1, "atm"),
+            initialMoleFractions={
+                "A": [0.1, 0.2],
+                "B": 0.8,
+            },
+            terminationTime=(1, "s"),
+            balanceSpecies="B",
+        )
+        inp.simple_reactor(
+            temperature=(1000, "K"),
+            pressure=(1, "atm"),
+            initialMoleFractions={
+                "A": [0.1, 0.2],
+                "C": 0.8,
+            },
+            terminationTime=(1, "s"),
+            balanceSpecies="C",
+        )
+        inp.simple_reactor(
+            temperature=(1000, "K"),
+            pressure=(1, "atm"),
+            initialMoleFractions={
+                "A": 0.2,
+                "B": 0.8,
+            },
+            terminationTime=(1, "s"),
+        )
+
+        global rmg
+        assert rmg.reaction_systems[0].balance_species == "B"
+        assert rmg.reaction_systems[1].balance_species == "C"
+        assert rmg.reaction_systems[2].balance_species is None
+
+    def test_simple_reactor_balance_species_not_in_mole_fractions(self):
+        """Test that a balanceSpecies missing from initialMoleFractions raises an InputError"""
+        with pytest.raises(InputError):
+            inp.simple_reactor(
+                temperature=(1000, "K"),
+                pressure=(1, "atm"),
+                initialMoleFractions={
+                    "A": [0.1, 0.2],
+                    "B": 0.8,
+                },
+                terminationTime=(1, "s"),
+                balanceSpecies="C",
+            )
+
     def test_liquid_reactor_concentrations(self):
         """Test that LiquidReactor concentrations are set properly"""
         inp.liquid_reactor(

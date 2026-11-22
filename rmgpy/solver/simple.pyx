@@ -106,6 +106,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public np.ndarray pdep_specific_collider_reaction_indices
 
     cdef public dict sens_conditions
+    cdef public str balance_species
 
     cdef public list Trange
     cdef public list Prange
@@ -142,6 +143,7 @@ cdef class SimpleReactor(ReactionSystem):
         self.specific_collider_species = None
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
+        self.balance_species = None  # set by the input file, see rmgpy.rmg.input
 
     def __reduce__(self):
         """
