@@ -550,3 +550,33 @@ class TestUncertainty:
             actual_group_data = sorted(actual_group_data)
             assert np.isclose(uncertainty.thermo_input_uncertainties[i], expected_result[0], rtol=1e-4)
             assert actual_group_data == expected_group_data
+
+
+def test_retrieve_saturated_species_from_other_resonance_structure():
+    """
+    The desorbed form of HC#C-C#X is [C]C#C with a radical and a lone pair on the bare carbon, which saturates
+    to the carbene [CH]C#C. Its C=C=[CH] resonance structure saturates to [C]=C=C, the species thermo used.
+    """
+    from rmgpy.molecule import Molecule
+    from rmgpy.species import Species
+
+    radical = Species(molecule=[Molecule().from_adjacency_list("""
+multiplicity 2
+1 C u0 p0 c0 {2,T} {3,S}
+2 C u0 p0 c0 {1,T} {4,S}
+3 C u1 p1 c0 {1,S}
+4 H u0 p0 c0 {2,S}
+""")])
+    vinylidene = Species(molecule=[Molecule().from_adjacency_list("""
+1 C u0 p0 c0 {2,D} {4,S} {5,S}
+2 C u0 p0 c0 {1,D} {3,D}
+3 C u0 p1 c0 {2,D}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+""")])
+    uncertainty = Uncertainty()
+    uncertainty.species_list = [vinylidene]
+
+    saturated, not_in_model = uncertainty.retrieve_saturated_species_from_list(radical)
+    assert saturated is vinylidene
+    assert not not_in_model

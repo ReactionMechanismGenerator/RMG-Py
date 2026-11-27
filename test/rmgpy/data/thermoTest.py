@@ -650,6 +650,11 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
+        # Comment line wrapped by the chemkin writer after a hyphen inside the adsorption group name
+        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-\nXR3)'
+        source = self.database.extract_source_from_comments(CHOX)
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C-XR3'
+
         # Also test that the database is retrieving and assembling comments correctly
         # Here we use the extremely limited test database already available in memory
         OX_comment = self.database.get_thermo_data(OX).comment

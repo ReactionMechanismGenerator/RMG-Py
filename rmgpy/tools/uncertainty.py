@@ -517,23 +517,37 @@ class Uncertainty(object):
 
         molecule = species.molecule[0]
         assert molecule.is_radical(), "Method only valid for radicals."
-        saturated_struct = molecule.copy(deep=True)
-        saturated_struct.saturate_radicals()
-        for otherSpecies in self.species_list:
-            if otherSpecies.is_isomorphic(saturated_struct):
-                return otherSpecies, False
+
+        # Thermo estimation saturates whichever resonance structure gives library data, which need not be
+        # the first one: the desorbed form of HC#C-C#X is [C]C#C, a radical with a lone pair that saturates
+        # to the carbene [CH]C#C, while the estimate came from its C=C=[CH] structure (saturated: [C]=C=C).
+        resonance = Species(molecule=[molecule.copy(deep=True)])
+        resonance.generate_resonance_structures()
+        structures = [molecule] + [m for m in resonance.molecule if not m.is_isomorphic(molecule)]
+        saturated_structs = []
+        for structure in structures:
+            if structure.is_radical():
+                saturated_struct = structure.copy(deep=True)
+                saturated_struct.saturate_radicals()
+                saturated_structs.append(saturated_struct)
+
+        for saturated_struct in saturated_structs:
+            for otherSpecies in self.species_list:
+                if otherSpecies.is_isomorphic(saturated_struct):
+                    return otherSpecies, False
 
         # couldn't find saturated species in the model, try libraries
-        new_spc = Species(molecule=[saturated_struct])
-        new_spc.generate_resonance_structures()
-        thermo = self.database.thermo.get_thermo_data_from_libraries(new_spc)
+        for saturated_struct in saturated_structs:
+            new_spc = Species(molecule=[saturated_struct])
+            new_spc.generate_resonance_structures()
+            thermo = self.database.thermo.get_thermo_data_from_libraries(new_spc)
 
-        if thermo is not None:
-            new_spc.thermo = thermo
-            self.species_list.append(new_spc)
-            return new_spc, True
-        else:
-            raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
+            if thermo is not None:
+                new_spc.thermo = thermo
+                self.species_list.append(new_spc)
+                return new_spc, True
+
+        raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
 
     def load_thermo_covariances_from_libraries(self):
         """
