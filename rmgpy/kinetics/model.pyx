@@ -54,30 +54,41 @@ cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
     determined.
     """
 
-    if n_surf == 0: # Volume units
+    if n_gas < 0 or n_surf < 0:
+        raise ValueError('Invalid reaction order of {0} gas {1} surface species.'.format(n_gas,n_surf))
+
+    if n_surf == 0 and n_gas <= 4: # Volume units
         if n_gas == 0: kunits = 'mol/(m^3*s)'
         elif n_gas == 1: kunits = 's^-1'
         elif n_gas == 2: kunits = 'm^3/(mol*s)'
         elif n_gas == 3: kunits = 'm^6/(mol^2*s)'
         elif n_gas == 4: kunits = 'm^9/(mol^3*s)'
-    elif n_surf == 1: # Area Units
+    elif n_surf == 1 and n_gas <= 3: # Area Units
         if n_gas == 0: kunits = 's^-1'
         elif n_gas == 1: kunits = 'm^3/(mol*s)'
         elif n_gas == 2: kunits = 'm^6/(mol^2*s)'
         elif n_gas == 3: kunits = 'm^9/(mol^3*s)'
-    elif n_surf == 2: # Area Units 
+    elif n_surf == 2 and n_gas <= 3: # Area Units
         if n_gas == 0: kunits = 'm^2/(mol*s)'
         elif n_gas == 1: kunits = 'm^5/(mol^2*s)'
         elif n_gas == 2: kunits = 'm^8/(mol^3*s)'
         elif n_gas == 3: kunits = 'm^11/(mol^4*s)'
-    elif n_surf == 3: # Area Units 
-        if n_gas == 0: kunits = 'm^4/(mol^2*s)' 
+    elif n_surf == 3 and n_gas <= 3: # Area Units
+        if n_gas == 0: kunits = 'm^4/(mol^2*s)'
         elif n_gas == 1: kunits = 'm^7/(mol^3*s)'
         elif n_gas == 2: kunits = 'm^10/(mol^4*s)'
         elif n_gas == 3: kunits = 'm^13/(mol^5*s)'
     else:
-        raise ValueError('Invalid reaction order of {0} gas {1} surface species.'.format(n_gas,n_surf))
-    
+        # Any other number of species. The rate is in mol/(m^3*s) for a gas-phase
+        # reaction, or mol/(m^2*s) once a surface species takes part. Each gas
+        # species adds a concentration in mol/m^3 and each surface species one in
+        # mol/m^2, so for n = n_gas + n_surf species k is in m^a/(mol^(n-1)*s).
+        if n_surf == 0:
+            m_exponent = 3 * n_gas - 3
+        else:
+            m_exponent = 3 * n_gas + 2 * n_surf - 2
+        kunits = 'm^{0}/(mol^{1}*s)'.format(m_exponent, n_gas + n_surf - 1)
+
     return kunits
 
 cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:
@@ -98,6 +109,12 @@ cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:
             order = 3
         elif dimensionality[pq.s] == -1 and dimensionality[pq.m] == 9 and dimensionality[pq.mol] == -3:
             order = 4
+        else:
+            # Any other order n has units of m^(3*(n-1))/(mol^(n-1)*s). An order
+            # that is not a whole number, or is negative, is not valid.
+            n = 1 - dimensionality[pq.mol]
+            if dimensionality[pq.s] == -1 and dimensionality[pq.m] == 3 * (n - 1) and n == int(n) and n >= 0:
+                order = int(n)
     elif len(dimensionality) == 1 and pq.s in dimensionality:
         if dimensionality[pq.s] == -1:
             order = 1

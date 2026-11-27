@@ -1133,6 +1133,106 @@ class TestReaction:
             krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
             assert round(abs(korig / krevrev - 1.0), 0) == 0
 
+    def test_generate_reverse_rate_coefficient_five_products(self):
+        """
+        Test the Reaction.generate_reverse_rate_coefficient() method works for a
+        reaction with five gas-phase products, whose reverse is fifth order.
+        The reaction and rate are from the Biomass model in RMG-models, and the
+        thermo is from the CurranPentane thermo library.
+        """
+        ethylperoxy = Species(
+            label="C2H5OO",
+            molecule=[Molecule(smiles="CCO[O]")],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(coeffs=[3.90352, 0.0222599, -1.0161e-05, 1.7171e-09, 1.88167e-14, -5096.54, 8.98723],
+                                   Tmin=(200, "K"), Tmax=(1389, "K")),
+                    NASAPolynomial(coeffs=[9.50283, 0.012043, -4.09492e-06, 6.33049e-10, -3.66134e-14, -7370.69, -22.1717],
+                                   Tmin=(1389, "K"), Tmax=(5000, "K")),
+                ],
+                Tmin=(200, "K"),
+                Tmax=(5000, "K"),
+            ),
+        )
+        oxygen = Species(
+            label="O2",
+            molecule=[Molecule(smiles="[O][O]")],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(coeffs=[3.78246, -0.00299673, 9.8473e-06, -9.6813e-09, 3.24373e-12, -1063.94, 3.65768],
+                                   Tmin=(200, "K"), Tmax=(1000, "K")),
+                    NASAPolynomial(coeffs=[3.66096, 0.000656366, -1.4115e-07, 2.05798e-11, -1.29913e-15, -1215.98, 3.41536],
+                                   Tmin=(1000, "K"), Tmax=(6000, "K")),
+                ],
+                Tmin=(200, "K"),
+                Tmax=(6000, "K"),
+            ),
+        )
+        methyl = Species(
+            label="CH3",
+            molecule=[Molecule(smiles="[CH3]")],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(coeffs=[3.65718, 0.0021266, 5.45839e-06, -6.6181e-09, 2.46571e-12, 16422.7, 1.67354],
+                                   Tmin=(200, "K"), Tmax=(1000, "K")),
+                    NASAPolynomial(coeffs=[2.97812, 0.00579785, -1.97558e-06, 3.07298e-10, -1.79174e-14, 16509.5, 4.72248],
+                                   Tmin=(1000, "K"), Tmax=(6000, "K")),
+                ],
+                Tmin=(200, "K"),
+                Tmax=(6000, "K"),
+            ),
+        )
+        formaldehyde = Species(
+            label="CH2O",
+            molecule=[Molecule(smiles="C=O")],
+            thermo=NASA(
+                polynomials=[
+                    NASAPolynomial(coeffs=[4.79372, -0.00990833, 3.7322e-05, -3.79285e-08, 1.31773e-11, -14379.2, 0.602798],
+                                   Tmin=(200, "K"), Tmax=(1000, "K")),
+                    NASAPolynomial(coeffs=[3.16953, 0.00619321, -2.25056e-06, 3.65976e-10, -2.20149e-14, -14548.7, 6.04208],
+                                   Tmin=(1000, "K"), Tmax=(6000, "K")),
+                ],
+                Tmin=(200, "K"),
+                Tmax=(6000, "K"),
+            ),
+        )
+        original_kinetics = Arrhenius(
+            A=(2.0e11, "cm^3/(mol*s)"),
+            n=0.0,
+            Ea=(0.0, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=(300, "K"),
+            Tmax=(2000, "K"),
+        )
+        # 2 C2H5OO => O2 + 2 CH3 + 2 CH2O
+        reaction = Reaction(
+            reactants=[ethylperoxy, ethylperoxy],
+            products=[oxygen, methyl, methyl, formaldehyde, formaldehyde],
+            kinetics=original_kinetics,
+        )
+
+        reverse_kinetics = reaction.generate_reverse_rate_coefficient()
+        assert reverse_kinetics.A.units == "m^12/(mol^4*s)"
+
+        reaction.kinetics = reverse_kinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        reaction.reactants, reaction.products = reaction.products, reaction.reactants
+        reverse_reverse_kinetics = reaction.generate_reverse_rate_coefficient()
+        assert reverse_reverse_kinetics.A.units == "m^3/(mol*s)"
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(
+            original_kinetics.Tmin.value_si,
+            original_kinetics.Tmax.value_si,
+            200.0,
+            numpy.float64,
+        )
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.get_rate_coefficient(T, P)
+            krevrev = reverse_reverse_kinetics.get_rate_coefficient(T, P)
+            assert round(abs(korig / krevrev - 1.0), 0) == 0
+
     def test_reverse_surface_arrhenius_rate(self):
         """
         Test the Reaction.reverse_surface_arrhenius_rate() method works for SurfaceArrhenius format.

@@ -812,6 +812,20 @@ RATECOEFFICIENT_CONVERSION_FACTORS = {
 RATECOEFFICIENT_COMMON_UNITS = ['s^-1', 'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)']
 
 
+def _get_rate_coefficient_exponents(dimensionality):
+    """
+    Return the whole-number exponents ``(a, b)`` of rate coefficient units of
+    the form m^a/(mol^b*s), or ``None`` if `dimensionality` is not of that form.
+    """
+    if set(dimensionality) - {pq.m, pq.mol, pq.s} or dimensionality.get(pq.s, 0) != -1:
+        return None
+    a = dimensionality.get(pq.m, 0)
+    b = -dimensionality.get(pq.mol, 0)
+    if a != int(a) or b != int(b):
+        return None
+    return int(a), int(b)
+
+
 def RateCoefficient(*args, **kwargs):
     # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
     quantity = Quantity(*args, **kwargs)
@@ -830,8 +844,11 @@ def RateCoefficient(*args, **kwargs):
         factor = RATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}. Common units: {1}'
-                            ''.format(quantity.units, RATECOEFFICIENT_COMMON_UNITS))
+        # Any other gas-phase order n >= 0 has units of m^(3*(n-1))/(mol^(n-1)*s)
+        exponents = _get_rate_coefficient_exponents(dimensionality)
+        if exponents is None or exponents[0] != 3 * exponents[1] or exponents[1] < -1:
+            raise QuantityError('Invalid units {0!r}. Common units: {1}'
+                                ''.format(quantity.units, RATECOEFFICIENT_COMMON_UNITS))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity
@@ -880,7 +897,12 @@ def SurfaceRateCoefficient(*args, **kwargs):
         factor = SURFACERATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+        # Any other reaction with n_gas >= 0 gas and n_surf >= 1 surface species
+        # has units of m^a/(mol^b*s), with a = 3*n_gas + 2*n_surf - 2 and
+        # b = n_gas + n_surf - 1. So n_gas = a - 2*b and n_surf = 3*b - a + 1.
+        exponents = _get_rate_coefficient_exponents(dimensionality)
+        if exponents is None or not 2 * exponents[1] <= exponents[0] <= 3 * exponents[1]:
+            raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity

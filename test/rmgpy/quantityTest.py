@@ -771,6 +771,66 @@ class TestRateCoefficient:
         assert q.units == "cm^9/(molecule^3*s)"
         assert abs(q.get_conversion_factor_from_si_to_cm_mol_s() - 1e18) < 1e3  # 1 m9/mole3/s  =  1e18 cm9/mol3/s
 
+    def test_m12permol4s(self):
+        """
+        Test the creation of a fifth-order rate coefficient quantity with units of m^12/(mol^4*s).
+        """
+        q = quantity.RateCoefficient(1.0, "m^12/(mol^4*s)")
+        assert round(abs(q.value - 1.0), 6) == 0
+        assert abs(q.value_si - 1.0) < 1e-6
+        assert q.units == "m^12/(mol^4*s)"
+
+    def test_cm12permol4s(self):
+        """
+        Test the creation of a fifth-order rate coefficient quantity with units of cm^12/(mol^4*s).
+        """
+        q = quantity.RateCoefficient(1.0, "cm^12/(mol^4*s)")
+        assert round(abs(q.value - 1.0), 6) == 0
+        assert abs(q.value_si * 1e6**4 - 1.0) < 1e-6
+        assert q.units == "cm^12/(mol^4*s)"
+
+    def test_invalid_units(self):
+        """
+        Test that units which are not those of a gas-phase rate coefficient raise a QuantityError.
+        """
+        for units in ["m^4/(mol*s)", "m^12/(mol^4*s^2)", "m^12/(mol^4*K*s)"]:
+            with pytest.raises(quantity.QuantityError):
+                quantity.RateCoefficient(1.0, units)
+
+
+class TestSurfaceRateCoefficient:
+    """
+    Contains unit tests of the SurfaceRateCoefficient unit type object.
+    """
+
+    def test_m8permol3s(self):
+        """
+        Test the creation of a surface rate coefficient quantity with units of m^8/(mol^3*s),
+        for two gas-phase and two surface species.
+        """
+        q = quantity.SurfaceRateCoefficient(1.0, "m^8/(mol^3*s)")
+        assert round(abs(q.value - 1.0), 6) == 0
+        assert abs(q.value_si - 1.0) < 1e-6
+        assert q.units == "m^8/(mol^3*s)"
+
+    def test_cm7permol3s(self):
+        """
+        Test the creation of a surface rate coefficient quantity with units of cm^7/(mol^3*s),
+        for one gas-phase and three surface species.
+        """
+        q = quantity.SurfaceRateCoefficient(1.0, "cm^7/(mol^3*s)")
+        assert round(abs(q.value - 1.0), 6) == 0
+        assert abs(q.value_si * 1e2**7 - 1.0) < 1e-6
+        assert q.units == "cm^7/(mol^3*s)"
+
+    def test_invalid_units(self):
+        """
+        Test that units which are not those of a surface rate coefficient raise a QuantityError.
+        """
+        for units in ["m^9/(mol^2*s)", "m/(mol*s)", "m^8/(mol^3*s^2)"]:
+            with pytest.raises(quantity.QuantityError):
+                quantity.SurfaceRateCoefficient(1.0, units)
+
 
 class TestTemperature:
     """
