@@ -38,6 +38,7 @@ import numpy as np
 
 from rmgpy.statmech import (
     IdealGasTranslation,
+    LinearRotor,
     NonlinearRotor,
     HarmonicOscillator,
     HinderedRotor,
@@ -666,3 +667,37 @@ class Psi4LogTest:
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         conformer, unscaled_frequencies = log.load_conformer()
         assert conformer.spin_multiplicity == 1
+
+    def test_linear_rotor_from_oblique_diatomic(self, tmp_path):
+        """
+        A diatomic should get a LinearRotor regardless of its orientation,
+        even when the smallest principal moment is a floating-point residual.
+        """
+        oblique = np.array([[0.803286, 1.531929, -1.098384], [0.663152, 2.004019, -0.249782]])
+        bond = float(np.linalg.norm(oblique[1] - oblique[0]))
+        aligned = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, bond]])
+        q_rot = []
+        for name, coords in (("oblique", oblique), ("aligned", aligned)):
+            atoms = "\n".join(
+                f"         {symbol}  " + "  ".join(f"{x:.17g}" for x in position) + f"  {mass:.12f}"
+                for symbol, position, mass in zip(("O", "H"), coords, (15.994914619570, 1.007825032230))
+            )
+            path = tmp_path / f"oh_{name}.out"
+            path.write_text(
+                "  Multiplicity = 2\n"
+                "       Center              X                  Y                   Z               Mass       \n"
+                "    ------------   -----------------  -----------------  -----------------  -----------------\n"
+                f"{atoms}\n\n"
+                "  ==> Harmonic Vibrational Analysis <==\n"
+                "  Freq [cm^-1]                3669.3000\n"
+                "  ==> Thermochemistry Components <==\n"
+                "*** Psi4 exiting successfully. Buy a developer a beer!\n"
+            )
+            log = Psi4Log(str(path))
+            conformer, _ = log.load_conformer(symmetry=1, optical_isomers=1)
+            rotors = [mode for mode in conformer.modes if isinstance(mode, (LinearRotor, NonlinearRotor))]
+            assert len(rotors) == 1
+            assert isinstance(rotors[0], LinearRotor), name
+            q_rot.append(rotors[0].get_partition_function(340.3))
+        assert q_rot[0] == pytest.approx(q_rot[1])
+        assert q_rot[0] == pytest.approx(12.805036, rel=1e-5)

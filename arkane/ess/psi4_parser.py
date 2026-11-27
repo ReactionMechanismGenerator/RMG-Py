@@ -44,6 +44,8 @@ from arkane.exceptions import LogError
 from arkane.ess.adapter import ESSAdapter
 from arkane.ess.factory import register_ess_adapter
 
+INERTIA_ZERO_TOL = 1e-4  # amu*angstrom^2
+
 ################################################################################
 
 
@@ -217,10 +219,10 @@ class Psi4Log(ESSAdapter):
         coord, number, mass = self.load_geometry()
         inertia = get_principal_moments_of_inertia(coord, numbers=number)
         inertia = list(inertia[0])
-        if len(inertia):
-            if any(i == 0.0 for i in inertia):
-                inertia.remove(0.0)
-                rot.append(LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry))
+        if len(inertia) and not all(abs(i) < INERTIA_ZERO_TOL for i in inertia):
+            nonzero = [i for i in inertia if abs(i) >= INERTIA_ZERO_TOL]
+            if len(nonzero) < len(inertia):
+                rot.append(LinearRotor(inertia=(max(nonzero), "amu*angstrom^2"), symmetry=symmetry))
             else:
                 rot.append(NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
 
